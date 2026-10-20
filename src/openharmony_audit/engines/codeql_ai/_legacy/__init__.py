@@ -1,0 +1,1 @@
+"""Embedded CodeQL-AI implementation."""

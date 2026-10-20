@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/audit/target-profile.schema.json",
+  "title": "Repository-independent audit target profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "displayName", "source", "units", "interfaces"],
+  "properties": {
+    "schema": {"const": "audit-target-profile-v1"},
+    "id": {"$ref": "#/$defs/id"},
+    "displayName": {"type": "string", "minLength": 1},
+    "campaignId": {"$ref": "#/$defs/id"},
+    "snapshotId": {"$ref": "#/$defs/id"},
+    "source": {
+      "type": "object",
+      "required": ["adapter", "root"],
+      "properties": {
+        "adapter": {"enum": ["git-repository", "directory-tree", "decompiled-tree"]},
+        "root": {"type": "string", "minLength": 1},
+        "revision": {"type": "string"}
+      }
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "path"],
+        "properties": {
+          "id": {"$ref": "#/$defs/id"},
+          "path": {"type": "string", "minLength": 1},
+          "focus": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "weight": {"type": "integer", "minimum": 1},
+          "metadata": {"type": "object"}
+        }
+      }
+    },
+    "interfaces": {
+      "type": "object",
+      "propertyNames": {
+        "enum": ["source", "history", "index", "seeds", "domain", "staticAnalysis", "novelty", "validation", "capability", "artifactStore", "reporting"]
+      },
+      "additionalProperties": {"$ref": "#/$defs/interface"}
+    },
+    "threatModel": {"type": "object"},
+    "evidenceRules": {"type": "object"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "interface": {
+      "type": "object",
+      "required": ["adapter"],
+      "properties": {"adapter": {"$ref": "#/$defs/id"}}
+    }
+  }
+}

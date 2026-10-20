@@ -1,0 +1,49 @@
+{
+  "schema": "audit-target-profile-v1",
+  "id": "openharmony-sp1",
+  "displayName": "OpenHarmony 6.1 SP1 patch-gap profile",
+  "source": {
+    "adapter": "directory-tree",
+    "root": "/secure/openharmony-sp1-snapshots",
+    "revision": "tag:OpenHarmony-v6.1-Release-SP1"
+  },
+  "units": [
+    {"id": "sensors_medical_sensor", "path": "base/sensors/medical_sensor", "focus": ["IPC", "Parcel"], "weight": 1},
+    {"id": "web_webview", "path": "base/web/webview", "focus": ["NAPI", "callback", "buffer"], "weight": 3},
+    {"id": "communication_netmanager_base", "path": "foundation/communication/netmanager_base", "focus": ["IPC", "Parcel", "permission"], "weight": 2},
+    {"id": "communication_wifi", "path": "foundation/communication/wifi", "focus": ["IPC", "identity", "permission"], "weight": 2},
+    {"id": "drivers_peripheral", "path": "drivers/peripheral", "focus": ["buffer", "integer", "lifetime"], "weight": 3},
+    {"id": "arkcompiler_ets_runtime", "path": "arkcompiler/ets_runtime", "focus": ["memory-safety", "lifetime"], "weight": 3},
+    {"id": "filemanagement_dfs_service", "path": "foundation/filemanagement/dfs_service", "focus": ["IPC", "permission"], "weight": 1},
+    {"id": "filemanagement_storage_service", "path": "foundation/filemanagement/storage_service", "focus": ["IPC", "permission", "path"], "weight": 2},
+    {"id": "multimedia_audio_framework", "path": "foundation/multimedia/audio_framework", "focus": ["IPC", "buffer", "callback"], "weight": 3},
+    {"id": "multimedia_camera_framework", "path": "foundation/multimedia/camera_framework", "focus": ["IPC", "NAPI", "callback"], "weight": 3},
+    {"id": "multimedia_video_processing_engine", "path": "foundation/multimedia/video_processing_engine", "focus": ["buffer", "integer", "lifetime"], "weight": 2},
+    {"id": "security_certificate_manager", "path": "base/security/certificate_manager", "focus": ["identity", "permission", "crypto-api"], "weight": 1},
+    {"id": "security_device_auth", "path": "base/security/device_auth", "focus": ["IPC", "NAPI", "identity"], "weight": 2},
+    {"id": "window_window_manager", "path": "foundation/window/window_manager", "focus": ["IPC", "Parcel", "lifetime"], "weight": 3}
+  ],
+  "interfaces": {
+    "source": {"adapter": "directory-tree", "componentRegistry": "patch-gap/config/component-registry.json", "baseline": "patch-gap/config/baseline.json"},
+    "history": {"adapter": "git-parent-diff", "futureHistoryPolicy": "deny-during-discovery", "seedCatalog": "patch-gap/config/seed-sources.json"},
+    "index": {"adapter": "openharmony-build-and-symbol-index", "componentRegistry": "patch-gap/config/component-registry.json"},
+    "seeds": {"adapter": "patch-gap-seed-catalog", "legacy": true, "commitParentEdges": true},
+    "domain": {"adapter": "openharmony-security-profile", "topics": ["IPC", "Parcel", "identity", "permission", "NAPI", "callback", "buffer"]},
+    "staticAnalysis": {"adapter": "openharmony-tool-manifest", "engines": ["semgrep", "codechecker", "codeql"]},
+    "validation": {"adapter": "ohos-component-v2", "backends": ["rk3568", "hap-broker"], "sharedResource": true, "controlPolicy": "original-variant-benign-patched"},
+    "capability": {"adapter": "openharmony-sp1-capability-snapshot"},
+    "novelty": {"adapter": "openharmony-master-revision", "policy": "candidate-frozen-before-access"},
+    "artifactStore": {"adapter": "patch-gap-state-and-live-queue"},
+    "reporting": {"adapter": "openharmony-src-report", "language": "zh-CN", "submission": "human-only"}
+  },
+  "threatModel": {
+    "actors": ["remote-client", "local-unprivileged-app"],
+    "trustBoundaries": ["IPC", "NAPI", "device-service", "permission"]
+  },
+  "evidenceRules": {
+    "minimumCounterEvidence": 2,
+    "requireBlindVerification": true,
+    "requireMasterNovelty": true,
+    "requireRealComponentControls": true
+  }
+}

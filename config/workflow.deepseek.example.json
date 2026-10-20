@@ -1,0 +1,36 @@
+{
+  "schema": "generic-audit-workflow-v1",
+  "campaignId": "repository-audit-01",
+  "promptDir": "builtin:generic",
+  "runtime": {
+    "adapter": "claude-code",
+    "command": "claude",
+    "model": "deepseek-v4-flash",
+    "outputFormat": "stream-json",
+    "mainTimeoutSeconds": 4200,
+    "checkpointTimeoutSeconds": 300,
+    "maxCycles": 4,
+    "extraArgs": [],
+    "inheritEnv": ["ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_API_KEY"],
+    "env": {}
+  },
+  "parallelism": {
+    "rootWorkers": 4,
+    "shardStrategy": "balanced-units",
+    "subagentsPerWorker": 3,
+    "subagentRoles": [
+      "entrypoint-boundary",
+      "dataflow-lifetime",
+      "counterevidence-history"
+    ],
+    "serializeValidation": true
+  },
+  "phases": [
+    {"id": "inventory", "minutes": 30, "objective": "freeze scope and consume seeds"},
+    {"id": "discovery", "minutes": 60, "objective": "extract invariants and discover variants"},
+    {"id": "verification", "minutes": 120, "objective": "blind verification, novelty, and PoC planning"},
+    {"id": "decision", "minutes": 30, "objective": "route, persist, and prepare human review"}
+  ],
+  "candidateLimitPerUnit": 3,
+  "terminalStates": ["COMPLETE", "NO_QUALIFIED_CANDIDATE", "BLOCKED", "CANCELLED"]
+}

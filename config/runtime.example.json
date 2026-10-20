@@ -1,0 +1,14 @@
+{
+  "claudeCode": {
+    "command": "claude",
+    "model": "replace-with-model",
+    "outputFormat": "stream-json",
+    "apiKeyEnv": "ANTHROPIC_API_KEY"
+  },
+  "openaiCompatible": {
+    "baseUrl": "https://api.example.invalid",
+    "model": "replace-with-model",
+    "apiKeyEnv": "OPENAI_API_KEY"
+  }
+}
+

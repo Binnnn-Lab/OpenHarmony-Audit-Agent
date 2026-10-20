@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/audit/generic-workflow.schema.json",
+  "title": "Generic repository audit workflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "campaignId", "runtime", "parallelism"],
+  "properties": {
+    "schema": {"const": "generic-audit-workflow-v1"},
+    "campaignId": {"$ref": "#/$defs/id"},
+    "promptDir": {"type": "string", "minLength": 1},
+    "candidateLimitPerUnit": {"type": "integer", "minimum": 1, "maximum": 100},
+    "terminalStates": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adapter", "command", "model"],
+      "properties": {
+        "adapter": {"const": "claude-code"},
+        "command": {"type": "string", "minLength": 1},
+        "model": {"type": "string", "minLength": 1},
+        "outputFormat": {"type": "string", "minLength": 1},
+        "mainTimeoutSeconds": {"type": "integer", "minimum": 1},
+        "checkpointTimeoutSeconds": {"type": "integer", "minimum": 1},
+        "maxCycles": {"type": "integer", "minimum": 1},
+        "extraArgs": {"type": "array", "items": {"type": "string"}},
+        "inheritEnv": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"}},
+        "env": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "parallelism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rootWorkers", "subagentsPerWorker", "subagentRoles"],
+      "properties": {
+        "rootWorkers": {"type": "integer", "minimum": 1, "maximum": 32},
+        "subagentsPerWorker": {"type": "integer", "minimum": 1, "maximum": 16},
+        "shardStrategy": {"enum": ["balanced-units", "one-unit-per-worker"]},
+        "subagentRoles": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "serializeValidation": {"type": "boolean"}
+      }
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "minutes"],
+        "properties": {
+          "id": {"$ref": "#/$defs/id"},
+          "minutes": {"type": "integer", "minimum": 1},
+          "objective": {"type": "string"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"}
+  }
+}

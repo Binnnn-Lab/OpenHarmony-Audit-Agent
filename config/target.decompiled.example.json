@@ -1,0 +1,43 @@
+{
+  "schema": "audit-target-profile-v1",
+  "id": "decompiled-firmware",
+  "displayName": "Example decompiled source tree",
+  "source": {
+    "adapter": "decompiled-tree",
+    "root": "/absolute/path/to/exported-source",
+    "revision": "artifact:firmware-build-2026-09-01"
+  },
+  "units": [
+    {"id": "rpc-service", "path": "modules/rpc_service", "focus": ["deserialization", "length-fields"], "weight": 3},
+    {"id": "media-codec", "path": "modules/media_codec", "focus": ["memory-safety", "integer-overflow"], "weight": 2}
+  ],
+  "interfaces": {
+    "source": {
+      "adapter": "decompiled-tree",
+      "pseudocodeExtensions": [".c", ".cpp"],
+      "disassemblyRoot": "/absolute/path/to/exported-source/disassembly",
+      "symbolMap": "/absolute/path/to/exported-source/symbols.json",
+      "callgraph": "/absolute/path/to/exported-source/callgraph.json"
+    },
+    "history": {"adapter": "none", "reason": "only one firmware artifact is available"},
+    "index": {"adapter": "decompiler-export-index", "symbols": "/absolute/path/to/exported-source/symbols.json", "callgraph": "/absolute/path/to/exported-source/callgraph.json"},
+    "seeds": {"adapter": "file-catalog", "catalogs": ["/absolute/path/to/manual-invariants.json"]},
+    "domain": {"adapter": "prompt-fragment", "path": "/absolute/path/to/firmware-protocol-profile.md"},
+    "staticAnalysis": {"adapter": "file-catalog", "catalogs": ["/absolute/path/to/decompiler-findings.json"]},
+    "validation": {"adapter": "external-runner", "manifest": "/absolute/path/to/emulator-recipes.json", "sharedResource": true},
+    "capability": {"adapter": "runner-probe", "manifest": "/absolute/path/to/emulator-recipes.json"},
+    "novelty": {"adapter": "none", "reason": "no newer comparable artifact is available"},
+    "artifactStore": {"adapter": "local-directory"},
+    "reporting": {"adapter": "markdown-json", "locationFormat": "module-function-address"}
+  },
+  "threatModel": {
+    "actors": ["remote-protocol-peer"],
+    "trustBoundaries": ["wire-format", "native-parser"]
+  },
+  "evidenceRules": {
+    "minimumCounterEvidence": 2,
+    "requireInstructionEvidenceForDecompilerClaims": true,
+    "noveltyUnavailableLabel": "NOVELTY_UNKNOWN",
+    "dynamicUnavailableLabel": "STATIC_ONLY"
+  }
+}

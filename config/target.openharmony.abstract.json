@@ -1,0 +1,42 @@
+{
+  "schema": "audit-target-profile-v1",
+  "id": "openharmony-abstract",
+  "displayName": "OpenHarmony abstract vulnerability-mining target",
+  "campaignId": "openharmony-audit-design",
+  "snapshotId": "abstract-snapshot",
+  "source": {
+    "adapter": "directory-tree",
+    "root": "/path/to/openharmony/source",
+    "revision": "replace-with-reviewed-tag-or-commit"
+  },
+  "units": [
+    {"id": "ipc-and-parcel", "path": "<component>/ipc", "focus": ["IPC", "Parcel", "trust-boundary"], "weight": 3},
+    {"id": "napi-and-callback", "path": "<component>/napi", "focus": ["NAPI", "callback", "lifetime"], "weight": 2},
+    {"id": "permission-and-identity", "path": "<component>/permission", "focus": ["permission", "identity", "authorization"], "weight": 2},
+    {"id": "buffer-and-integer", "path": "<component>/native", "focus": ["buffer", "integer", "memory-safety"], "weight": 3}
+  ],
+  "interfaces": {
+    "source": {"adapter": "directory-tree"},
+    "history": {"adapter": "git-parent-diff", "futureHistoryPolicy": "deny-during-discovery"},
+    "index": {"adapter": "openharmony-build-and-symbol-index"},
+    "seeds": {"adapter": "file-catalog"},
+    "domain": {"adapter": "openharmony-security-profile"},
+    "staticAnalysis": {"adapter": "codeql", "engines": ["codeql"]},
+    "novelty": {"adapter": "master-revision", "policy": "candidate-frozen-before-access"},
+    "validation": {"adapter": "optional-component-backend", "status": "deferred"},
+    "capability": {"adapter": "runner-probe"},
+    "artifactStore": {"adapter": "local-directory"},
+    "reporting": {"adapter": "markdown-pdf", "language": "zh-CN", "submission": "human-only"}
+  },
+  "threatModel": {
+    "actors": ["remote-client", "local-unprivileged-app"],
+    "trustBoundaries": ["IPC", "NAPI", "device-service", "permission"]
+  },
+  "evidenceRules": {
+    "minimumCounterEvidence": 2,
+    "requireBlindVerification": true,
+    "dynamicVerificationOptional": true,
+    "staticOnlyLabel": "STATIC_ONLY"
+  }
+}
+

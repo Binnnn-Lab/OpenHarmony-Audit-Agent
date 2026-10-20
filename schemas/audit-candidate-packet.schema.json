@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.invalid/audit/candidate-packet.schema.json",
+  "title": "Frozen repository-independent vulnerability candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "candidateId", "revision", "snapshotId", "unitId", "title", "locations", "callChain", "invariant", "threatModel", "impact", "counterEvidence", "evidenceRefs", "unresolvedAssumptions"],
+  "properties": {
+    "schema": {"const": "audit-candidate-packet-v1"},
+    "candidateId": {"$ref": "#/$defs/id"},
+    "revision": {"type": "integer", "minimum": 1},
+    "snapshotId": {"type": "string", "minLength": 1},
+    "unitId": {"$ref": "#/$defs/id"},
+    "title": {"type": "string", "minLength": 1},
+    "locations": {
+      "type": "object",
+      "required": ["entry", "boundary", "sink", "missingGuard"],
+      "properties": {
+        "entry": {"$ref": "#/$defs/location"},
+        "boundary": {"$ref": "#/$defs/location"},
+        "sink": {"$ref": "#/$defs/location"},
+        "missingGuard": {"$ref": "#/$defs/location"}
+      }
+    },
+    "callChain": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/location"}},
+    "invariant": {"type": "object"},
+    "threatModel": {"type": "object"},
+    "impact": {"type": "object"},
+    "counterEvidence": {"type": "array", "minItems": 2, "items": {"type": "object"}},
+    "evidenceRefs": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "unresolvedAssumptions": {"type": "array", "items": {"type": "string"}},
+    "provenance": {"type": "object"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},
+    "sourceSpan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "path", "startLine"],
+      "properties": {
+        "kind": {"const": "source-span"},
+        "path": {"type": "string", "minLength": 1},
+        "startLine": {"type": "integer", "minimum": 1},
+        "endLine": {"type": "integer", "minimum": 1},
+        "symbol": {"type": "string"}
+      }
+    },
+    "binaryAddress": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "module", "address", "functionId"],
+      "properties": {
+        "kind": {"const": "binary-address"},
+        "module": {"type": "string", "minLength": 1},
+        "address": {"type": "string", "pattern": "^0x[0-9A-Fa-f]+$"},
+        "rva": {"type": "string", "pattern": "^0x[0-9A-Fa-f]+$"},
+        "fileOffset": {"type": "string", "pattern": "^0x[0-9A-Fa-f]+$"},
+        "functionId": {"type": "string", "minLength": 1},
+        "decompilerLine": {"type": "integer", "minimum": 1},
+        "mappingConfidence": {"enum": ["exact", "derived", "heuristic"]}
+      }
+    },
+    "generatedSymbol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "artifact", "symbol"],
+      "properties": {
+        "kind": {"const": "generated-symbol"},
+        "artifact": {"type": "string", "minLength": 1},
+        "symbol": {"type": "string", "minLength": 1},
+        "offset": {"type": "integer", "minimum": 0}
+      }
+    },
+    "location": {"oneOf": [{"$ref": "#/$defs/sourceSpan"}, {"$ref": "#/$defs/binaryAddress"}, {"$ref": "#/$defs/generatedSymbol"}]}
+  }
+}

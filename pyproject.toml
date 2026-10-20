@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openharmony-audit-agent"
+version = "0.1.0"
+description = "Evidence-driven OpenHarmony source vulnerability auditing workflow"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+codeql-ai = ["fastmcp>=2.14.1", "angr>=9.2.103", "pyelftools>=0.31", "tabulate>=0.9.0"]
+pdf = ["reportlab>=4.0", "pypdf>=4.0", "pdfplumber>=0.11"]
+
+[project.scripts]
+openharmony-audit = "openharmony_audit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

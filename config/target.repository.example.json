@@ -1,0 +1,37 @@
+{
+  "schema": "audit-target-profile-v1",
+  "id": "my-repository",
+  "displayName": "Example Git repository",
+  "source": {
+    "adapter": "git-repository",
+    "root": "/absolute/path/to/repository",
+    "revision": "commit:0123456789abcdef0123456789abcdef01234567"
+  },
+  "units": [
+    {"id": "parser", "path": "src/parser", "focus": ["untrusted-input", "bounds"], "weight": 3},
+    {"id": "network", "path": "src/network", "focus": ["protocol", "authentication"], "weight": 2},
+    {"id": "storage", "path": "src/storage", "focus": ["authorization", "lifetime"], "weight": 1}
+  ],
+  "interfaces": {
+    "source": {"adapter": "git-repository", "include": ["src"], "exclude": ["third_party", "tests/fixtures"]},
+    "history": {"adapter": "git-parent-diff", "historyRoot": "/absolute/path/to/repository", "futureHistoryPolicy": "deny-during-discovery"},
+    "index": {"adapter": "compilation-database", "path": "/absolute/path/to/compile_commands.json"},
+    "seeds": {"adapter": "file-catalog", "catalogs": ["/absolute/path/to/static-findings.json"]},
+    "domain": {"adapter": "prompt-fragment", "path": "/absolute/path/to/repository-audit-profile.md"},
+    "staticAnalysis": {"adapter": "tool-manifest", "manifest": "/absolute/path/to/static-tools.json"},
+    "validation": {"adapter": "command-manifest", "manifest": "/absolute/path/to/validation-recipes.json", "sharedResource": false},
+    "capability": {"adapter": "local-build-probe", "manifest": "/absolute/path/to/validation-recipes.json"},
+    "novelty": {"adapter": "git-ref", "reference": "commit:fedcba9876543210fedcba9876543210fedcba98"},
+    "artifactStore": {"adapter": "local-directory"},
+    "reporting": {"adapter": "markdown-json", "template": "generic-security-review"}
+  },
+  "threatModel": {
+    "actors": ["remote-client", "local-unprivileged-user"],
+    "trustBoundaries": ["network", "process", "privilege"]
+  },
+  "evidenceRules": {
+    "minimumCounterEvidence": 2,
+    "requireBlindVerification": true,
+    "requireDynamicEvidenceForConfirmed": true
+  }
+}

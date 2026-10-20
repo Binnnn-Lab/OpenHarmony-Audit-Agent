@@ -1,0 +1,19 @@
+flowchart LR
+    A[OpenHarmony Target Profile] --> B[Inventory & Sharding]
+    B --> C[CodeQL SARIF Discovery]
+    C --> D[Unified Finding]
+    D --> E[Semantic Audit Roles]
+    E --> F[Frozen Candidate Packet]
+    F --> G[FP Experience Match]
+    F --> H[Function Sanitizer]
+    F --> I[QL Optimizer]
+    F --> J[Focused Symbolic Verification]
+    G --> K[Evidence Normalizer]
+    H --> K
+    I --> K
+    J --> K
+    K --> L[Blind Verification & Decision Gate]
+    L --> M[PoC Plan / Repair Plan / Report]
+    K --> N[Low-confidence Experience Store]
+    N -. next campaign .-> G
+
