@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#122a2b" />
+    <title>OpenHarmony Audit Agent · 证据驱动审计工作台</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%23122a2b'/%3E%3Cpath d='M20 7 31 12v9c0 7-11 13-11 13S9 28 9 21v-9Z' fill='none' stroke='%237fe3bc' stroke-width='2'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳转到主内容</a>
+    <aside class="sidebar">
+      <a
+        class="brand"
+        href="#workspace"
+        aria-label="OpenHarmony Audit Agent 首页"
+        ><span class="brand-mark">◈</span
+        ><span>OpenHarmony<small>AUDIT AGENT</small></span></a
+      >
+      <div class="workspace-label">BINNNN LAB <span>研究工作空间</span></div>
+      <nav aria-label="主导航">
+        <button data-view="workspace" class="nav-item active">
+          <span class="nav-icon">▦</span>审计工作台
+          <span class="nav-number">01</span>
+        </button>
+        <button data-view="principles" class="nav-item">
+          <span class="nav-icon">⌘</span>原理实验室
+          <span class="nav-number">02</span>
+        </button>
+        <button data-view="evidence" class="nav-item">
+          <span class="nav-icon">◇</span>证据档案
+          <span class="nav-number">03</span>
+        </button>
+        <button data-view="report" class="nav-item">
+          <span class="nav-icon">▤</span>演示报告
+          <span class="nav-number">04</span>
+        </button>
+      </nav>
+      <div class="sidebar-note">
+        <span class="tiny-label">DESIGN PRINCIPLE</span>
+        <p>让每个结论，<br />都有证据可循。</p>
+        <div class="mini-route">
+          <i></i><span></span><i></i><span></span><i></i>
+        </div>
+        <small>Finding → Evidence → Decision</small>
+      </div>
+      <div class="sidebar-bottom">
+        <span class="online-dot"></span> 本地交互演示
+        <span class="version">v0.1</span
+        ><small>抽象案例 · 不连接真实扫描引擎</small>
+      </div>
+    </aside>
+    <div class="shell">
+      <header class="topbar">
+        <div class="breadcrumb">
+          工作空间 <span>/</span> <strong id="breadcrumb">审计工作台</strong>
+        </div>
+        <div class="top-actions">
+          <span class="demo-pill"><i></i> DEMO MODE</span
+          ><button
+            id="present"
+            class="icon-button"
+            aria-label="切换专注演示模式"
+            title="专注演示"
+          >
+            ⛶</button
+          ><span class="avatar" title="Binnnn Lab">BL</span>
+        </div>
+      </header>
+      <main id="main" tabindex="-1">
+        <section
+          id="workspace"
+          class="view active"
+          aria-labelledby="page-title"
+        >
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">EVIDENCE-DRIVEN SECURITY RESEARCH</div>
+              <h1 id="page-title">
+                从代码线索，到可信结论<span class="title-dot">。</span>
+              </h1>
+              <p>一条统一的证据链，连接静态发现、语义审计与独立复核。</p>
+            </div>
+            <button class="button primary" id="play">
+              <span>▶</span> 播放审计过程
+            </button>
+          </div>
+          <div class="campaign-strip">
+            <div>
+              <span class="small-shield">◇</span
+              ><strong>OpenHarmony 抽象目标</strong
+              ><span class="tag">C / C++</span
+              ><span class="tag subtle">只读演示</span>
+            </div>
+            <div class="campaign-meta">
+              <span>快照 <code>oh-demo-001</code></span
+              ><span>范围 <b>IPC · NAPI · Native</b></span>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <article class="stat-card">
+              <div class="stat-label">预置静态候选 <span>↗</span></div>
+              <div class="stat-value">03<span>条</span></div>
+              <div class="stat-foot">
+                <span class="dot teal"></span>覆盖三类抽象风险场景
+              </div>
+              <div class="stat-spark">
+                <i style="height: 25%"></i><i style="height: 45%"></i
+                ><i style="height: 30%"></i><i style="height: 66%"></i
+                ><i style="height: 48%"></i><i style="height: 80%"></i
+                ><i style="height: 65%"></i>
+              </div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">当前证据对象 <span>◇</span></div>
+              <div class="stat-value" id="evidence-count">
+                00<span>/ 12</span>
+              </div>
+              <div class="stat-foot">随演示阶段逐步归档</div>
+              <div class="tiny-progress">
+                <span id="evidence-progress"></span>
+              </div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-label">角色协作 <span>⌘</span></div>
+              <div class="stat-value">07<span>个角色</span></div>
+              <div class="stat-foot">
+                <span class="role-dots"><i>E</i><i>D</i><i>C</i><i>+4</i></span>
+                独立分工，共享证据
+              </div>
+            </article>
+            <article class="stat-card dark-stat">
+              <div class="stat-label">
+                当前阶段 <span class="online-dot"></span>
+              </div>
+              <div class="phase-value" id="phase-value">目标冻结</div>
+              <div class="stat-foot" id="phase-foot">01 / 07 · Inventory</div>
+              <div class="orbit">◎</div>
+            </article>
+          </div>
+          <article class="panel pipeline-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-index">01</span>
+                <h2>统一审计流水线</h2>
+                <span class="muted-label">UNIFIED WORKFLOW</span>
+              </div>
+              <div class="pipeline-controls">
+                <button id="reset" class="text-button">↺ 重置</button
+                ><button id="next" class="text-button">下一阶段 →</button>
+              </div>
+            </div>
+            <div
+              class="pipeline"
+              id="pipeline"
+              aria-label="七阶段演示进度"
+            ></div>
+            <div class="stage-detail">
+              <div class="stage-icon" id="stage-icon">01</div>
+              <div>
+                <div class="stage-label" id="stage-label"></div>
+                <p id="stage-description"></p>
+              </div>
+              <div class="stage-output">
+                <span>阶段产物</span><code id="stage-output"></code>
+              </div>
+            </div>
+          </article>
+          <div class="analysis-grid">
+            <article class="panel findings-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">02</span>
+                  <h2>候选审计</h2>
+                  <span class="count-badge">3</span>
+                </div>
+                <span class="muted-label">点击切换案例</span>
+              </div>
+              <div class="filter-row" role="group" aria-label="筛选候选">
+                <button data-filter="all" class="filter active">全部候选</button
+                ><button data-filter="memory" class="filter">内存安全</button
+                ><button data-filter="boundary" class="filter">边界校验</button>
+              </div>
+              <div id="findings"></div>
+              <div class="list-footer">
+                <span class="dot amber"></span> 预置案例与状态仅用于解释流程
+              </div>
+            </article>
+            <article class="panel detail-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">03</span>
+                  <h2>证据追踪</h2>
+                </div>
+                <span class="tag subtle" id="candidate-id"></span>
+              </div>
+              <div class="detail-body">
+                <div class="detail-title">
+                  <h3 id="candidate-title"></h3>
+                  <span id="candidate-status"></span>
+                </div>
+                <p class="detail-summary" id="candidate-summary"></p>
+                <div class="trace-label">
+                  SOURCE <span>跨越信任边界</span> SINK
+                </div>
+                <div class="call-chain" id="call-chain"></div>
+                <div class="code-panel">
+                  <div class="code-top">
+                    <span><i></i><i></i><i></i></span
+                    ><span id="code-filename"></span><small>抽象伪代码</small>
+                  </div>
+                  <pre id="code-sample"></pre>
+                </div>
+                <div class="invariant">
+                  <span>!</span>
+                  <div>
+                    <strong>需要证明的安全不变量</strong>
+                    <p id="invariant"></p>
+                  </div>
+                </div>
+                <div class="evidence-mini" id="evidence-mini"></div>
+              </div>
+            </article>
+          </div>
+          <div class="bottom-grid">
+            <article class="panel log-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">04</span>
+                  <h2>编排事件</h2>
+                </div>
+                <span class="live-label"><i></i> 演示回放</span>
+              </div>
+              <div
+                id="event-log"
+                class="event-log"
+                role="log"
+                aria-live="polite"
+              ></div>
+            </article>
+            <article class="insight-card">
+              <div class="tiny-label">WHY EVIDENCE MATTERS</div>
+              <h3>告警只是起点。<br />证据决定结论。</h3>
+              <p>
+                静态路径提供线索，反证检查挑战假设，确定性复核决定证据能走多远。
+              </p>
+              <button class="text-button" data-view="principles">
+                进入原理实验室 <span>↗</span>
+              </button>
+              <div class="insight-shape">◈</div>
+            </article>
+          </div>
+        </section>
+        <section
+          id="principles"
+          class="view"
+          aria-labelledby="principles-title"
+        >
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">HOW THE SYSTEM REASONS</div>
+              <h1 id="principles-title">把判断过程，变成可解释的原理。</h1>
+              <p>用一条闭环理解两个工具的分工，再亲手改变决策所需的证据。</p>
+            </div>
+            <span class="tag">方法设计演示</span>
+          </div>
+          <div class="architecture panel">
+            <div class="panel-heading">
+              <div><h2>一个控制器，四类复核能力</h2></div>
+              <span class="muted-label">点击节点查看职责</span>
+            </div>
+            <div class="architecture-layout">
+              <button class="arch-block" data-arch="discovery">
+                <small>01 / DISCOVERY</small><strong>CodeQL 静态发现</strong
+                ><span>SARIF → Finding</span></button
+              ><span class="connector">→</span
+              ><button class="arch-block controller" data-arch="workflow">
+                <small>02 / ORCHESTRATION</small><strong>审计工作流</strong
+                ><span>角色协作 · 冻结候选 · 盲验证</span></button
+              ><span class="connector">→</span>
+              <div class="engine-stack">
+                <button data-arch="experience">
+                  FP Experience <span>经验匹配</span></button
+                ><button data-arch="sanitizer">
+                  Function Sanitizer <span>语义清洗</span></button
+                ><button data-arch="optimizer">
+                  QL Optimizer <span>查询修补</span></button
+                ><button data-arch="symbolic">
+                  Symbolic Sanitizer <span>路径复核</span>
+                </button>
+              </div>
+              <span class="connector">→</span
+              ><button class="arch-block" data-arch="gate">
+                <small>03 / DECISION</small><strong>统一证据门禁</strong
+                ><span>Evidence → Decision</span>
+              </button>
+            </div>
+            <div class="feedback-line">
+              ↶ 经回归验证的经验，反馈下一轮审计
+              <span>候选经验不直接抑制告警</span>
+            </div>
+            <div
+              class="arch-explanation"
+              id="arch-explanation"
+              aria-live="polite"
+            ></div>
+          </div>
+          <div class="lab-grid">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-index">LAB</span>
+                  <h2>决策门禁实验</h2>
+                </div>
+                <button class="text-button" id="reset-lab">恢复默认</button>
+              </div>
+              <p class="lab-intro">
+                切换证据条件，观察决策变化。此处展示目标方法规则；不会运行后端引擎。
+              </p>
+              <div id="gate-inputs"></div>
+              <div class="confidence-control">
+                <label for="confidence"
+                  >模型自评置信度
+                  <output id="confidence-value">95%</output></label
+                ><input
+                  id="confidence"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value="95"
+                /><small>调高模型置信度，不会改变证据门禁结果。</small>
+              </div>
+            </article>
+            <article class="gate-result" aria-live="polite">
+              <span class="tiny-label">DECISION / 模拟决策</span>
+              <div class="gate-emblem" id="gate-emblem">◇</div>
+              <div class="gate-verdict" id="gate-verdict"></div>
+              <h3 id="gate-title"></h3>
+              <p id="gate-reason"></p>
+              <div class="gate-missing" id="gate-missing"></div>
+              <div class="gate-note">
+                PoC 计划 ≠ PoC 执行证据<br />盲验证 ≠ 确定性复核
+              </div>
+            </article>
+          </div>
+          <div class="role-heading">
+            <h2>七个角色，一条证据链</h2>
+            <p>让发现者与验证者的视角保持独立。</p>
+          </div>
+          <div class="roles-grid" id="roles"></div>
+        </section>
+        <section id="evidence" class="view" aria-labelledby="evidence-title">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">TRACEABLE BY DESIGN</div>
+              <h1 id="evidence-title">每一份证据，都有来处。</h1>
+              <p>
+                检查来源模块、候选引用和生成阶段，区分已回放与待回放的演示记录。
+              </p>
+            </div>
+            <button class="button secondary" id="export-json">
+              ↓ 导出演示 JSON
+            </button>
+          </div>
+          <div class="notice">
+            <span>◇</span>
+            下面是预置的证据目录。摘要与路径均为演示内容，没有真实源码输入、模型调用或符号求解。
+          </div>
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>统一证据档案</h2>
+                <span class="count-badge">12</span>
+              </div>
+              <label class="select-label"
+                >案例
+                <select id="evidence-filter">
+                  <option value="all">全部案例</option>
+                </select></label
+              >
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>证据 / ID</th>
+                    <th>产生模块</th>
+                    <th>候选引用</th>
+                    <th>阶段</th>
+                    <th>状态</th>
+                    <th>详情</th>
+                  </tr>
+                </thead>
+                <tbody id="evidence-table"></tbody>
+              </table>
+            </div>
+          </article>
+          <div class="provenance-banner">
+            <div>
+              <span class="eyebrow">PROVENANCE</span>
+              <h3>内容可以追溯，结论才能复核。</h3>
+              <p>
+                实际接入时，每份证据需记录输入快照、规则或模型版本、时间和内容哈希。演示不伪造这些真实运行凭证。
+              </p>
+            </div>
+            <code
+              >producer<br />input_snapshot<br />rule_version / model_version<br />created_at
+              · content_hash<br />candidate_id</code
+            >
+          </div>
+        </section>
+        <section id="report" class="view" aria-labelledby="report-title">
+          <div class="page-heading">
+            <div>
+              <div class="eyebrow">RESEARCH OUTPUT</div>
+              <h1 id="report-title">可复核的结论，可交付的报告。</h1>
+              <p>将案例、证据与待验证事项组织成可带走的演示材料。</p>
+            </div>
+            <button class="button primary" id="export-report">
+              ↓ 下载 Markdown
+            </button>
+          </div>
+          <div class="report-layout">
+            <article class="report-paper" id="report-paper"></article>
+            <aside class="report-aside">
+              <span class="tiny-label">REPORT OUTLINE</span
+              ><a href="#report-context">01　目标与范围</a
+              ><a href="#report-findings">02　候选与证据</a
+              ><a href="#report-limitations">03　验证边界</a>
+              <div>
+                <strong>展示建议</strong>
+                <p>
+                  先播放流程，再切换案例；最后用原理实验室解释为什么一条静态告警还不能直接成为已确认漏洞。
+                </p>
+                <button class="text-button" data-view="workspace">
+                  回到工作台 →
+                </button>
+              </div>
+            </aside>
+          </div>
+        </section>
+        <footer>
+          <span>OpenHarmony Audit Agent <b> / </b> Binnnn Lab</span
+          ><span>证据驱动 · 可解释 · 可追溯 <i>所有案例均为抽象演示</i></span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="evidence-dialog">
+      <div class="dialog-heading">
+        <div>
+          <span class="eyebrow">EVIDENCE INSPECTOR</span>
+          <h2 id="dialog-title"></h2>
+        </div>
+        <button id="close-dialog" class="icon-button" aria-label="关闭证据详情">
+          ×
+        </button>
+      </div>
+      <div id="dialog-content"></div>
+    </dialog>
+    <div class="toast" id="toast" role="status"></div>
+  </body>
+</html>

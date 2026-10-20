@@ -9,4 +9,5 @@ reports/run-data/
 knowledge/
 scripts/.CODEQL-AI/
 tmp/
+node_modules/
 

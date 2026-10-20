@@ -1,0 +1,12 @@
+{
+  "name": "openharmony-audit-demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline interactive demo; npm is needed only for optional browser checks",
+  "scripts": {
+    "test": "node tests/smoke.cjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "24.43.0"
+  }
+}
