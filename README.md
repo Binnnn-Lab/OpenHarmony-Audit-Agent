@@ -10,6 +10,8 @@ OpenHarmony-Audit-Agent 将角色化代码审计工作流与 CodeQL-AI 的静态
 
 ### HTML 原理与流程演示（推荐）
 
+[工具使用说明书（HTML）](frontend/manual.html) 包含依赖环境、安装步骤、命令输入输出、DEMO 操作和故障处理。DEMO 视频尚未录制，说明书末尾提供录制提纲；HTML 演示不能替代视频文件。
+
 直接用浏览器打开 [frontend/demo.html](frontend/demo.html)，无需安装依赖或联网。八个章节串起两个工具的分工、Parcel 案例、路径约束实验、独立验证、经验反馈和实验设计，支持键盘推进、全屏、自动播放与讲解提示。讲解顺序见 [演示说明](frontend/DEMO.md)。
 
 也可通过下方本地服务访问 http://127.0.0.1:8765/demo.html。
@@ -22,7 +24,7 @@ OpenHarmony-Audit-Agent 将角色化代码审计工作流与 CodeQL-AI 的静态
 python scripts/serve_demo.py
 ```
 
-打开 http://127.0.0.1:8765，体验可播放的审计流程、调用链与证据追踪、决策门禁实验和报告导出。前端使用纯静态文件，不需要 Node 构建或 API key。所有案例都标注为抽象演示，未连接实际审计引擎。详细讲解顺序见 [前端说明](frontend/README.md)。
+打开 http://127.0.0.1:8765，体验可播放的审计流程、调用链与证据追踪、结论判定实验和报告导出。前端使用纯静态文件，不需要 Node 构建或 API key。所有案例都标注为抽象演示，未连接实际审计引擎。详细讲解顺序见 [前端说明](frontend/README.md)。
 
 ![审计工作台：演示候选、七阶段工作流与统一证据链](docs/demo-workspace.png)
 
@@ -44,7 +46,7 @@ CodeQL、angr、FastMCP 和 PDF 依赖均为可选能力，分别见 `pyproject.
 - `src/openharmony_audit/engines/codeql`：CodeQL 命令和 SARIF 入口。
 - `src/openharmony_audit/engines/codeql_ai`：内嵌的 CodeQL-AI provider 和可选 MCP 服务。
 - `src/openharmony_audit/runtimes`：Claude Code 与 OpenAI-compatible 双 runtime。
-- `src/openharmony_audit/evidence`：SARIF 归一化、provenance、经验库和决策门禁。
+- `src/openharmony_audit/evidence`：SARIF 归一化、provenance、经验库和证据审核。
 - `docs/technical-report.md`：中文技术方案主报告。
 - `reports/technical-report.pdf`：由报告主稿生成的 PDF。
 

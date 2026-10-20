@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>工具使用说明书 · OpenHarmony Audit Agent</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #173039;
+        --muted: #566b70;
+        --line: #cdd8d3;
+        --green: #19664e;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #f4f6f1;
+        color: var(--ink);
+        font:
+          16px/1.85 "Segoe UI",
+          "Microsoft YaHei",
+          sans-serif;
+      }
+      header {
+        background: #12232b;
+        color: #f0f5ec;
+        padding: 48px max(24px, calc((100vw - 1040px) / 2));
+      }
+      header small {
+        color: #a8d9c6;
+        letter-spacing: 2px;
+      }
+      h1 {
+        font-size: clamp(28px, 5vw, 44px);
+        margin: 12px 0;
+      }
+      header p {
+        max-width: 780px;
+        color: #c3d3d1;
+      }
+      a {
+        color: var(--green);
+        text-underline-offset: 4px;
+      }
+      header a {
+        color: #b6e5d1;
+      }
+      a:focus-visible {
+        outline: 3px solid #bd821c;
+        outline-offset: 4px;
+      }
+      main {
+        max-width: 1096px;
+        margin: auto;
+        padding: 28px;
+      }
+      nav {
+        display: flex;
+        gap: 12px 24px;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 24px;
+      }
+      section {
+        padding: 28px 0;
+        border-bottom: 1px solid var(--line);
+        scroll-margin-top: 20px;
+      }
+      h2 {
+        font-size: 26px;
+        margin: 0 0 14px;
+      }
+      h2 small {
+        font-size: 13px;
+        color: var(--green);
+        margin-right: 12px;
+      }
+      h3 {
+        font-size: 19px;
+        margin: 24px 0 8px;
+      }
+      p {
+        margin: 10px 0;
+      }
+      .note {
+        background: #e5eee7;
+        border-left: 3px solid var(--green);
+        padding: 16px 20px;
+        margin: 20px 0;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th,
+      td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #e6ece5;
+        white-space: nowrap;
+      }
+      pre {
+        background: #12232b;
+        color: #e0eee7;
+        padding: 20px;
+        border-radius: 6px;
+        overflow: auto;
+        font:
+          13px/1.8 Consolas,
+          monospace;
+      }
+      code {
+        font-family: Consolas, monospace;
+        font-size: 0.9em;
+        overflow-wrap: anywhere;
+      }
+      pre code {
+        font-size: inherit;
+        overflow-wrap: normal;
+      }
+      li {
+        padding: 3px 0;
+      }
+      footer {
+        max-width: 1096px;
+        margin: auto;
+        padding: 28px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      @media (max-width: 600px) {
+        main {
+          padding: 20px;
+        }
+        header {
+          padding: 30px 20px;
+        }
+        h2 {
+          font-size: 23px;
+        }
+        th,
+        td {
+          padding: 10px;
+        }
+        pre {
+          padding: 14px;
+        }
+      }
+      @media print {
+        body {
+          background: white;
+          font-size: 11pt;
+        }
+        header {
+          background: white;
+          color: #173039;
+          padding: 0;
+        }
+        header p,
+        header small,
+        header a {
+          color: #173039;
+        }
+        main {
+          padding: 0;
+        }
+        nav {
+          display: none;
+        }
+        section {
+          break-inside: auto;
+        }
+        h2,
+        h3 {
+          break-after: avoid;
+        }
+        pre {
+          white-space: pre-wrap;
+          background: #eef2ed;
+          color: #173039;
+        }
+        tr {
+          break-inside: avoid;
+        }
+        footer {
+          padding: 14px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <small>BINNNN LAB / OPENHARMONY AUDIT AGENT / v0.1.0</small>
+      <h1>工具使用说明书</h1>
+      <p>
+        运行环境、安装步骤、命令操作与结果说明。本文对应当前工程原型；HTML
+        演示采用抽象案例，实际审计能力的接入范围见下表。
+      </p>
+      <a href="demo.html">打开原理 DEMO →</a>　
+      <a href="index.html">打开交互工作台 →</a>
+    </header>
+    <main>
+      <nav aria-label="说明书目录">
+        <a href="#scope">功能范围</a><a href="#environment">依赖环境</a
+        ><a href="#start">安装与操作</a><a href="#demo">DEMO 操作</a
+        ><a href="#troubleshooting">常见问题</a
+        ><a href="#video">视频录制提纲</a>
+      </nav>
+      <section id="scope">
+        <h2><small>01</small>当前功能范围</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>入口</th>
+                <th>当前行为</th>
+                <th>结果与边界</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>原理 DEMO</td>
+                <td>八章节讲解、案例分步展示、约束实验、独立验证和经验反馈</td>
+                <td>在浏览器运行；全部案例为抽象示例，未连接审计引擎</td>
+              </tr>
+              <tr>
+                <td>交互工作台</td>
+                <td>模拟阶段回放、候选切换、证据查看、JSON / Markdown 下载</td>
+                <td>导出的内容为当前演示数据</td>
+              </tr>
+              <tr>
+                <td>Python 命令行</td>
+                <td>
+                  加载目标配置、生成任务计划、归一化 SARIF、生成技术方案报告
+                </td>
+                <td>生成本地文件；prepare 仅创建计划，不启动审计 worker</td>
+              </tr>
+              <tr>
+                <td>运行时与分析适配器</td>
+                <td>
+                  提供 Claude Code、OpenAI-compatible、CodeQL 和 CodeQL-AI
+                  接入代码
+                </td>
+                <td>
+                  按模块配置与调用；当前 CLI 未提供一条命令完成全流程审计的入口
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">
+          证据审核和经验状态在 DEMO
+          中展示目标方法。后端仍需补充决定性反证、证据归属与有效性检查，并完成实际引擎联调。演示中的
+          CONFIRMED 不表示已确认真实漏洞。
+        </p>
+      </section>
+      <section id="environment">
+        <h2><small>02</small>运行依赖</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>使用场景</th>
+                <th>依赖与配置</th>
+                <th>网络要求</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>直接打开 HTML</td>
+                <td>
+                  现代桌面浏览器；交互检查使用本机 Chrome。建议 1440 × 900
+                  或更大视口。无需 Python、Node 或密钥
+                </td>
+                <td>可离线运行</td>
+              </tr>
+              <tr>
+                <td>本地 HTTP 演示</td>
+                <td>Python 3.10+，使用标准库；运行 scripts/serve_demo.py</td>
+                <td>仅监听 127.0.0.1</td>
+              </tr>
+              <tr>
+                <td>基础命令行</td>
+                <td>
+                  Python 3.10+、pip；构建依赖 setuptools ≥
+                  68；基础功能无第三方运行依赖
+                </td>
+                <td>安装时可能需要下载构建依赖；基础命令可离线运行</td>
+              </tr>
+              <tr>
+                <td>PDF 报告</td>
+                <td>
+                  安装 .[pdf]：reportlab ≥ 4.0、pypdf ≥ 4.0、pdfplumber ≥
+                  0.11；当前 CLI 默认使用 Windows 字体 C:\Windows\Fonts\msyh.ttc
+                </td>
+                <td>安装后可离线生成；其他系统需调整字体路径</td>
+              </tr>
+              <tr>
+                <td>CodeQL 分析</td>
+                <td>
+                  单独安装 CodeQL
+                  CLI，准备目标源码对应的数据库、查询包及目标工程构建环境；导入已有
+                  SARIF 时无需 CodeQL
+                </td>
+                <td>依数据库、查询包准备方式而定</td>
+              </tr>
+              <tr>
+                <td>CodeQL-AI 可选能力</td>
+                <td>
+                  安装 .[codeql-ai]：fastmcp ≥ 2.14.1、angr ≥
+                  9.2.103、pyelftools ≥ 0.31、tabulate ≥
+                  0.9.0。符号分析需兼容的二进制和分析配置；建议在 Linux / WSL2
+                  单独验证依赖兼容性
+                </td>
+                <td>安装需要包源；模型相关步骤需要可用模型端点</td>
+              </tr>
+              <tr>
+                <td>模型运行时</td>
+                <td>
+                  Claude Code：可用的 claude
+                  命令、模型和认证；OpenAI-compatible：base_url、模型名、API key
+                  环境变量名。参考 config/runtime.example.json
+                </td>
+                <td>须能访问所配置端点；示例端点不可直接使用</td>
+              </tr>
+              <tr>
+                <td>可选浏览器回归检查</td>
+                <td>
+                  Node.js 22+（建议）、npm、已安装的 Chrome；npm ci 安装锁定的
+                  puppeteer-core，依赖不会下载 Chrome
+                </td>
+                <td>安装后可离线检查新版 DEMO</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted">
+          上述版本来自工程依赖声明。完整引擎组合和 OpenHarmony
+          真机环境尚未完成验证；基础演示不需要开发板或真实漏洞材料。
+        </p>
+      </section>
+      <section id="start">
+        <h2><small>03</small>安装与命令操作</h2>
+        <p>
+          以下命令在仓库根目录执行，示例使用 Windows
+          PowerShell。运行时采用独立虚拟环境，命令直接指定解释器，无需修改
+          PowerShell 执行策略。
+        </p>
+        <h3>1. 安装基础工具</h3>
+        <pre><code>python --version
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\python.exe -m openharmony_audit --help</code></pre>
+        <p>
+          帮助信息应列出 validate-target、prepare、normalize-sarif 和
+          report。Linux / macOS 使用 .venv/bin/python 替换上述解释器路径。
+        </p>
+        <h3>2. 加载抽象目标配置</h3>
+        <pre><code>.\.venv\Scripts\python.exe -m openharmony_audit validate-target --target config/target.openharmony.abstract.json</code></pre>
+        <p>
+          终端输出目标快照、分析单元和威胁模型的
+          JSON。该命令加载目标配置并构造模型，当前不执行完整 JSON Schema 校验。
+        </p>
+        <h3>3. 生成任务计划</h3>
+        <pre><code>.\.venv\Scripts\python.exe -m openharmony_audit prepare --target config/target.openharmony.abstract.json --run-root reports/run-data --workers 2</code></pre>
+        <p>
+          检查 reports/run-data/plan.json 和
+          workers/worker-*/assignment.json。candidates、evidence、reports
+          目录用于后续产物。worker
+          数按分析单元数量限制；重复使用相同目录会更新计划文件。
+        </p>
+        <h3>4. 导入已有 SARIF（可选）</h3>
+        <pre><code>.\.venv\Scripts\python.exe -m openharmony_audit normalize-sarif --sarif path/to/results.sarif --output reports/run-data/findings.json</code></pre>
+        <p>
+          将 path/to/results.sarif 替换为自己的 SARIF
+          文件路径。终端显示归一化数量，输出 JSON
+          可查看规则、位置与路径字段。本操作不执行 CodeQL
+          扫描，也不判定漏洞是否成立。
+        </p>
+        <h3>5. 生成技术方案报告（可选）</h3>
+        <pre><code>.\.venv\Scripts\python.exe -m pip install -e ".[pdf]"
+.\.venv\Scripts\python.exe -m openharmony_audit report --output reports/technical-report.md --pdf reports/technical-report.pdf</code></pre>
+        <p>
+          命令生成技术方案 Markdown 和
+          PDF，并覆盖同名输出文件。当前报告入口不读取上述
+          findings.json；实际漏洞报告的自动汇总仍需接入。
+        </p>
+        <h3>6. 扩展引擎配置</h3>
+        <p>
+          需要 CodeQL-AI 模块时安装
+          <code>python -m pip install -e ".[codeql-ai]"</code
+          >（使用同一虚拟环境）。模型配置只记录模型名、端点和环境变量名，密钥由进程环境提供。示例配置需要替换占位值；当前基础
+          CLI 不会自动读取该配置并启动模型。
+        </p>
+      </section>
+      <section id="demo">
+        <h2><small>04</small>HTML DEMO 操作</h2>
+        <p>
+          双击 frontend/demo.html
+          可离线演示。附录使用说明书和旧工作台依赖同目录文件，分享完整材料时保留
+          frontend 目录结构。
+        </p>
+        <pre><code>python scripts/serve_demo.py
+# 浏览器访问：http://127.0.0.1:8765/demo.html
+# 使用说明书：http://127.0.0.1:8765/manual.html
+# 结束服务：Ctrl+C</code></pre>
+        <ol>
+          <li>点击“开始演示”，第二章点击架构节点查看两个工具的分工。</li>
+          <li>
+            第三章点击“展开下一步”，查看五个步骤中的代码高亮、候选记录和证据说明。
+          </li>
+          <li>
+            第四章设 n=96、容量 64，观察危险条件。把 n 改成
+            32，观察当前输入安全与输入域中仍存在危险值的区别。打开容量检查，观察路径条件冲突。
+          </li>
+          <li>
+            第五章点击四种结论，查看各自需要的证据；第六章点击经验记录、回归和复用节点。
+          </li>
+          <li>
+            第七章介绍对照实验方案，第八章汇总，并提供使用说明书和旧工作台入口。
+          </li>
+        </ol>
+        <p>
+          <strong>快捷键：</strong>← / →、PageUp / PageDown 推进；N
+          显示讲解提示；F 全屏；Escape
+          收起提示并暂停播放。第三章包含五个子步骤。底部数字跳转章节；自动播放每
+          9 秒推进，手动操作或切换标签页会暂停。
+        </p>
+        <p class="note">
+          约束实验在浏览器枚举 0…256 的整数，容量固定为
+          64。它展示简化条件下的计算结果，未调用 SMT、执行内存复制或运行真实
+          PoC。完整保护、无整数溢出等假设会影响结论的适用范围。
+        </p>
+      </section>
+      <section id="troubleshooting">
+        <h2><small>05</small>常见问题与检查</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>现象</th>
+                <th>处理方法</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>本地地址打不开</td>
+                <td>
+                  保持服务终端运行；端口占用时使用 python scripts/serve_demo.py
+                  --port 8766，并访问对应端口。也可直接打开 HTML 文件。
+                </td>
+              </tr>
+              <tr>
+                <td>No module named openharmony_audit</td>
+                <td>
+                  确认在仓库根目录安装，安装和运行使用同一虚拟环境解释器。
+                </td>
+              </tr>
+              <tr>
+                <td>配置或 SARIF 文件不存在</td>
+                <td>
+                  检查当前目录和 --target / --sarif
+                  路径，带空格的路径用引号包裹。
+                </td>
+              </tr>
+              <tr>
+                <td>PDF 依赖或字体错误</td>
+                <td>
+                  安装 .[pdf] 并确认默认字体存在。字体路径可由 build_pdf 的
+                  font_path 参数指定；CLI 暂未暴露此选项。
+                </td>
+              </tr>
+              <tr>
+                <td>模型端点或认证失败</td>
+                <td>
+                  确认占位端点已替换、模型可用、密钥环境变量对当前进程生效；HTML
+                  演示无需模型配置。
+                </td>
+              </tr>
+              <tr>
+                <td>预期看到真实扫描结果</td>
+                <td>
+                  当前网页展示预置案例，prepare
+                  只准备计划。实际扫描、适配器调用及产物回写需要继续集成。
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          开发者可在 frontend 目录运行 <code>npm ci</code>、<code
+            >npm run test:demo</code
+          >。新版检查覆盖离线加载、案例步骤、约束边界、键盘和响应式布局。旧工作台检查使用
+          <code>npm test</code>，需要启动本地服务。
+        </p>
+      </section>
+      <section id="video">
+        <h2><small>06</small>DEMO 视频录制提纲</h2>
+        <p>
+          <strong>交付状态：</strong>本 HTML 为工具使用说明书，demo.html
+          为可操作的原理演示。仓库目前未提供 DEMO 视频文件；完整满足“说明书及
+          DEMO 演示视频”仍需录制并提交视频。
+        </p>
+        <p>
+          建议录制约 6–8 分钟，采用 1920 × 1080
+          画面、可读终端字号和中文讲解或字幕。实际时长、格式和大小以比赛提交要求为准。
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>建议时段</th>
+                <th>录制画面</th>
+                <th>说明内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>0:00–0:45</td>
+                <td>本说明书的功能与依赖表</td>
+                <td>演示环境、Python 版本、可选引擎及当前实现范围</td>
+              </tr>
+              <tr>
+                <td>0:45–2:00</td>
+                <td>
+                  终端执行 --help、validate-target、prepare，打开 plan.json
+                </td>
+                <td>展示实际命令和生成的计划，说明输入输出对应关系</td>
+              </tr>
+              <tr>
+                <td>2:00–3:00</td>
+                <td>DEMO 第一、二章</td>
+                <td>
+                  工具分工与 Finding → CandidatePacket → Evidence → Decision
+                </td>
+              </tr>
+              <tr>
+                <td>3:00–4:30</td>
+                <td>第三章五个步骤</td>
+                <td>静态路径、不变量、候选版本、反证检查和静态结论</td>
+              </tr>
+              <tr>
+                <td>4:30–5:30</td>
+                <td>第四章拖动长度、切换容量检查</td>
+                <td>解释当前输入、输入域与路径约束的区别</td>
+              </tr>
+              <tr>
+                <td>5:30–7:00</td>
+                <td>第五至八章；按需展示旧工作台下载文件</td>
+                <td>独立验证、证据审核、经验复用、实验计划及实现边界</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          录制实际命令输出，并保留抽象案例标识。视频提交前检查画面清晰度、音轨或字幕、完整播放和文件格式；完成度以真实展示的功能为准。
+        </p>
+      </section>
+    </main>
+    <footer>
+      OpenHarmony Audit Agent · 工具使用说明书 · 更新于 2026-10-20 ·
+      <a href="demo.html">返回演示</a>
+    </footer>
+  </body>
+</html>

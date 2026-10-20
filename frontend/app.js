@@ -51,7 +51,7 @@ const stages = [
     en: "Decision Gate",
     output: "Decision × 3",
     role: "blind-verifier",
-    description: "独立复核后，按目标门禁规则区分静态成立、反证排除和证据不足。",
+    description: "独立复核后，按证据审核规则区分静态成立、反证排除和证据不足。",
     log: "演示结果：STATIC_ONLY / REJECTED / NEEDS_EVIDENCE；没有真实漏洞确认。",
   },
   {
@@ -183,7 +183,7 @@ const cases = [
         producer: "Function Sanitizer",
         stage: 3,
         content:
-          "演示前提：ValidateLength 精确检查容量，且该检查支配每条复制路径。这是抽象构造的反证，不是实际程序分析结果。",
+          "演示前提：ValidateLength 精确检查容量，且该检查支配每条复制路径。此反证来自抽象案例设定，未执行实际程序分析。",
       },
       {
         kind: "ql_patch",
@@ -511,7 +511,7 @@ const architecture = {
   ],
   gate: [
     "Decision Gate / 由证据决定结论",
-    "先看决定性反证，再检查静态路径、不变量、攻击者控制、危险操作和反证覆盖。基础证据完整时为 STATIC_ONLY；有效确定性复核可进一步支持 CONFIRMED。",
+    "决定性反证可排除候选；其余情况检查静态路径、不变量、攻击者控制、危险操作和反证覆盖。基础证据完整时为 STATIC_ONLY；有效确定性复核可进一步支持 CONFIRMED。",
   ],
 };
 function explainArchitecture(key) {

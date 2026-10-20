@@ -1886,12 +1886,10 @@
                   范围清晰 · 可追溯
                 </text>
               </g>
-              <text x="350" y="111" class="diagram-mono">不是每条告警</text>
-              <text x="350" y="130" class="diagram-mono">都意味着真实漏洞</text>
-              <text x="42" y="326" class="diagram-mono">
-                也不是每个模型判断
-              </text>
-              <text x="42" y="345" class="diagram-mono">都能替代验证证据</text>
+              <text x="350" y="111" class="diagram-mono">静态告警提供线索</text>
+              <text x="350" y="130" class="diagram-mono">触发条件需要复核</text>
+              <text x="42" y="326" class="diagram-mono">模型判断辅助分析</text>
+              <text x="42" y="345" class="diagram-mono">结论依据验证证据</text>
             </svg>
             <div class="hero-art-caption">
               <span>THE JOURNEY OF A FINDING</span
@@ -1967,7 +1965,7 @@
               data-system="decision"
               aria-pressed="false"
             >
-              <small>04 / DECISION</small><strong>证据门禁</strong
+              <small>04 / DECISION</small><strong>证据审核</strong
               ><span>结论、证据引用<br />适用范围与未解假设</span>
             </button>
           </div>
@@ -2105,7 +2103,7 @@
       >
         <div class="scene-head">
           <div class="eyebrow">04 / CHALLENGE THE HYPOTHESIS</div>
-          <h2>把事实传给验证者，把预期结论留在门外。</h2>
+          <h2>独立验证：依据源码和输入重建调用路径。</h2>
           <p class="intro">
             独立重建可以减少确认偏差；漏洞确认仍需要有效、范围明确的确定性证据。
           </p>
@@ -2184,7 +2182,7 @@
       >
         <div class="scene-head">
           <div class="eyebrow">05 / CLOSE THE LOOP CAREFULLY</div>
-          <h2>让一次反证，成为下一轮更好的问题。</h2>
+          <h2>误报经验的记录、验证与复用。</h2>
           <p class="intro">
             以“未建模的长度检查”为例，演示经验如何从线索走向可复用模型。
           </p>
@@ -2295,7 +2293,7 @@
       >
         <div class="scene-head">
           <div class="eyebrow">06 / FROM A DEMO TO A TESTABLE METHOD</div>
-          <h2>科学性，来自能被检验的假设。</h2>
+          <h2>通过对照实验评估方法效果。</h2>
           <p class="intro">
             统一架构提供机制上的合理性；是否真正提升效果，需要在相同版本和预算下做对照。
           </p>
@@ -2395,16 +2393,16 @@
           </div>
           <div class="closing-points">
             <div>
-              <strong>一个统一编排</strong>
+              <strong>统一编排</strong>
               <p>候选冻结，角色分工，产物可追溯。</p>
             </div>
             <div>
-              <strong>一个证据门禁</strong>
+              <strong>证据审核</strong>
               <p>区分假设、反证与确定性复核。</p>
             </div>
             <div>
-              <strong>一个受约束的反馈环</strong>
-              <p>经验先回归，再在限定范围内复用。</p>
+              <strong>经验复用</strong>
+              <p>通过回归验证的经验，在适用范围内复用。</p>
             </div>
           </div>
           <div class="closing-actions">
@@ -2414,6 +2412,7 @@
             </button>
           </div>
           <p class="footnote">
+            <a href="manual.html">工具使用说明书：环境、安装与操作 ↗</a><br />
             原工作台已保留：<a href="index.html#workspace">打开操作界面版本 ↗</a
             ><br />本文件可离线打开；所有案例和决策均用于解释方法，不构成真实漏洞发现。
           </p>
@@ -2463,7 +2462,7 @@
       ];
       const caseFrames = [
         {
-          title: "静态分析先找到一条路径。",
+          title: "静态分析识别输入到复制操作的路径。",
           description:
             "外部长度 n 从 Parcel 进入 memcpy 的复制参数。CodeQL 给出候选，我们还不知道它是否真的可触发。",
           type: "Finding",
@@ -2472,7 +2471,7 @@
           lines: [2, 6],
           role: "CodeQL · Discovery",
           note: "关注输入来源和危险操作。静态路径的存在，不等于路径在真实环境中可达。",
-          takeaway: "告警是线索，还不是结论。",
+          takeaway: "本阶段记录静态路径，触发条件待核实。",
         },
         {
           title: "把可疑点改写为一个不变量。",
@@ -2484,7 +2483,7 @@
           lines: [1, 2, 4, 6],
           role: "entrypoint-boundary + dataflow-lifetime",
           note: "只有同时证明控制量、容量与危险操作，才有一个可检验的漏洞假设。",
-          takeaway: "从“看起来危险”，走到“什么条件下危险”。",
+          takeaway: "明确容量约束与越界条件。",
         },
         {
           title: "冻结候选，保留未解假设。",
@@ -2496,7 +2495,7 @@
           lines: [0, 2, 6],
           role: "chain-composer · Candidate Freeze",
           note: "真实运行需记录代码 commit、输入哈希与规则版本。本演示不伪造真实来源凭证。",
-          takeaway: "先固定问题，再检验问题。",
+          takeaway: "候选版本固定，后续证据关联到该版本。",
         },
         {
           title: "主动寻找能推翻它的证据。",
@@ -2508,7 +2507,7 @@
           lines: [0, 5, 6],
           role: "counterevidence-history + CodeQL-AI",
           note: "函数名字、单次模型判断或相似误报经验，都不足以排除当前候选。",
-          takeaway: "反证不是附录，而是审计的核心步骤。",
+          takeaway: "反证检查用于排除受保护或不可达的路径。",
         },
         {
           title: "静态证据齐备后，仍要等待确定性复核。",
@@ -2525,13 +2524,13 @@
       ];
       const notes = [
         "开场只讲一个问题：静态扫描会给出告警，但如何让评委相信结论？后面的演示围绕一个抽象案例展开，不宣称已经发现真实 OpenHarmony 漏洞。按 → 或空格推进，N 显示讲解提示，F 进入全屏。",
-        "强调工具的结合点：审计工作流是组织者，CodeQL-AI 是被调用的证据增强能力。点击四个节点可补充职责。统一的数据契约让每次交接可审查，而不是简单串接两个工具。",
+        "说明工具分工：审计工作流调度 CodeQL-AI 补充证据。点击四个节点可查看职责。统一的数据契约记录每次交接的输入、产物和来源。",
         "本章有五个小步骤。每次按 → 展开一个步骤，再进入下一章。依次指出输入长度、目标容量、复制操作、未解假设与反证问题。避免把玩具示例说成真实源码。",
-        "先保持 n=96、关闭 guard，说明为什么超过容量。将 n 调至 32，说明一个安全输入不能证明不存在其他危险输入。再打开 guard：危险条件与路径条件冲突。明确这里只做有限整数枚举，真实求解仍受模型与覆盖范围限制。",
+        "设定 n=96、关闭 guard，说明为什么超过容量。将 n 调至 32，说明一个安全输入不能证明不存在其他危险输入。打开 guard 后，危险条件与路径条件冲突。这里只做有限整数枚举，真实求解仍受模型与覆盖范围限制。",
         "区分两层独立性：盲验证帮助减少确认偏差，确定性复核检验路径或触发条件。点击四张卡解释四种结论的前提。它们展示目标方法规则，未调用或复刻当前 Python 后端。",
-        "沿三节点循环讲解：新发现先是低置信度候选经验；有 guard 的样例应减少误报，无 guard 的正例仍应被检出；通过后才在范围内复用。点击节点或下一环节按钮。这里只是方法示意，不是已完成的回归验证。",
+        "沿三节点循环讲解：新发现记录为低置信度候选经验；有 guard 的样例应减少误报，无 guard 的正例仍应被检出；通过验证后在适用范围内复用。点击节点或下一环节按钮。这里展示验证方法，实际回归测试尚未执行。",
         "这里说明科学性如何落地：固定版本、预算与样本，做基线对照和消融。收益需要测量，不能仅凭架构推断精度提升。没有真实真值的未知漏洞集合，不报告全量召回率。",
-        "用三个点收束：统一编排、统一证据门禁、受约束的经验反馈。所有结论都附带证据和适用范围。旧工作台可以作为附录，主要答辩演示使用本 HTML。",
+        "总结三个环节：统一编排、证据审核、经验复用。所有结论都附带证据和适用范围。使用说明书包含环境依赖和操作步骤；旧工作台可用于补充演示。",
       ];
       const systemDetails = {
         discovery: [
@@ -2547,7 +2546,7 @@
           "误报经验提出线索；sanitizer 检查保护关系；QL 优化修补分析模型；符号复核检查约束内可达性。所有输出都应带来源。",
         ],
         decision: [
-          "证据门禁 · 限定结论",
+          "证据审核 · 判定结论",
           "检查证据归属、有效性与覆盖范围；决定性反证可排除候选，基础证据缺失时继续补证，确定性复核不能被模型自评替代。",
         ],
       };
@@ -2558,7 +2557,7 @@
         ],
         static: [
           "基础静态与语义证据支持假设。",
-          "不变量、攻击者控制、危险操作和反证检查已齐备，但没有有效确定性复核。这个状态明确保留验证边界，不伪装成已复现漏洞。",
+          "不变量、攻击者控制、危险操作和反证检查已齐备，确定性复核尚未完成。当前结论限于静态分析支持的范围。",
         ],
         confirmed: [
           "在已验证的范围与假设内确认。",
@@ -2572,7 +2571,7 @@
       const cycleFrames = [
         [
           "01 / CANDIDATE",
-          "先保存线索，不急于学习成结论。",
+          "记录候选经验及适用条件。",
           "记录本次反证的语义条件、证据来源和适用范围。即使看起来像已有误报，也要重新检查当前调用路径。",
           ["status: candidate", "confidence: low"],
           "pattern: guard enforces n <= capacity\nrequired: guard dominates the copy",
