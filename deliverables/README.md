@@ -7,10 +7,14 @@
 | 1 工具源代码 | 01-source.zip | 含源码、提示词、配置、测试、HTML 与复现脚本；清单与 SHA-256 在压缩包内 SOURCE-MANIFEST.json |
 | 2 技术说明书 | 02-technical-manual.pdf | 原理、关键模块与实现说明；可编辑稿为 docs/technical-report.md |
 | 3 使用说明书 | 03-user-manual.pdf | 依赖、安装、操作及故障处理；HTML 为 frontend/manual.html |
-| 3 DEMO 视频 | 03-demo-captioned.mp4 | 字幕版工程原型演示；实际浏览器操作画面与真实 dry-run 输出剪辑，无配音；章节字幕另附 03-demo-captioned.srt |
+| 3 DEMO 录制材料 | 03-recording-kit.zip | 推荐：单文件演示网页、逐页口语讲稿及打开说明，供团队自行录屏 |
+| 3 演示网页 | 03-recording-demo.html | 内嵌样式、图形、交互、环境说明和讲稿；可单独复制到其他电脑离线打开 |
+| 3 逐页讲稿 | 03-narration.html、03-narration.md | 八页正文直接朗读，操作提示单独标注 |
 | 5 性能说明 | 05-performance.pdf | 规划模块实测及完整审计测量方法；实际大规模源码扫描数据待补 |
 
-视频中的案例、辅助返回和 checkpoint 交互是浏览器演示状态。命令章节实际运行 validate、plan、prepare、status，不调用模型。视频不包含真实漏洞扫描或设备复现；团队可按 frontend/NARRATION.md 录制配音版，后续追加实际任务片段。
+录屏时打开 03-recording-demo.html，把 03-narration.html 放在另一个窗口照读。网页内的“环境与操作”和“逐页讲稿”也可查看相关内容。第 4 页增加了 32 / 64 / 96 快捷按钮，便于配合讲稿操作。推荐录制分辨率为 1920×1080 或 1440×900。
+
+旧版字幕视频 03-demo-captioned.mp4 及 SRT 保留存档。本次交付以团队自行录制所需的网页与讲稿为主。
 
 第 4 项漏洞分析报告由团队后续提供。第 5 项尚缺真实大规模审计耗时与内存，当前工程测量不能替代。完整对照见 docs/competition-checklist.md。
 

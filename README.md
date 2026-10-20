@@ -16,9 +16,9 @@ OpenHarmony-Audit-Agent 以 **audit-workflow-prompts 审计工作流为主体**�
 
 ### HTML 原理与流程演示（推荐）
 
-[工具使用说明书（HTML）](frontend/manual.html) 包含依赖环境、安装步骤、命令输入输出、DEMO 操作和故障处理。[字幕版原型演示视频](deliverables/03-demo-captioned.mp4) 展示实际 dry-run 输出与 HTML 操作，未运行真实漏洞扫描。另附逐页讲稿供团队录制配音版。
+[录屏材料包](deliverables/03-recording-kit.zip) 包含可直接转发的单文件演示 HTML 和逐页口语讲稿。打开 [录屏网页](deliverables/03-recording-demo.html)，照着 [讲稿](deliverables/03-narration.html) 操作并自行录制即可。演示文件内嵌环境说明与完整讲稿，复制到其他电脑后可直接用浏览器离线打开。
 
-[逐页录屏讲解稿](frontend/narration.html) 可配合八章 DEMO 直接朗读，动作提示单独标注；[Markdown 原稿](frontend/NARRATION.md) 便于修改或打印。
+[逐页录屏讲解稿](frontend/narration.html) 对应八章 DEMO，正文直接朗读，操作提示单独标注，全程约 10–12 分钟；[Markdown 原稿](frontend/NARRATION.md) 便于修改或打印。[工具使用说明书](frontend/manual.html) 另有详细依赖、安装和故障处理说明。
 
 直接用浏览器打开 [frontend/demo.html](frontend/demo.html)，无需安装依赖或联网。八个章节串起两个工具的分工、Parcel 案例、路径约束实验、独立验证、经验反馈和实验设计，支持键盘推进、全屏、自动播放与讲解提示。讲解顺序见 [演示说明](frontend/DEMO.md)。
 

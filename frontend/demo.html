@@ -660,7 +660,7 @@
         gap: 30px;
       }
       .experiment-controls {
-        padding: 27px 30px;
+        padding: 21px 30px;
         border: 1px solid var(--line);
         background: var(--panel);
         border-radius: 6px;
@@ -687,7 +687,7 @@
       input[type="range"] {
         width: 100%;
         accent-color: var(--mint);
-        margin: 20px 0 9px;
+        margin: 12px 0 9px;
       }
       .range-labels {
         display: flex;
@@ -699,9 +699,9 @@
         display: flex !important;
         gap: 16px;
         align-items: center;
-        margin: 23px 0;
+        margin: 15px 0;
         border-top: 1px solid var(--line);
-        padding-top: 23px;
+        padding-top: 15px;
         cursor: pointer;
       }
       .guard-control input {
@@ -1865,6 +1865,27 @@
           font-size: 12px;
         }
       }
+
+      .length-presets {display:flex;align-items:center;gap:9px;margin:12px 0;color:var(--muted);font-size:12px}
+      .length-presets button {background:transparent;border:1px solid var(--line);border-radius:4px;padding:3px 14px;color:var(--mint)}
+      #reading-dialog {width:min(1080px,calc(100vw - 32px));max-height:88vh;padding:0;border:1px solid #8cae9f;border-radius:12px;background:#f4f6f1;color:#20353c;overflow:auto}
+      #reading-dialog::backdrop {background:#061017cc}
+      .reading-bar {position:sticky;top:0;z-index:1;background:#12232b;color:#e7eee7;padding:15px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+      .reading-bar button {color:#c8e8d7;border:1px solid #5a796b;background:transparent;border-radius:4px;padding:7px 14px;white-space:nowrap}
+      .reading-content {padding:30px 38px;overflow-wrap:anywhere;font-size:17px;line-height:1.95}
+      .reading-content h1 {font-size:30px;letter-spacing:0;line-height:1.5;margin:0 0 24px}
+      .reading-content h2 {font-size:24px;letter-spacing:0;margin:32px 0 16px;scroll-margin-top:85px}
+      .reading-content h3 {font-size:20px;margin:24px 0 12px}
+      .reading-content p {margin:16px 0}
+      .reading-content aside {padding:12px 18px;background:#e2ece3;border-left:3px solid #659378;font-size:14px;margin:24px 0}
+      .reading-content nav {display:flex;gap:8px 20px;flex-wrap:wrap;font-size:14px;padding-bottom:20px;border-bottom:1px solid #bfd0c5}
+      .reading-content .table-wrap,.reading-content pre {overflow-x:auto}
+      .reading-content table {width:100%;border-collapse:collapse;font-size:14px}
+      .reading-content th,.reading-content td {padding:10px;border-bottom:1px solid #c4d6c9;vertical-align:top;text-align:left}
+      .reading-content th {background:#e2ece3}
+      .reading-content pre {background:#12232b;color:#d5e9dc;padding:18px;font:13px/1.8 Consolas,monospace}
+      .reading-content code {overflow-wrap:anywhere}
+      @media(max-width:760px){.top {height:112px;flex-wrap:wrap;padding:12px 20px;gap:8px}.brand{width:100%}.top-right{width:100%;justify-content:space-between;gap:6px}.top button{font-size:10px;padding:5px 8px}.reading-content{padding:18px}.reading-content h1{font-size:25px}.reading-bar{padding:12px 18px}}
     </style>
   </head>
   <body>
@@ -1878,7 +1899,7 @@
         </div>
       </div>
       <div class="top-right">
-        <span class="edition">METHOD DEMO / 2026</span
+        <button type="button" data-reading="guide">环境与操作</button><button type="button" data-reading="speech">逐页讲稿</button
         ><button id="notes-toggle" aria-pressed="false" title="讲解提示（N）">
           讲解提示</button
         ><button id="fullscreen" title="全屏（F）">全屏 ↗</button>
@@ -1903,7 +1924,7 @@
               ><button class="outline" id="jump-case">直接看案例</button>
             </div>
             <p class="footnote">
-              8 个章节 · 建议讲解 5–8 分钟<br />抽象示例与方法演示，不调用真实扫描引擎。
+              8 个章节 · 讲稿约 10–12 分钟<br />Parcel 教学示例 · 源码审计与路径条件
             </p>
           </div>
           <div class="hero-art">
@@ -1974,7 +1995,7 @@
                 />
                 <text x="17" y="25" class="diagram-mono">02 / EVIDENCE</text>
                 <text x="17" y="54" class="diagram-label" font-size="19">
-                  证据逐步闭合
+                  汇总调查依据
                 </text>
                 <text x="17" y="82" class="diagram-mono">
                   审计 · 反证 · 复核
@@ -1990,10 +2011,10 @@
                 />
                 <text x="17" y="25" class="diagram-mono">03 / DECISION</text>
                 <text x="17" y="54" class="diagram-label" font-size="19">
-                  有条件的结论
+                  记录复核结论
                 </text>
                 <text x="17" y="80" class="diagram-mono">
-                  范围清晰 · 可追溯
+                  版本 · 条件 · 依据
                 </text>
               </g>
               <text x="350" y="111" class="diagram-mono">角色协作发现候选</text>
@@ -2003,7 +2024,7 @@
             </svg>
             <div class="hero-art-caption">
               <span>THE JOURNEY OF A FINDING</span
-              ><span>ILLUSTRATIVE ONLY</span>
+              ><span>PARCEL TEACHING EXAMPLE</span>
             </div>
           </div>
         </div>
@@ -2058,9 +2079,7 @@
             <p id="flow-status" role="status"></p>
           </div>
           <p class="workflow-boundary">
-            方法模拟：状态仅保存在本页内存；未启动 Agent 或
-            CodeQL-AI。后端已有任务规划、通用 runner 和
-            provider，自动交接及证据校验尚未完整接通。
+            本页交接示例：分配任务 → 汇总候选 → 按需核查 → 保存与恢复。
           </p>
         </div>
         <div id="system-map" hidden>
@@ -2118,7 +2137,7 @@
             </div>
             <div class="loop-line">
               ↶ 经验回写，服务下一轮审计
-              <span>低置信度模式只作线索，不直接抑制告警</span>
+              <span>经验提供调查线索，总控核对当前代码</span>
             </div>
           </div>
           <div
@@ -2138,7 +2157,7 @@
           <div class="eyebrow">02 / A FINDING IN MOTION</div>
           <h2>同一候选，交给不同角色处理。</h2>
           <p class="intro">
-            工作流按职责分派问题、冻结候选，并按需调用辅助工具。伪代码和证据卡均为抽象示例。
+            沿着 Parcel 教学代码，看入口、数据流、反证和复核角色怎样交接。
           </p>
         </div>
         <div class="case-layout">
@@ -2156,7 +2175,7 @@
             <p id="case-description"></p>
             <div class="evidence-paper">
               <div class="paper-header">
-                <span id="paper-type"></span><span>DEMO-001 / 模拟记录</span>
+                <span id="paper-type"></span><span>DEMO-001 / 教学示例</span>
               </div>
               <code id="paper-content"></code>
             </div>
@@ -2205,6 +2224,7 @@
               <span>0</span><span>64</span><span>128</span><span>192</span
               ><span>256</span>
             </div>
+            <div class="length-presets" role="group" aria-label="常用长度"><span>切换长度</span><button data-length="32">32</button><button data-length="64">64</button><button data-length="96">96</button></div>
             <label class="guard-control"
               ><input id="guard" type="checkbox" /><span
                 ><strong>加入完整的容量检查</strong
@@ -2213,8 +2233,7 @@
             >
             <div class="formula" id="formula"></div>
             <p class="caution">
-              前提：n 由外部控制；复制按 n
-              写入；不考虑整数溢出、别名或其他分支。
+              模型设定：外部提供整数 n，按 n 复制到容量为 64 的目标；观察长度与检查条件的关系。
             </p>
           </div>
           <div class="experiment-result">
@@ -2235,8 +2254,7 @@
               aria-live="polite"
             ></div>
             <p class="caution">
-              浏览器仅枚举 0–256 的整数玩具模型；不调用 SMT
-              求解器，不执行内存写入，也不证明真实 OpenHarmony 代码的安全性。
+              计算方式：浏览器逐一检查 0–256 的整数，寻找同时满足路径条件与越界条件的值。
             </p>
           </div>
         </div>
@@ -2320,10 +2338,9 @@
           aria-live="polite"
         ></div>
         <div class="principle-strip">
-          <strong>不能跳过的边界</strong
+          <strong>结论对应的材料</strong
           ><span
-            >模型高置信度、盲验证意见和 PoC
-            计划，都不能单独替代确定性复核。符号结果只在模型假设与覆盖范围内有效。</span
+            >独立复核记录、路径验证或复现材料，以及对应的代码版本、环境与适用条件。</span
           >
         </div>
       </section>
@@ -2434,7 +2451,7 @@
             <div class="formula" id="cycle-formula"></div>
             <button class="outline" id="cycle-next">演示下一环节 →</button>
             <p class="caution">
-              状态变化为方法示意，不代表已运行回归测试或写入知识库。
+              经验流程示例：记录保护关系，检查正反例，按适用条件复用。
             </p>
           </div>
         </div>
@@ -2449,7 +2466,7 @@
           <div class="eyebrow">06 / FROM A DEMO TO A TESTABLE METHOD</div>
           <h2>通过对照实验评估方法效果。</h2>
           <p class="intro">
-            统一架构提供机制上的合理性；是否真正提升效果，需要在相同版本和预算下做对照。
+            评估方案：对比主体单独运行和主体加辅助验证，观察候选质量、复核时间与资源开销。
           </p>
         </div>
         <div class="research-grid">
@@ -2490,10 +2507,10 @@
             <article class="research-point">
               <span>01</span>
               <div>
-                <h3>固定条件，避免不公平比较</h3>
+                <h3>固定代码、模型和预算</h3>
                 <p>
                   锁定代码快照、规则、模型版本、算力与 token
-                  预算。历史信息按时间隔离，避免答案泄漏。
+                  预算。历史信息按任务时间范围提供。
                 </p>
               </div>
             </article>
@@ -2502,14 +2519,14 @@
               <div>
                 <h3>同时观察收益与代价</h3>
                 <p>
-                  核验准确率、已知基准上的召回率、误报、时间与人工复核成本。未知真值下不声称完整召回。
+                  统计候选准确性、已知基准检出情况、任务耗时、内存与人工复核成本。
                 </p>
               </div>
             </article>
             <article class="research-point">
               <span>03</span>
               <div>
-                <h3>允许方法被反驳</h3>
+                <h3>记录失败、超时与重试</h3>
                 <p>
                   经验误匹配、符号超时、跨线程建模失败都要记录。失败案例与成功案例同样进入评估。
                 </p>
@@ -2518,10 +2535,9 @@
           </div>
         </div>
         <div class="principle-strip">
-          <strong>当前交付</strong
+          <strong>评估重点</strong
           ><span
-            >HTML
-            原理演示、抽象案例与工程结构；上述实验是后续验证设计，目前没有真实漏洞数量、性能提升或比赛得分数据。</span
+            >主体发现了哪些问题，辅助检查查清了哪些条件，以及完成这些工作花了多少时间和资源。</span
           >
         </div>
       </section>
@@ -2534,8 +2550,8 @@
         <div class="closing">
           <div class="eyebrow">07 / EVIDENCE MAKES THE DIFFERENCE</div>
           <h2>
-            让漏洞假设，<br />走完一条<span class="accent"
-              >可复核的证据链。</span
+            定位问题，<br />核对条件，<span class="accent"
+              >整理报告。</span
             >
           </h2>
           <p class="intro">
@@ -2567,9 +2583,7 @@
             </button>
           </div>
           <p class="footnote">
-            <a href="manual.html">工具使用说明书：环境、安装与操作 ↗</a><br />
-            原工作台已保留：<a href="index.html#workspace">打开操作界面版本 ↗</a
-            ><br />本文件可离线打开；所有案例和决策均用于解释方法，不构成真实漏洞发现。
+            <button class="outline" data-reading="guide">环境、安装与操作</button> <button class="outline" data-reading="speech">查看逐页讲稿</button><br />单文件离线演示 · 复制 HTML 到其他电脑即可查看
           </p>
         </div>
       </section>
@@ -2595,6 +2609,145 @@
       <span id="progress"></span>
     </div>
     <div class="toast" id="toast" role="status" hidden></div>
+
+    <dialog id="reading-dialog" aria-labelledby="reading-title">
+      <div class="reading-bar"><strong id="reading-title">环境与操作</strong><button id="close-reading" type="button">返回演示</button></div>
+      <div class="reading-content" id="reading-content"></div>
+    </dialog>
+    <!-- RECORDING_CONTENT_START -->
+<template id="guide-template"><nav aria-label="文档目录"><a href="#part-1">打开和录制</a><a href="#part-2">运行环境</a><a href="#part-3">安装</a><a href="#part-4">常用命令</a><a href="#part-5">网页操作</a><a href="#part-6">示例设定</a></nav><h1 id="part-0">环境与操作</h1>
+<h2 id="part-1">打开和录制</h2>
+<p>将 03-recording-demo.html 保存到电脑，双击后用 Chrome、Edge、Firefox 或 Safari 打开。样式、图形、交互、环境说明和逐页讲稿都包含在这个文件中，支持离线查看。Windows、macOS 和 Linux 都可使用现代浏览器打开。</p>
+<p>录屏时全屏展示网页，按自己的语速点击“继续演示”。第三页分五个步骤，第四页使用 32 / 64 / 96 快捷按钮和容量检查开关。顶部“逐页讲稿”可以查看全文；也可以在另一个窗口打开单独提供的讲稿文件。</p>
+<h2 id="part-2">运行环境</h2>
+<div class="table-wrap"><table><tr><th>用途</th><th>环境</th></tr><tr><td>网页演示</td><td>现代浏览器；单个 HTML 文件离线打开</td></tr><tr><td>目标校验与任务准备</td><td>Python 3.10+、pip；从源码目录安装基础包</td></tr><tr><td>主体审计</td><td>Claude Code、可用模型与认证、目标源码；在 workflow 配置运行命令和模型</td></tr><tr><td>按需辅助检查</td><td>CodeQL CLI、数据库和查询包；CodeQL-AI 对应的 FastMCP、angr 等依赖与目标产物</td></tr></table></div>
+<p>模型认证通过环境变量配置。审计目标填写源码路径、代码版本、分析单元和威胁模型。</p>
+<h2 id="part-3">安装</h2>
+<p>在源码根目录执行以下 Windows PowerShell 命令。macOS / Linux 的虚拟环境解释器路径为 .venv/bin/python。</p>
+<pre><code>python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\python.exe -m openharmony_audit --help</code></pre>
+<h2 id="part-4">常用命令</h2>
+<div class="table-wrap"><table><tr><th>命令</th><th>用途</th><th>产物</th></tr><tr><td>workflow validate</td><td>检查目标和工作流配置</td><td>校验结果</td></tr><tr><td>workflow plan</td><td>查看任务分工</td><td>worker 和分析单元的分配计划</td></tr><tr><td>workflow prepare</td><td>创建任务包</td><td>plan.json、assignment.json、角色与检查点提示词</td></tr><tr><td>workflow run</td><td>启动已准备的审计任务</td><td>会话日志与任务状态</td></tr><tr><td>workflow status</td><td>查看任务进度</td><td>各 worker 的当前状态</td></tr></table></div>
+<p>下面两条命令用于抽象配置的校验与任务准备；--allow-missing-source 适用于这组抽象路径。</p>
+<pre><code>.\.venv\Scripts\python.exe -m openharmony_audit workflow validate --workflow config/workflow.audit.example.json --target config/target.openharmony.abstract.json
+.\.venv\Scripts\python.exe -m openharmony_audit workflow prepare --workflow config/workflow.audit.example.json --target config/target.openharmony.abstract.json --run-root reports/run-data --allow-missing-source</code></pre>
+<p>实际审计时填入目标源码与模型配置，prepare 使用实际源码校验，随后执行：</p>
+<pre><code>.\.venv\Scripts\python.exe -m openharmony_audit workflow run --run-root reports/run-data
+.\.venv\Scripts\python.exe -m openharmony_audit workflow status --run-root reports/run-data</code></pre>
+<h2 id="part-5">网页操作</h2>
+<ul><li>点击底部章节数字可跳转。左右方向键、PageUp / PageDown 可以推进或回看。</li><li>第三页点击“展开下一步”，依次查看五个角色步骤。</li><li>第四页点击 32、64、96 快捷按钮，或拖动长度滑块，再切换容量检查。</li><li>N 显示本页操作提示，F 切换全屏，Escape 关闭说明或提示。</li><li>“重新演示”恢复初始状态。网页刷新也会重新初始化示例。</li></ul>
+<h2 id="part-6">示例设定</h2>
+<p>演示使用 Parcel 长度检查教学案例。任务交接通过网页状态变化呈现；约束实验计算 0–256 的整数输入，目标容量为 64。第七页展示评估方案，实际审计通过上面的命令在源码环境中运行。
+</p></template>
+<template id="speech-template"><nav aria-label="文档目录"><a href="#part-1">第 1 页：工具介绍与运行环境</a><a href="#part-2">第 2 页：任务分工与交接</a><a href="#part-3">第 3 页：跟着角色检查一段代码</a><a href="#part-9">第 4 页：改变长度，观察路径条件</a><a href="#part-10">第 5 页：独立复核后怎样记录结论</a><a href="#part-11">第 6 页：把调查结果用到下一次审计</a><a href="#part-12">第 7 页：怎样比较工具效果</a><a href="#part-13">第 8 页：结束</a></nav><h1 id="part-0">OpenHarmony Audit Agent 逐页录屏讲稿</h1>
+<aside>录制准备：打开 03-recording-demo.html，另开 03-narration.html 放在旁边。录屏选择演示窗口，关闭自动播放，按自己的语速点击。下面的正文可以直接读，绿色框里的操作提示留给自己看。全程约 10–12 分钟，可按试读速度调整。</aside>
+<h2 id="part-1">第 1 页：工具介绍与运行环境</h2>
+<aside>操作：停留在封面，开始录屏。</aside>
+<p>大家好，下面介绍我们的 OpenHarmony 代码审计工具。</p>
+<p>做代码审计时，经常会遇到这样的情况：某一行代码看起来有风险，但要判断它能否触发，还得沿着调用关系，把输入、权限和保护条件查清楚。代码量大了以后，这些调查工作也需要分工和记录。</p>
+<p>我们的工具以审计工作流为主体。它把任务分给不同角色，让大家分别查入口、数据流和对象生命周期，再把调查结果放到同一份候选记录里，继续做反证检查和独立复核。</p>
+<p>CodeQL-AI 在这个过程中提供辅助。比如，一个函数到底有没有限制输入长度，某条路径上的条件能否同时满足，主体就可以把这类具体问题交给它检查。</p>
+<aside>操作：点击页面顶部“环境与操作”。指向“运行环境”，读下面两段。</aside>
+<p>工具主体使用 Python 三点十及以上版本。安装源码包后，可以校验配置、划分任务和生成审计任务包。实际审计通过 Claude Code 调用配置好的模型，并读取目标源码。模型认证信息通过环境变量配置。</p>
+<p>需要辅助验证时，再配置 CodeQL 数据库、查询包和相应的分析环境。这份演示网页可以直接用浏览器打开，图形、交互和讲稿都装在文件里，复制到另一台电脑也能查看。</p>
+<aside>操作：指向“常用命令”，读下面一段。</aside>
+<p>操作上，validate 用来检查配置，plan 查看任务分工，prepare 生成每个工作单元的任务包。准备好源码和模型后，用 run 启动任务，用 status 查看进度。这些命令也保存在页面里，使用时可以对照。</p>
+<aside>操作：点击“返回演示”，再点击“开始演示”。</aside>
+<p>下面用一个 Parcel 长度检查的教学例子，说明各个角色怎样配合，以及辅助工具在哪一步发挥作用。</p>
+<h2 id="part-2">第 2 页：任务分工与交接</h2>
+<aside>操作：点击“01 任务拆分”。</aside>
+<p>这一页从任务分工开始看。</p>
+<p>总控记录代码版本和审计范围，再把 IPC、NAPI、权限检查这些部分分给不同的工作单元。每个单元都有自己的范围、任务说明和输出位置，后面可以按组件查看进度。</p>
+<aside>操作：点击“02 角色协作”。</aside>
+<p>在一个工作单元里，几个角色会从不同角度查同一个问题。</p>
+<p>入口角色追踪输入是谁提供的，攻击者能控制哪些参数。数据流角色检查这些参数传到了哪里，目标容量有多大，对象在使用时是否还有效。反证角色则查调用方限制、权限检查和保护函数。</p>
+<p>总控把结果整理成一份候选。这里的编号是 DEMO-001，版本是第一版。后面的检查都会带上这个编号和版本，方便对照同一个问题。</p>
+<aside>操作：点击“03 调用与回写”。</aside>
+<p>假设现在要查的是：长度检查能否覆盖这次复制操作？总控会把这个问题连同源码位置、候选编号和版本，交给适合的辅助工具。</p>
+<aside>操作：点击“演示证据返回”，指向右侧新增的 DEMO-E01。</aside>
+<p>点击后，右边出现一条示例证据。它关联回刚才的候选。主体接着检查返回材料，结合其他角色的调查结果，安排下一步复核。</p>
+<aside>操作：点击“04 断点续作”，点击“保存检查点并中断”；停顿两秒，点击“恢复继续”。</aside>
+<p>审计时间比较长时，可以把候选版本、已有证据和待办事项一起保存。这里演示保存和恢复。恢复后，候选编号、版本和证据数量都保留下来，任务可以从记录的位置继续。</p>
+<aside>操作：点击“整体架构”。</aside>
+<p>整体关系就是图上这样：主体负责发现问题、组织调查和复核；辅助工具回答其中的具体技术问题，检查结果回到主体，由主体整理结论。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-3">第 3 页：跟着角色检查一段代码</h2>
+<h3 id="part-4">步骤 1：找到输入和复制操作</h3>
+<aside>操作：确认右侧显示 STEP 01 / 05。指向左侧第 3 行和第 7 行。</aside>
+<p>看这段教学代码。程序从 Parcel 中读取长度 n，再按这个长度，把数据复制进一个六十四字节的缓冲区。</p>
+<p>入口角色要查的是，这个长度从哪里来，外部调用方能把它设置成多大。右侧记录了输入来源和复制操作，后面的角色就可以沿着这些位置继续查。</p>
+<h3 id="part-5">步骤 2：写清楚容量条件</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 02 / 05。</aside>
+<p>数据流角色把容量关系写出来：复制长度要小于等于目标容量。这里容量是六十四，所以要重点检查 n 大于六十四时会发生什么。</p>
+<p>这就是我们说的安全不变量。把它写清楚以后，调查就有了具体问题：谁能控制 n，这个值经过了哪些处理，最后是否用于复制。</p>
+<h3 id="part-6">步骤 3：固定候选记录</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 03 / 05。</aside>
+<p>总控把代码位置、调用关系、容量条件和待查问题保存下来，形成第一版候选。</p>
+<p>例如，调用方有没有限制长度，入口要求什么权限，这些都放进同一份记录。后面补充证据时，可以清楚地看到它回答了哪个问题。</p>
+<h3 id="part-7">步骤 4：检查保护条件</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 04 / 05。</aside>
+<p>反证角色从保护条件入手。它会检查调用方有没有做长度限制，权限检查是否挡住了对应的调用者，以及保护函数是否覆盖这条复制路径。</p>
+<p>如果保护函数的处理比较复杂，主体就可以让 CodeQL-AI 帮忙检查函数和路径。历史误报经验也可以帮助定位值得查看的地方，再沿着当前代码核对。</p>
+<h3 id="part-8">步骤 5：安排独立复核</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 05 / 05。</aside>
+<p>到了这一步，独立复核角色会重新检查调用路径和容量条件。</p>
+<p>这个示例把当前状态记为 STATIC_ONLY，意思是已有源码分析依据，下一项任务是完成路径验证或复现。这样接手的人就知道，已经查清了什么，接下来该做什么。</p>
+<aside>操作：再次点击“继续演示”，进入第四页。</aside>
+<h2 id="part-9">第 4 页：改变长度，观察路径条件</h2>
+<aside>操作：把长度设置为 96，容量检查保持关闭。可以点击“96”快捷按钮。</aside>
+<p>这一页把刚才的容量问题展开来看。</p>
+<p>现在长度是九十六，目标容量是六十四。按这个长度复制，会超出三十二个字节。右侧用红色标出了超出的部分。</p>
+<aside>操作：点击长度快捷按钮“32”，停顿两秒。</aside>
+<p>我把长度改成三十二。这次输入在容量以内。再看下面的范围检查，它仍然能找到六十五这样的越界输入。</p>
+<p>所以，检查路径时要把允许输入的范围一起考虑进去。这个页面检查的是零到二百五十六之间的整数。</p>
+<aside>操作：点击“96”，然后勾选“加入完整的容量检查”。</aside>
+<p>现在加上长度检查。长度超过六十四时，程序直接返回，复制操作就执行不到了。</p>
+<p>可以把它写成两个条件：到达复制操作，要求 n 小于等于六十四；发生越界，要求 n 大于六十四。两个条件放在一起，就出现了冲突。</p>
+<p>这也是辅助路径验证要回答的问题：在给定的路径条件下，是否还存在能够触发危险操作的输入。主体给出要检查的条件，辅助工具负责求解，结果再交回主体分析。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-10">第 5 页：独立复核后怎样记录结论</h2>
+<aside>操作：指向上方左右两组信息。</aside>
+<p>为了让复核有独立判断的空间，验证者拿到的是源码位置、调用上下文和代码版本，再从这些信息出发，重新追踪路径和保护条件。</p>
+<p>复核结束后，结果分成四种状态。</p>
+<aside>操作：点击“继续补证”。</aside>
+<p>第一种，继续补证。比如输入由谁控制、入口权限是什么，还要继续调查，记录里会写清下一步检查内容。</p>
+<aside>操作：点击“保留假设”。</aside>
+<p>第二种，保留假设。源码和语义分析已经支持这个候选，接下来安排路径验证或复现。</p>
+<aside>操作：点击“限定范围确认”。</aside>
+<p>第三种，确认候选。独立复核完成，并且有对应的路径验证或复现材料。记录里同时写明代码版本、验证环境和适用条件。</p>
+<aside>操作：点击“排除候选”。</aside>
+<p>第四种，排除候选。比如查到了完整的容量检查，相关复制路径都受它保护，就把这条反证连同判断依据保存下来。</p>
+<p>这四种状态把后续工作分清楚了：哪些继续查，哪些安排验证，哪些可以整理报告，哪些已经有排除依据。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-11">第 6 页：把调查结果用到下一次审计</h2>
+<aside>操作：点击图中的“登记候选经验”。</aside>
+<p>一次审计结束后，有些结果值得保存下来。</p>
+<p>例如，某个函数已经检查过长度，但原来的查询规则没有识别出这个保护。这时可以记录函数检查了什么、在哪些调用路径上有效，以及对应的代码版本。</p>
+<aside>操作：点击“正反例回归验证”。</aside>
+<p>修改查询规则后，要拿两类样例检查。一类带有完整保护，另一类保留危险条件。我们希望减少前一类的误报，同时继续找到后一类的问题。</p>
+<p>还可以加入不同容量、绕过路径和版本变化的样例，检查这条经验在哪些条件下适用。</p>
+<aside>操作：点击“受限复用经验”。</aside>
+<p>通过回归检查后，后续任务就可以参考这条经验。总控对照当前代码和调用条件，决定怎样使用。这样，前一次调查中查清的函数和保护关系，就能帮助下一次审计。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-12">第 7 页：怎样比较工具效果</h2>
+<aside>操作：指向左侧表格，按 A、B、C、D 四行讲解。</aside>
+<p>评估时，我们把主体工作流单独运行作为主要基线，再加入按需辅助验证，比较两种设置的结果。</p>
+<p>重点看两件事：辅助检查帮助查清了哪些疑难问题，以及为此增加了多少时间和资源开销。</p>
+<p>单独运行 CodeQL 可以作为另一个参照，看看不同方法各自覆盖哪些问题。还可以分别去掉角色分工、反证检查或辅助验证，观察每个环节的作用。</p>
+<aside>操作：指向右侧三项。</aside>
+<p>比较时固定代码版本、模型和任务预算。记录候选质量、已知基准中的检出情况、人工复核时间，以及整个任务的耗时和内存。失败、超时和重试也一起统计。</p>
+<p>通过这样的安排，可以把主体本身的效果、辅助验证的收益和运行成本分别看清楚。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-13">第 8 页：结束</h2>
+<aside>操作：停留在最后一页，指向下方三个分工栏目。</aside>
+<p>这套工具的主要流程就介绍到这里。</p>
+<p>审计工作流负责从源码中发现问题，组织角色调查，保存候选并安排独立复核。CodeQL-AI 针对具体的函数和路径提供辅助检查。查清的误报和保护模式经过回归验证后，再供后续任务参考。</p>
+<p>整个过程中，源码位置、调用关系、触发条件和验证材料都跟着同一个候选保存。整理报告时，就可以据此填写漏洞分类、影响范围、复现过程和修复建议。</p>
+<p>以上是我们的工具介绍和流程演示，谢谢大家。</p>
+<aside>操作：停留三秒，结束录屏。
+</aside></template>
+<!-- RECORDING_CONTENT_END -->
     <script>
       "use strict";
       const $ = (s) => document.querySelector(s),
@@ -2616,81 +2769,90 @@
         "}",
       ];
       const caseFrames = [
-        {
-          title: "入口角色发现可疑复制操作。",
-          description:
-            "工作流分配 Parcel 入口给审计角色。源码显示长度 n 进入 memcpy；角色记录位置与调用关系，提出待验证问题。",
-          type: "Source review",
-          content:
-            "producer: entrypoint-boundary\nsource: Parcel.ReadUint32()\nsink: memcpy(..., n)\norigin: source audit / illustrative",
-          lines: [2, 6],
-          role: "主体工作流 · entrypoint-boundary",
-          note: "关注输入来源和危险操作。静态路径的存在，不等于路径在真实环境中可达。",
-          takeaway: "本阶段记录静态路径，触发条件待核实。",
-        },
-        {
-          title: "把可疑点改写为一个不变量。",
-          description:
-            "入口角色检查攻击者能否控制 n；数据流角色检查目标容量。危险条件被明确写成 n > capacity。",
-          type: "Candidate hypothesis",
-          content:
-            "attacker_control: n (to verify)\ncapacity: 64 (illustrative)\ninvariant: n <= capacity\nviolation: n > capacity",
-          lines: [1, 2, 4, 6],
-          role: "主体工作流 · entrypoint-boundary + dataflow-lifetime",
-          note: "只有同时证明控制量、容量与危险操作，才有一个可检验的漏洞假设。",
-          takeaway: "明确容量约束与越界条件。",
-        },
-        {
-          title: "冻结候选，保留未解假设。",
-          description:
-            "将路径与不变量写入 CandidatePacket，绑定目标快照。后续复核补充证据，避免悄悄改写最初的假设。",
-          type: "Frozen CandidatePacket",
-          content:
-            "candidate_id: DEMO-001\nsnapshot: abstract-example (not a commit)\nrevision: 1\nopen_questions: caller guards, IPC permission",
-          lines: [0, 2, 6],
-          role: "主体工作流 · chain-composer / 总控冻结",
-          note: "真实运行需记录代码 commit、输入哈希与规则版本。本演示不伪造真实来源凭证。",
-          takeaway: "候选版本固定，后续证据关联到该版本。",
-        },
-        {
-          title: "主动寻找能推翻它的证据。",
-          description:
-            "反证角色检查调用方长度限制与入口权限。若保护函数语义仍不明确，总控按需调用 CodeQL-AI 检查 sanitizer，并关联返回证据。",
-          type: "Counterevidence checklist",
-          content:
-            "[?] caller guarantees n <= 64\n[?] IPC policy excludes the attacker\n[?] sanitizer dominates every copy\nexperience match ≠ decisive proof",
-          lines: [0, 5, 6],
-          role: "主体反证角色 → 可选 CodeQL-AI → 总控复核",
-          note: "函数名字、单次模型判断或相似误报经验，都不足以排除当前候选。",
-          takeaway: "反证检查用于排除受保护或不可达的路径。",
-        },
-        {
-          title: "静态证据齐备后，仍要等待确定性复核。",
-          description:
-            "在本示例的设定中，假定已完成基础检查且未发现决定性反证。缺少真实路径求解或复现时，只能保留为 STATIC_ONLY。",
-          type: "Decision (illustrative)",
-          content:
-            "verdict: STATIC_ONLY\nrequires: valid deterministic verification\npoc_plan: not an execution result\nscope: this abstract example only",
-          lines: [5, 6],
-          role: "主体工作流 · blind-verifier / 证据审核",
-          note: "下一章用一个可操作的约束模型，解释符号复核究竟试图回答什么。",
-          takeaway: "有计划，不等于已验证。",
-        },
-      ];
+  {
+    "title": "追踪输入和复制操作。",
+    "description": "入口角色沿着 Parcel 长度参数找到 memcpy，记录输入来源、源码位置和调用关系。",
+    "type": "Source review",
+    "content": "producer: entrypoint-boundary\nsource: Parcel.ReadUint32()\nsink: memcpy(..., n)\nrecord: teaching example",
+    "lines": [
+      2,
+      6
+    ],
+    "role": "主体工作流 · entrypoint-boundary",
+    "note": "检查要点：输入由谁提供，长度能取哪些值，这次复制从哪里调用。",
+    "takeaway": "入口调查把输入参数和危险操作联系起来。"
+  },
+  {
+    "title": "写清复制长度与目标容量。",
+    "description": "数据流角色核对 n 的传递过程和目标容量，将越界条件写成 n > capacity。",
+    "type": "Candidate hypothesis",
+    "content": "question: who controls n?\ncapacity: 64\ninvariant: n <= capacity\nviolation: n > capacity",
+    "lines": [
+      1,
+      2,
+      4,
+      6
+    ],
+    "role": "主体工作流 · entrypoint-boundary + dataflow-lifetime",
+    "note": "检查要点：长度的来源、目标的容量，以及长度在复制前经过的处理。",
+    "takeaway": "把容量关系写清楚，后续检查有了具体条件。"
+  },
+  {
+    "title": "保存第一版候选。",
+    "description": "总控把代码位置、调用关系、不变量和待查事项放进同一份候选记录。后续材料引用它的编号和版本。",
+    "type": "Frozen CandidatePacket",
+    "content": "candidate_id: DEMO-001\nsnapshot: teaching-example\nrevision: 1\nquestions: caller guards, IPC permission",
+    "lines": [
+      0,
+      2,
+      6
+    ],
+    "role": "主体工作流 · chain-composer / 总控",
+    "note": "候选记录：源码位置、调用路径、版本、调查结果和下一步问题。",
+    "takeaway": "每份检查结果都能对应到具体候选。"
+  },
+  {
+    "title": "检查调用方限制和保护条件。",
+    "description": "反证角色检查长度限制、入口权限和保护函数；需要进一步核对函数或路径时，由总控调用 CodeQL-AI。",
+    "type": "Counterevidence checklist",
+    "content": "[?] caller limits n to 64\n[?] IPC access permissions\n[?] guard covers the copy\nreview: current code and conditions",
+    "lines": [
+      0,
+      5,
+      6
+    ],
+    "role": "主体反证角色 → 按需辅助 → 总控",
+    "note": "检查要点：保护条件写在哪里，适用于谁，能否覆盖这条复制路径。",
+    "takeaway": "沿当前路径核对保护条件。"
+  },
+  {
+    "title": "独立复核，记录下一步验证任务。",
+    "description": "验证角色重新追踪调用关系和容量条件。示例候选记为 STATIC_ONLY，待办项为路径验证或复现。",
+    "type": "Decision / teaching example",
+    "content": "verdict: STATIC_ONLY\nbasis: source and semantic review\nnext: path verification or reproduction\ncandidate: DEMO-001 / r1",
+    "lines": [
+      5,
+      6
+    ],
+    "role": "主体工作流 · blind-verifier",
+    "note": "下一页把容量条件展开，观察输入和保护逻辑如何影响路径。",
+    "takeaway": "把调查依据和待办事项一起交给复核人员。"
+  }
+];
       const notes = [
-        "介绍主体审计工作流：任务分片、角色调查、不变量与变体发现、反证、候选冻结和盲验证。CodeQL-AI 是可选辅助验证。按 → 推进，N 显示提示，F 全屏。",
-        "依次点击任务拆分、角色协作、调用与回写。点击演示证据返回，再到断点续作保存并恢复，观察候选 ID、revision 和证据数量保持一致。说明这里只模拟交接，没有运行引擎。",
-        "本章有五个小步骤。每次按 → 展开一个步骤，再进入下一章。依次指出输入长度、目标容量、复制操作、未解假设与反证问题。避免把玩具示例说成真实源码。",
-        "设定 n=96、关闭 guard，说明为什么超过容量。将 n 调至 32，说明一个安全输入不能证明不存在其他危险输入。打开 guard 后，危险条件与路径条件冲突。这里只做有限整数枚举，真实求解仍受模型与覆盖范围限制。",
-        "区分两层独立性：盲验证帮助减少确认偏差，确定性复核检验路径或触发条件。点击四张卡解释四种结论的前提。它们展示目标方法规则，未调用或复刻当前 Python 后端。",
-        "沿三节点循环讲解：新发现记录为低置信度候选经验；有 guard 的样例应减少误报，无 guard 的正例仍应被检出；通过验证后在适用范围内复用。点击节点或下一环节按钮。这里展示验证方法，实际回归测试尚未执行。",
-        "这里说明科学性如何落地：固定版本、预算与样本，做基线对照和消融。收益需要测量，不能仅凭架构推断精度提升。没有真实真值的未知漏洞集合，不报告全量召回率。",
-        "总结三个环节：统一编排、证据审核、经验复用。所有结论都附带证据和适用范围。使用说明书包含环境依赖和操作步骤；旧工作台可用于补充演示。",
-      ];
+  "介绍主体与辅助的分工；打开“环境与操作”说明依赖和命令；关闭后点击“开始演示”。",
+  "依次点击任务拆分、角色协作、调用与回写；演示证据返回，保存检查点并恢复，最后查看整体架构。",
+  "共五个步骤：输入、容量条件、保存候选、检查保护、独立复核。每次点击“展开下一步”。",
+  "点击 96，说明超出容量；点击 32，观察输入域中的 65；点击 96 并开启容量检查，解释两个条件冲突。",
+  "介绍验证者收到的源码、上下文和版本；依次点击四种结论，说明各自对应的材料和下一步工作。",
+  "依次点击登记经验、正反例回归、受限复用；用长度检查函数的例子说明经验怎样帮助后续审计。",
+  "介绍评估方案：主体单独运行与加入辅助作对比；固定版本、模型和预算，记录质量、耗时、内存和失败。",
+  "按主体工作流、辅助检查、经验复用三个栏目收尾。读完结束语后停留三秒。"
+];
       const systemDetails = {
         discovery: [
           "主体工作流 · 候选发现",
-          "审计角色从源码入口、安全不变量、生命周期与获准的历史信息提出候选。已有 SARIF 可以补充线索；没有 CodeQL 告警也可以开展源码审计。",
+          "审计角色从源码入口、安全不变量和生命周期提出候选。已有 SARIF 告警可作为补充调查线索。",
         ],
         candidate: [
           "工作流 · 语义拆解",
@@ -2702,27 +2864,27 @@
         ],
         decision: [
           "证据审核 · 判定结论",
-          "检查证据归属、有效性与覆盖范围；决定性反证可排除候选，基础证据缺失时继续补证，确定性复核不能被模型自评替代。",
+          "总控核对证据对应的候选和版本，根据源码调查、独立复核与验证材料，记录结论和后续任务。",
         ],
       };
       const verdictDetails = {
-        needs: [
-          "基础前提尚不完整。",
-          "例如：攻击者能否控制 n、对象是否存活或调用链是否可达尚未确定。应补齐证据；更高的模型置信度不会改变这一点。",
-        ],
-        static: [
-          "基础静态与语义证据支持假设。",
-          "不变量、攻击者控制、危险操作和反证检查已齐备，确定性复核尚未完成。当前结论限于静态分析支持的范围。",
-        ],
-        confirmed: [
-          "在已验证的范围与假设内确认。",
-          "基础证据齐备，并获得有效的符号可达性、PoC 执行或其他确定性复核。SAT 仅说明模型内可满足，不能外推为已在真机成功利用。",
-        ],
-        rejected: [
-          "决定性反证推翻当前候选。",
-          "例如完整容量检查支配相关复制路径，并且模型前提适用。经验相似、单一路径 UNSAT 或符号超时，均不足以证明整个组件安全。",
-        ],
-      };
+  "needs": [
+    "继续查清基础条件。",
+    "确认输入控制、对象状态和调用路径，把下一步调查事项写进记录。"
+  ],
+  "static": [
+    "已有源码和语义分析依据。",
+    "保存不变量、攻击者控制、危险操作和反证检查结果，安排路径验证或复现。"
+  ],
+  "confirmed": [
+    "独立复核与确定性验证材料齐备。",
+    "记录有效的路径验证、PoC 执行或其他确定性复核结果，同时写明代码版本、环境与适用条件。"
+  ],
+  "rejected": [
+    "决定性反证支持排除当前候选。",
+    "例如完整的容量检查覆盖相关复制路径。将保护条件、检查范围和判断依据一并保存。"
+  ]
+};
       const cycleFrames = [
         [
           "01 / CANDIDATE",
@@ -2741,9 +2903,9 @@
         [
           "03 / REUSE",
           "通过验证后，在限定范围内复用。",
-          "只有回归结果支持时才提升经验状态。下一轮仍要核对函数语义、规则版本、路径支配关系与代码版本，失配时回到候选状态。",
-          ["status: validated*", "scope: explicit"],
-          "* conceptual transition, not a test result\nreuse only when applicability is established",
+          "通过回归检查后记录经验状态。下一轮核对函数语义、规则版本、调用路径和代码版本，按匹配的条件使用。",
+          ["status: validated / example", "scope: explicit"],
+          "review: guarded and unguarded examples\nreuse: match function, path and version",
         ],
       ];
       let flowMode = "plan";
@@ -2788,25 +2950,25 @@
           call: [
             "主体 → 可选辅助 / REQUEST",
             "交给工具一个具体问题",
-            "源码审计已形成候选。当前需要核对保护条件是否覆盖复制路径；总控选择适用能力，工具缺席则记录待补证项。",
+            "当前问题：保护条件能否覆盖复制路径？总控选用适合的辅助能力，并附上候选编号、版本与输入位置。",
             "caller: counterevidence / controller\nprovider: CodeQL-AI sanitizer / symbolic\nquestion: guard covers relevant paths?\ncandidate: DEMO-001 / r1",
             "可选辅助 → 主体 / EVIDENCE",
             "结果回到原候选，由主体复核",
-            "检查执行状态、来源、版本与适用范围。错误或超时不排除候选；有效结果也需进入独立盲验证。",
+            "总控检查执行状态、来源、版本和适用范围，将返回材料关联到候选，交给独立角色复核。",
             candidate +
               (flowState.evidence_refs.length
-                ? "\nDEMO-E01: illustrative, not executed"
+                ? "\nDEMO-E01: teaching example"
                 : "\nstatus: 尚未演示证据返回"),
           ],
           checkpoint: [
             "主体 / CHECKPOINT",
             "保存进度与未完成事项",
-            "总控保存当前候选版本、已关联证据和下一步任务。这里可模拟中断与恢复，页面刷新会清除该模拟状态。",
+            "总控保存候选版本、关联证据和下一步任务。点击按钮，观察保存与恢复时的记录变化。",
             (flowCheckpoint && Object.entries(JSON.parse(flowCheckpoint)).map(([key, value]) => key + ": " + JSON.stringify(value)).join("\n")) ||
               "checkpoint: 尚未保存\nnext: 独立盲验证 → 历史核查\nthen: PoC 计划 → 人工复核\n模型上下文可重建，产物负责交接",
             "主体 / RESUME",
             "恢复候选，继续待办任务",
-            "恢复后沿用同一候选 ID 与 revision，不重复追加已接收的证据。缺少验证条件时保留明确的能力缺口。",
+            "恢复时读取候选编号、版本和已有证据，按记录继续处理待办任务。",
             candidate +
               `\nstate: ${flowState.paused ? "已中断（模拟）" : "可继续（模拟）"}`,
           ],
@@ -2996,7 +3158,7 @@
           ? `n = ${n} 大于容量 64，完整检查使该输入无法到达复制操作。`
           : unsafe
             ? `n = ${n} 大于容量 64。在这个简化模型中，复制会超出目标容量 ${n - capacity} 个单位。`
-            : `n = ${n} 不超过容量 64。单个输入安全，并不等于所有可能输入都安全。`;
+            : `n = ${n} 在容量 64 以内。下方继续检查整个输入域中的越界条件。`;
         let witness = null;
         for (let value = 0; value <= 256; value++) {
           if ((!guard || value <= capacity) && value > capacity) {
@@ -3008,14 +3170,14 @@
         const b = document.createElement("b");
         b.textContent =
           witness === null
-            ? "整个玩具输入域：无满足危险条件的值。"
-            : "整个玩具输入域：存在危险条件的见证。";
+            ? "输入域 0–256：无满足危险条件的值。"
+            : "输入域 0–256：存在危险条件的见证。";
         $("#domain-result").append(
           b,
           document.createTextNode(
             witness === null
               ? " 路径要求 n ≤ 64，而危险条件要求 n > 64，两者冲突。"
-              : ` 例如 n = ${witness}。这说明只测试一个安全输入不足以排除候选。`,
+              : ` 例如 n = ${witness}，该输入满足 n > 64 的越界条件。`,
           ),
         );
       }
@@ -3042,6 +3204,19 @@
         $("#cycle-next").textContent =
           index === 2 ? "↶ 回到候选经验" : "演示下一环节 →";
       }
+      function openReading(kind) {
+        stopAuto();
+        const speech = kind === "speech";
+        $("#reading-title").textContent = speech ? "逐页录屏讲稿" : "环境与操作";
+        $("#reading-content").replaceChildren($(speech ? "#speech-template" : "#guide-template").content.cloneNode(true));
+        $("#reading-dialog").showModal();
+        $("#reading-dialog").scrollTop = 0;
+      }
+      $("#close-reading").addEventListener("click", () => $("#reading-dialog").close());
+      $("#reading-content").addEventListener("click", e => {
+        const anchor = e.target.closest('a[href^="#"]');
+        if (anchor) { e.preventDefault(); $("#reading-content").querySelector(anchor.getAttribute("href"))?.scrollIntoView({block:"start"}); }
+      });
       function toggleNotes() {
         const visible = $("#notes").hidden;
         $("#notes").hidden = !visible;
@@ -3097,6 +3272,8 @@
       document.addEventListener("click", (e) => {
         const b = e.target.closest("button,[data-cycle]");
         if (!b) return;
+        if (b.dataset.length !== undefined) { stopAuto(); $("#length").value = b.dataset.length; renderExperiment(); }
+        if (b.dataset.reading) openReading(b.dataset.reading);
         if (b.dataset.chapter !== undefined) goTo(Number(b.dataset.chapter));
         if (b.dataset.case !== undefined) {
           stopAuto();
@@ -3169,6 +3346,7 @@
         $("#auto").setAttribute("aria-pressed", "true");
       });
       document.addEventListener("keydown", (e) => {
+        if ($("#reading-dialog").open) return;
         if (
           e.target.matches("input,textarea,select") ||
           e.altKey ||

@@ -18,6 +18,9 @@ function render(source,output,title,reading=false){
  fs.writeFileSync(output,html);
  console.log(output);
 }
-render('docs/user-manual.md','frontend/manual.html','工具使用说明书');
-render('frontend/NARRATION.md','frontend/narration.html','逐页录屏讲解稿',true);
-if(fs.existsSync('docs/performance.md'))render('docs/performance.md','frontend/performance.html','工具性能说明');
+module.exports = render;
+if (require.main === module) {
+ render('docs/user-manual.md','frontend/manual.html','工具使用说明书');
+ render('frontend/NARRATION.md','frontend/narration.html','逐页录屏讲解稿',true);
+ if(fs.existsSync('docs/performance.md'))render('docs/performance.md','frontend/performance.html','工具性能说明');
+}

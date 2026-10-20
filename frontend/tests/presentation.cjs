@@ -1,9 +1,16 @@
 const puppeteer = require("puppeteer-core");
 const assert = require("node:assert/strict");
 const path = require("node:path");
+const fs = require("node:fs");
+const os = require("node:os");
 const { pathToFileURL } = require("node:url");
 
 (async () => {
+  const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'oh-recording-'));
+  const entry = path.join(isolated, 'recording.html');
+  const portable = path.resolve(__dirname, '../../deliverables/03-recording-demo.html');
+  assert.equal(fs.readFileSync(portable,'utf8'),fs.readFileSync(path.resolve(__dirname,'../demo.html'),'utf8'));
+  fs.copyFileSync(portable,entry);
   const browser = await puppeteer.launch({
     headless: true,
     ...(process.env.CHROME_PATH
@@ -23,11 +30,25 @@ const { pathToFileURL } = require("node:url");
       { name: "prefers-reduced-motion", value: "reduce" },
     ]);
     await page.goto(
-      pathToFileURL(path.resolve(__dirname, "../demo.html")).href,
+      pathToFileURL(entry).href,
     );
     const text = (selector) => page.$eval(selector, (el) => el.textContent);
     const choose = (number) => page.click(`[data-chapter="${number - 1}"]`);
     assert.equal(await page.$$eval(".slide.active", (els) => els.length), 1);
+    await page.click('.top [data-reading="guide"]');
+    assert.equal(await page.$eval('#reading-dialog',el=>el.open),true);
+    assert.match(await text('#reading-content'),/Python 3.10/);
+    await page.keyboard.press('PageDown');
+    assert.equal(await text('#chapter-number'),'01 / 08');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.$eval('#reading-dialog',el=>el.open),false);
+    await page.click('.top [data-reading="speech"]');
+    assert.equal(await page.$$eval('#reading-content h2',els=>els.length),8);
+    await page.click('#reading-content nav a:last-child');
+    assert.equal(await text('#chapter-number'),'01 / 08');
+    await page.click('#close-reading');
+    assert.equal(await page.$$eval('a[href]',els=>els.every(el=>el.getAttribute('href').startsWith('#'))),true);
+    assert.equal(await page.$$eval('script[src],link[rel="stylesheet"],img[src]',els=>els.length),0);
     await choose(2);
     assert.match(await text("#flow-left-data"), /CodeQL required: no/);
     await page.click('[data-flow="roles"]');
@@ -58,6 +79,10 @@ const { pathToFileURL } = require("node:url");
     assert.equal(await text("#chapter-number"), "04 / 08");
     assert.match(await text("#input-result"), /违反容量/);
     assert.match(await text("#domain-result"), /n = 65/);
+    for (const n of [32,64,96]) {
+      await page.click(`[data-length="${n}"]`);
+      assert.equal(await page.$eval('#length',el=>Number(el.value)),n);
+    }
     const setLength = async (n) =>
       page.$eval(
         "#length",
@@ -144,10 +169,12 @@ const { pathToFileURL } = require("node:url");
     assert.deepEqual(errors, []);
     assert.deepEqual(remoteRequests, []);
     console.log(
-      "PASS: offline HTML, 8 chapters, 5 case steps, constraint boundaries, 4 verdicts, feedback, keyboard, autoplay, reset, responsive layout; no remote requests or browser errors.",
+      "PASS: isolated single-file HTML, embedded guide and 8-page speech, presets, 8 chapters, 5 case steps, constraint boundaries, 4 verdicts, feedback, keyboard, autoplay, reset, responsive layout; no remote requests or browser errors.",
     );
   } finally {
     await browser.close();
+    fs.unlinkSync(entry);
+    fs.rmdirSync(isolated);
   }
 })().catch((e) => {
   console.error(e);

@@ -1,0 +1,3402 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#111c24" />
+    <title>源码审计与按需验证 · OpenHarmony Audit Agent</title>
+    <style>
+      :root {
+        --bg: #111c24;
+        --panel: #192831;
+        --ink: #f0eee5;
+        --muted: #9cacae;
+        --mint: #a8e1c4;
+        --yellow: #ead492;
+        --coral: #e8a18a;
+        --line: #ffffff1c;
+        --mono: Consolas, "SFMono-Regular", monospace;
+        --sans: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.65;
+      }
+      button,
+      a,
+      input {
+        touch-action: manipulation;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      a {
+        color: inherit;
+        text-underline-offset: 4px;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid var(--yellow);
+        outline-offset: 5px;
+      }
+      button {
+        color: inherit;
+      }
+      p,
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+      }
+      button {
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      button:not(:disabled):active {
+        transform: translateY(1px);
+      }
+      .top {
+        height: 78px;
+        padding: 0 4.5vw;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .brand-symbol {
+        font-size: 30px;
+        color: var(--mint);
+      }
+      .brand small {
+        display: block;
+        font-size: 9px;
+        font-weight: 400;
+        letter-spacing: 2px;
+        color: var(--muted);
+      }
+      .top-right {
+        display: flex;
+        gap: 23px;
+        align-items: center;
+      }
+      .edition {
+        font: 10px var(--mono);
+        color: var(--muted);
+        letter-spacing: 1.5px;
+      }
+      .top button {
+        border: 1px solid var(--line);
+        background: transparent;
+        border-radius: 5px;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .top button:hover {
+        background: #ffffff10;
+      }
+      .slide {
+        display: none;
+        max-width: 1600px;
+        margin: auto;
+        padding: 40px 5.5vw 32px;
+        min-height: calc(100svh - 162px);
+      }
+      .slide.active {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        animation: enter 0.45s ease;
+      }
+      .eyebrow {
+        font: 11px var(--mono);
+        letter-spacing: 2px;
+        color: var(--mint);
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .eyebrow:before {
+        content: "";
+        height: 1px;
+        width: 24px;
+        background: var(--mint);
+      }
+      h1 {
+        font-size: clamp(42px, 4.8vw, 76px);
+        font-weight: 500;
+        letter-spacing: -3px;
+        line-height: 1.24;
+        margin: 25px 0;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--mint);
+      }
+      h2 {
+        font-size: clamp(30px, 3vw, 47px);
+        font-weight: 500;
+        letter-spacing: -1.8px;
+        line-height: 1.35;
+        margin: 14px 0 10px;
+      }
+      h3 {
+        font-size: 19px;
+        font-weight: 500;
+      }
+      .intro {
+        font-size: 16px;
+        color: var(--muted);
+        line-height: 1.9;
+        max-width: 900px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        align-items: center;
+        gap: 5vw;
+      }
+      .hero .intro {
+        font-size: 17px;
+        max-width: 540px;
+      }
+      .accent {
+        color: var(--mint);
+      }
+      .primary,
+      .outline {
+        border-radius: 5px;
+        padding: 12px 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        font-size: 13px;
+        text-decoration: none;
+      }
+      .primary {
+        background: var(--mint);
+        border: 1px solid var(--mint);
+        color: #183329;
+        font-weight: 600;
+      }
+      .primary:hover {
+        background: #c5f2db;
+      }
+      .outline {
+        border: 1px solid #ffffff33;
+        background: none;
+        color: var(--ink);
+      }
+      .outline:hover {
+        background: #ffffff0a;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 30px 0 24px;
+      }
+      .footnote {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+      .hero-art {
+        position: relative;
+        min-width: 0;
+      }
+      .hero-art svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .diagram-label {
+        font-family: var(--sans);
+        fill: var(--ink);
+      }
+      .diagram-mono {
+        font-family: var(--mono);
+        fill: var(--muted);
+        font-size: 10px;
+      }
+      .hero-art-caption {
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .pulsing {
+        animation: pulse 3s ease-in-out infinite;
+      }
+      .moving-dot {
+        offset-path: path(
+          "M 88 120 C 180 120 160 230 250 230 S 340 340 435 340"
+        );
+        animation: travel 7s linear infinite;
+        fill: var(--mint);
+      }
+      .hero-bottom {
+        margin-top: 45px;
+        display: flex;
+        gap: 30px;
+        align-items: center;
+      }
+      .hero-bottom span {
+        font: 10px var(--mono);
+        color: #8fa5a7;
+        letter-spacing: 1px;
+      }
+      .hero-bottom .rule {
+        height: 1px;
+        background: var(--line);
+        flex: 1;
+      }
+      .scene-head {
+        margin-bottom: 28px;
+      }
+      .chapter-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+        min-height: 84px;
+        background: #111c24f5;
+        backdrop-filter: blur(16px);
+        border-top: 1px solid var(--line);
+        padding: 18px 4.5vw;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 22px;
+      }
+      .chapter-info {
+        min-width: 170px;
+      }
+      .chapter-info span {
+        font: 11px var(--mono);
+        color: var(--mint);
+        margin-right: 12px;
+      }
+      .chapter-info strong {
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .chapter-dots {
+        display: flex;
+        gap: 10px;
+      }
+      .chapter-dot {
+        width: 28px;
+        height: 25px;
+        background: none;
+        border: 0;
+        border-bottom: 2px solid #ffffff22;
+        position: relative;
+        color: #839599;
+        font: 9px var(--mono);
+      }
+      .chapter-dot.active {
+        border-color: var(--mint);
+        color: var(--mint);
+      }
+      .nav-controls {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+      }
+      .nav-controls button {
+        border: 1px solid var(--line);
+        background: none;
+        border-radius: 5px;
+        min-height: 36px;
+        padding: 7px 13px;
+        font-size: 12px;
+      }
+      .nav-controls #next {
+        background: var(--mint);
+        color: #15362a;
+        border-color: var(--mint);
+      }
+      .nav-controls #auto[aria-pressed="true"] {
+        color: var(--yellow);
+        border-color: #ead49266;
+      }
+      .presenter-notes {
+        position: fixed;
+        bottom: 96px;
+        right: 4.5vw;
+        z-index: 30;
+        background: #e9e9da;
+        color: #34453e;
+        padding: 22px 25px;
+        max-width: 500px;
+        border-radius: 6px;
+        box-shadow: 0 12px 45px #0005;
+        border-left: 3px solid var(--mint);
+      }
+      .presenter-notes[hidden] {
+        display: none;
+      }
+      .presenter-notes h3 {
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: #708374;
+        margin-bottom: 10px;
+      }
+      .presenter-notes p {
+        font-size: 14px;
+        line-height: 1.9;
+      }
+      .principle-strip {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 18px 22px;
+        border: 1px solid var(--line);
+        background: #ffffff04;
+        margin-top: 24px;
+        border-radius: 5px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .principle-strip strong {
+        color: var(--mint);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .system-figure {
+        padding: 24px 28px;
+        background: linear-gradient(150deg, #1c3036, #17242d);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .orchestrator {
+        padding: 14px 24px;
+        border: 1px solid #a8e1c45c;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        background: #a8e1c409;
+      }
+      .orchestrator span {
+        font: 11px var(--mono);
+        color: var(--mint);
+      }
+      .orchestrator h3 {
+        font-size: 19px;
+      }
+      .orchestrator p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 5px;
+      }
+      .control-arrows {
+        height: 37px;
+        display: flex;
+        justify-content: space-around;
+        padding: 0 8%;
+        color: #7c9a90;
+      }
+      .system-row {
+        display: grid;
+        grid-template-columns: 1fr 30px 1.25fr 30px 1.5fr 30px 1fr;
+        align-items: stretch;
+        gap: 9px;
+      }
+      .sys-node {
+        padding: 21px 16px;
+        border: 1px solid var(--line);
+        background: #111c2480;
+        border-radius: 5px;
+        text-align: left;
+        min-width: 0;
+      }
+      .sys-node small {
+        font: 10px var(--mono);
+        color: #91a6a5;
+        display: block;
+        margin-bottom: 18px;
+      }
+      .sys-node strong {
+        font-size: 17px;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 10px;
+      }
+      .sys-node span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .sys-node[aria-pressed="true"] {
+        border-color: var(--mint);
+        box-shadow: 0 0 0 1px #a8e1c414;
+      }
+      .arrow {
+        display: grid;
+        place-items: center;
+        color: var(--mint);
+        font-size: 20px;
+      }
+      .enrich-stack {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 15px;
+      }
+      .enrich-stack span {
+        font: 10px var(--mono);
+        padding: 7px 3px;
+        background: #ffffff07;
+        text-align: center;
+        color: var(--mint);
+      }
+      .loop-line {
+        margin-top: 22px;
+        padding-top: 16px;
+        border-top: 1px dashed #a8e1c43f;
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        font-size: 12px;
+        color: #91b3a3;
+      }
+      .system-detail {
+        min-height: 48px;
+        margin-top: 20px;
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .system-detail strong {
+        color: var(--yellow);
+        font-size: 14px;
+        font-weight: 500;
+        min-width: 155px;
+      }
+      .case-layout {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 28px;
+      }
+      .code-scene {
+        background: #0e171e;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 22px;
+        background: #ffffff04;
+        border-bottom: 1px solid var(--line);
+        font: 11px var(--mono);
+        color: var(--muted);
+      }
+      .code-header span:last-child {
+        font: 10px var(--sans);
+        color: var(--yellow);
+      }
+      .code-lines {
+        padding: 20px 0;
+        font: clamp(11px, 1.05vw, 15px)/2.05 var(--mono);
+        flex: 1;
+      }
+      .code-line {
+        display: flex;
+        padding: 0 22px;
+        border-left: 3px solid transparent;
+        min-height: 30px;
+      }
+      .code-line.focus {
+        background: #a8e1c414;
+        border-color: var(--mint);
+        color: var(--mint);
+      }
+      .code-line.warning {
+        background: #ead49212;
+        border-color: var(--yellow);
+        color: var(--yellow);
+      }
+      .line-no {
+        color: #6a8187;
+        flex-shrink: 0;
+        width: 28px;
+        user-select: none;
+      }
+      .line-code {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .code-annotation {
+        padding: 15px 20px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        min-height: 68px;
+      }
+      .evidence-story {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 8px 0;
+      }
+      .step-kicker {
+        font: 11px var(--mono);
+        color: var(--mint);
+        letter-spacing: 1px;
+      }
+      .evidence-story h3 {
+        font-size: 28px;
+        line-height: 1.45;
+        margin: 13px 0;
+      }
+      .evidence-story p {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.9;
+      }
+      .evidence-paper {
+        margin: 22px 0 18px;
+        background: #e9ebdf;
+        color: #263d35;
+        border-radius: 5px;
+        padding: 20px 23px;
+        box-shadow: 5px 5px 0 #a8e1c419;
+        min-height: 156px;
+      }
+      .paper-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid #344e3826;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+        font: 10px var(--mono);
+        color: #71806c;
+      }
+      .evidence-paper code {
+        font: 12px/1.9 var(--mono);
+        white-space: pre-wrap;
+        display: block;
+        overflow-wrap: anywhere;
+      }
+      .case-step-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+      }
+      .case-step-controls button {
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        background: none;
+        font: 11px var(--mono);
+      }
+      .case-step-controls button.active {
+        background: var(--mint);
+        color: #18362b;
+        border-color: var(--mint);
+      }
+      .case-step-controls small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .case-role {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 21px;
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .case-role:before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        background: var(--mint);
+        border-radius: 50%;
+      }
+      .experiment-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+      .experiment-controls {
+        padding: 21px 30px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 6px;
+      }
+      .experiment-controls label {
+        display: block;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .value-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 13px;
+      }
+      .value-row strong {
+        font: 44px var(--mono);
+        color: var(--mint);
+      }
+      .value-row span {
+        font: 12px var(--mono);
+        color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--mint);
+        margin: 12px 0 9px;
+      }
+      .range-labels {
+        display: flex;
+        justify-content: space-between;
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .guard-control {
+        display: flex !important;
+        gap: 16px;
+        align-items: center;
+        margin: 15px 0;
+        border-top: 1px solid var(--line);
+        padding-top: 15px;
+        cursor: pointer;
+      }
+      .guard-control input {
+        appearance: none;
+        width: 42px;
+        height: 24px;
+        flex-shrink: 0;
+        margin: 0;
+        border-radius: 20px;
+        background: #54666b;
+        position: relative;
+      }
+      .guard-control input:before {
+        content: "";
+        height: 16px;
+        width: 16px;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        border-radius: 50%;
+        background: #f1f0e5;
+        transition: left 0.2s;
+      }
+      .guard-control input:checked {
+        background: #679e85;
+      }
+      .guard-control input:checked:before {
+        left: 22px;
+      }
+      .guard-control strong {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ink);
+        display: block;
+      }
+      .guard-control small {
+        font-size: 11px;
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+      }
+      .formula {
+        padding: 15px 17px;
+        background: #0f1c22;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font: 13px/1.8 var(--mono);
+        color: var(--yellow);
+        overflow-wrap: anywhere;
+      }
+      .formula small {
+        display: block;
+        color: var(--muted);
+        font: 10px var(--sans);
+        margin-top: 8px;
+      }
+      #cycle-formula {
+        white-space: pre-wrap;
+      }
+      .experiment-result {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+      }
+      .buffer-labels {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 11px;
+        margin-bottom: 12px;
+      }
+      .buffer {
+        height: 88px;
+        position: relative;
+        display: flex;
+        border: 1px solid #a8e1c44a;
+        border-radius: 5px;
+        overflow: hidden;
+        background: repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent calc(6.25% - 1px),
+          #ffffff0d calc(6.25% - 1px),
+          #ffffff0d 6.25%
+        );
+      }
+      .safe-zone {
+        width: 25%;
+        height: 100%;
+        border-right: 2px dashed var(--mint);
+        background: #a8e1c40a;
+        position: relative;
+        z-index: 2;
+      }
+      .safe-zone:after {
+        content: "容量 64";
+        position: absolute;
+        top: 8px;
+        right: 6px;
+        font: 10px var(--mono);
+        color: var(--mint);
+      }
+      .buffer-fill {
+        position: absolute;
+        bottom: 0;
+        height: 47%;
+        width: 37.5%;
+        background: #a8e1c488;
+        transition:
+          width 0.4s,
+          background 0.4s;
+      }
+      .buffer-fill.overflow {
+        background: linear-gradient(
+          90deg,
+          #8eb99c 0 var(--safe-fill),
+          #da947dcc var(--safe-fill)
+        );
+      }
+      .buffer-blocked {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background: #15252ceb;
+        font-size: 16px;
+        color: var(--mint);
+        z-index: 3;
+      }
+      .buffer.blocked .buffer-blocked {
+        display: grid;
+      }
+      .result-kicker {
+        font: 10px var(--mono);
+        letter-spacing: 1px;
+        color: var(--muted);
+        margin-top: 27px;
+      }
+      .result-word {
+        font-size: 31px;
+        font-weight: 500;
+        margin: 10px 0;
+        color: var(--yellow);
+      }
+      .result-description {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.9;
+        min-height: 58px;
+      }
+      .solver-note {
+        padding: 13px 16px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        margin-top: 18px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .solver-note b {
+        color: var(--mint);
+        font-weight: 500;
+      }
+      .caution {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 15px;
+      }
+      .blind-diagram {
+        display: grid;
+        grid-template-columns: 1fr 70px 1fr;
+        gap: 15px;
+        align-items: center;
+        margin-top: 2px;
+      }
+      .blind-side {
+        padding: 20px 24px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--panel);
+      }
+      .blind-side h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      .blind-side p {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .facts {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin: 15px 0 0;
+      }
+      .fact {
+        font: 10px var(--mono);
+        border: 1px solid #ffffff20;
+        border-radius: 3px;
+        padding: 5px 9px;
+        color: var(--mint);
+      }
+      .fact.excluded {
+        color: #e4a08a;
+        background: repeating-linear-gradient(
+          135deg,
+          transparent 0,
+          transparent 5px,
+          #e4a08a09 5px,
+          #e4a08a09 6px
+        );
+        text-decoration: line-through;
+      }
+      .blind-wall {
+        text-align: center;
+        color: var(--yellow);
+        font-size: 25px;
+      }
+      .blind-wall small {
+        display: block;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .verdict-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin: 23px 0 16px;
+      }
+      .verdict-card {
+        padding: 17px 15px;
+        border: 1px solid var(--line);
+        background: none;
+        border-radius: 5px;
+        text-align: left;
+      }
+      .verdict-card[aria-pressed="true"] {
+        background: #a8e1c40d;
+        border-color: var(--mint);
+      }
+      .verdict-card small {
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .verdict-card strong {
+        font-size: 17px;
+        font-weight: 500;
+        display: block;
+        margin: 9px 0;
+      }
+      .verdict-card code {
+        font: 10px var(--mono);
+        color: var(--mint);
+      }
+      .verdict-detail {
+        padding: 19px 23px;
+        border-left: 2px solid var(--yellow);
+        background: #ead49208;
+        color: var(--muted);
+        font-size: 14px;
+        min-height: 95px;
+        line-height: 1.9;
+      }
+      .verdict-detail strong {
+        color: var(--yellow);
+        font-weight: 500;
+      }
+      .feedback-figure {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 38px;
+        align-items: center;
+      }
+      .cycle-graphic {
+        width: 100%;
+        max-width: 490px;
+        display: block;
+        margin: auto;
+      }
+      .cycle-node {
+        cursor: pointer;
+      }
+      .cycle-node rect {
+        fill: #1b2e35;
+        stroke: #ffffff30;
+        transition:
+          stroke 0.3s,
+          fill 0.3s;
+      }
+      .cycle-node[aria-pressed="true"] rect {
+        fill: #284b43;
+        stroke: var(--mint);
+      }
+      .cycle-node text {
+        font-family: var(--sans);
+        fill: var(--ink);
+        font-size: 16px;
+      }
+      .cycle-node .cycle-small {
+        font: 10px var(--mono);
+        fill: var(--muted);
+      }
+      .cycle-description .step-kicker {
+        margin-bottom: 12px;
+      }
+      .cycle-description h3 {
+        font-size: 27px;
+        margin-bottom: 15px;
+      }
+      .cycle-description p {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.9;
+      }
+      .cycle-tags {
+        display: flex;
+        gap: 9px;
+        margin: 25px 0;
+      }
+      .cycle-tags span {
+        font: 11px var(--mono);
+        color: var(--mint);
+        padding: 7px 11px;
+        border: 1px solid #a8e1c43d;
+        border-radius: 4px;
+      }
+      .cycle-description .outline {
+        margin-top: 15px;
+      }
+      .research-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 28px;
+      }
+      .research-table {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .research-table table {
+        border-collapse: collapse;
+        width: 100%;
+        text-align: left;
+        font-size: 13px;
+      }
+      .research-table th {
+        font-weight: 500;
+        color: var(--muted);
+        font-size: 11px;
+        padding: 16px 21px;
+        background: #ffffff04;
+        border-bottom: 1px solid var(--line);
+      }
+      .research-table td {
+        padding: 19px 21px;
+        border-bottom: 1px solid var(--line);
+      }
+      .research-table tr:last-child td {
+        border-bottom: 0;
+      }
+      .research-table td:first-child {
+        font: 11px var(--mono);
+        color: var(--mint);
+      }
+      .research-table small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      .research-points {
+        display: grid;
+        gap: 15px;
+      }
+      .research-point {
+        padding: 18px 21px;
+        background: #ffffff04;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        display: flex;
+        gap: 18px;
+      }
+      .research-point > span {
+        font: 11px var(--mono);
+        color: var(--yellow);
+        padding-top: 5px;
+      }
+      .research-point h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+      .research-point p {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .closing {
+        max-width: 1080px;
+        margin: auto;
+        text-align: center;
+      }
+      .closing .eyebrow {
+        justify-content: center;
+      }
+      .closing h2 {
+        font-size: clamp(38px, 4.5vw, 66px);
+        margin-top: 25px;
+        line-height: 1.3;
+      }
+      .closing .intro {
+        margin: 20px auto;
+      }
+      .closing-chain {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin: 35px 0;
+      }
+      .closing-chain span {
+        color: var(--mint);
+        font: 14px var(--mono);
+      }
+      .closing-chain i {
+        font-style: normal;
+        color: #658376;
+      }
+      .closing-points {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 23px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 26px 0;
+        margin: 30px 0;
+        text-align: left;
+      }
+      .closing-points strong {
+        font-size: 16px;
+        font-weight: 500;
+      }
+      .closing-points p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 7px;
+      }
+      .closing-actions {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        margin-bottom: 19px;
+      }
+      .kbd-hint {
+        font-size: 10px;
+        color: var(--muted);
+        text-align: center;
+        margin: 14px 0 0;
+      }
+      .slide-count-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 2px;
+        z-index: 40;
+        background: #263b42;
+      }
+      .slide-count-bar span {
+        display: block;
+        height: 100%;
+        background: var(--mint);
+        width: 12.5%;
+        transition: width 0.3s;
+      }
+      .toast {
+        position: fixed;
+        top: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        background: #e9ebdf;
+        color: #294436;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 45;
+        box-shadow: 0 4px 20px #0003;
+        max-width: 90vw;
+      }
+      .toast[hidden] {
+        display: none;
+      }
+      @keyframes enter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      @keyframes travel {
+        from {
+          offset-distance: 0%;
+        }
+        to {
+          offset-distance: 100%;
+        }
+      }
+      @media (min-width: 1700px) {
+        .slide {
+          padding-top: 55px;
+          padding-bottom: 55px;
+        }
+        .scene-head {
+          margin-bottom: 40px;
+        }
+        .case-layout,
+        .experiment-grid {
+          gap: 55px;
+        }
+        .code-line {
+          min-height: 37px;
+        }
+        .sys-node {
+          padding: 27px 21px;
+        }
+        .system-figure {
+          padding: 38px;
+        }
+        .system-detail {
+          font-size: 16px;
+        }
+        .intro {
+          font-size: 19px;
+        }
+        .evidence-story p,
+        .cycle-description p {
+          font-size: 18px;
+        }
+        .research-table td {
+          padding: 24px;
+        }
+        .research-point {
+          padding: 24px;
+        }
+        .research-point p {
+          font-size: 14px;
+        }
+      }
+      @media (max-width: 1050px) {
+        .top {
+          padding: 0 26px;
+        }
+        .slide {
+          padding: 28px 32px;
+        }
+        .chapter-footer {
+          padding: 16px 26px;
+          gap: 15px;
+        }
+        .chapter-info {
+          min-width: 120px;
+        }
+        .chapter-dots {
+          gap: 4px;
+        }
+        .chapter-dot {
+          width: 23px;
+        }
+        .hero {
+          gap: 15px;
+          grid-template-columns: 1fr 1fr;
+        }
+        h1 {
+          font-size: 45px;
+        }
+        .hero .intro {
+          font-size: 15px;
+        }
+        .system-row {
+          grid-template-columns: 1fr 18px 1fr 18px 1.25fr 18px 1fr;
+          gap: 5px;
+        }
+        .sys-node {
+          padding: 16px 10px;
+        }
+        .sys-node strong {
+          font-size: 14px;
+        }
+        .sys-node span {
+          font-size: 11px;
+        }
+        .enrich-stack {
+          grid-template-columns: 1fr;
+        }
+        .system-figure {
+          padding: 23px;
+        }
+        .evidence-story h3 {
+          font-size: 23px;
+        }
+        .evidence-story p {
+          font-size: 13px;
+        }
+        .case-layout {
+          gap: 20px;
+        }
+        .code-line {
+          padding-left: 13px;
+          padding-right: 13px;
+        }
+        .research-table th,
+        .research-table td {
+          padding: 15px 13px;
+        }
+        .research-grid {
+          gap: 18px;
+        }
+        .cycle-description p {
+          font-size: 14px;
+        }
+        .closing-chain {
+          gap: 12px;
+        }
+        .closing-chain span {
+          font-size: 12px;
+        }
+      }
+      @media (max-width: 760px) {
+        .top-right {
+          flex-shrink: 0;
+        }
+        .top button {
+          white-space: nowrap;
+        }
+        .brand {
+          font-size: 11px;
+          gap: 7px;
+        }
+        .brand small {
+          font-size: 7px;
+          letter-spacing: 1px;
+        }
+        #cycle-formula {
+          white-space: pre-wrap;
+        }
+        .top {
+          height: 65px;
+          padding: 0 20px;
+        }
+        .edition {
+          display: none;
+        }
+        .top-right {
+          gap: 9px;
+        }
+        .slide {
+          padding: 27px 23px;
+          min-height: calc(100svh - 153px);
+        }
+        .slide.active {
+          justify-content: flex-start;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .hero-art {
+          max-width: 470px;
+          margin: auto;
+          width: 100%;
+        }
+        h1 {
+          font-size: 46px;
+          letter-spacing: -2px;
+        }
+        .hero .intro {
+          max-width: 100%;
+        }
+        .hero-bottom {
+          margin-top: 24px;
+          gap: 15px;
+        }
+        .hero-bottom span {
+          font-size: 8px;
+        }
+        .chapter-footer {
+          padding: 12px 17px;
+          min-height: 88px;
+          flex-wrap: wrap;
+          gap: 9px;
+        }
+        .chapter-info {
+          min-width: 0;
+        }
+        .chapter-info strong {
+          font-size: 11px;
+        }
+        .chapter-dots {
+          order: 3;
+          width: 100%;
+          justify-content: center;
+          height: 19px;
+        }
+        .chapter-dot {
+          height: 16px;
+          padding: 0 3px;
+        }
+        .nav-controls button {
+          font-size: 10px;
+          padding: 5px 9px;
+          min-height: 30px;
+        }
+        .nav-controls {
+          gap: 6px;
+        }
+        .eyebrow {
+          font-size: 9px;
+          letter-spacing: 1px;
+        }
+        h2 {
+          font-size: 30px;
+          letter-spacing: -1px;
+        }
+        .intro {
+          font-size: 13px;
+        }
+        .scene-head {
+          margin-bottom: 22px;
+        }
+        .system-row {
+          grid-template-columns: 1fr;
+        }
+        .arrow {
+          height: 23px;
+          transform: rotate(90deg);
+          font-size: 16px;
+        }
+        .sys-node small {
+          margin-bottom: 9px;
+        }
+        .sys-node strong {
+          font-size: 17px;
+        }
+        .sys-node span {
+          font-size: 12px;
+        }
+        .enrich-stack {
+          grid-template-columns: 1fr 1fr;
+        }
+        .system-figure {
+          padding: 20px;
+        }
+        .orchestrator {
+          padding: 15px;
+          display: block;
+        }
+        .orchestrator span {
+          display: block;
+          margin-bottom: 8px;
+        }
+        .orchestrator h3 {
+          font-size: 17px;
+        }
+        .system-detail {
+          display: block;
+          font-size: 12px;
+        }
+        .system-detail strong {
+          display: block;
+          margin-bottom: 8px;
+        }
+        .loop-line {
+          display: block;
+          text-align: center;
+          font-size: 11px;
+        }
+        .loop-line span {
+          display: block;
+          margin-top: 5px;
+        }
+        .principle-strip {
+          font-size: 12px;
+          align-items: flex-start;
+          display: block;
+          padding: 16px;
+        }
+        .principle-strip strong {
+          display: block;
+          margin-bottom: 6px;
+        }
+        .case-layout,
+        .experiment-grid,
+        .feedback-figure,
+        .research-grid {
+          grid-template-columns: 1fr;
+        }
+        .code-lines {
+          font-size: 12px;
+        }
+        .evidence-story h3 {
+          font-size: 24px;
+        }
+        .case-step-controls {
+          margin-top: 10px;
+        }
+        .evidence-story p {
+          font-size: 14px;
+        }
+        .code-header {
+          font-size: 10px;
+          padding: 13px 15px;
+        }
+        .experiment-controls {
+          padding: 22px;
+        }
+        .buffer {
+          height: 78px;
+        }
+        .result-word {
+          font-size: 26px;
+        }
+        .experiment-grid {
+          gap: 24px;
+        }
+        .blind-diagram {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .blind-wall {
+          transform: none;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 12px;
+          font-size: 22px;
+        }
+        .blind-wall small {
+          font-size: 10px;
+        }
+        .verdict-cards {
+          grid-template-columns: 1fr 1fr;
+          gap: 9px;
+        }
+        .verdict-card strong {
+          font-size: 16px;
+        }
+        .verdict-card code {
+          font-size: 9px;
+        }
+        .verdict-detail {
+          font-size: 13px;
+        }
+        .feedback-figure {
+          gap: 23px;
+        }
+        .cycle-graphic {
+          max-width: 410px;
+        }
+        .cycle-description h3 {
+          font-size: 25px;
+        }
+        .research-table table {
+          font-size: 12px;
+        }
+        .closing h2 {
+          font-size: 35px;
+          letter-spacing: -1px;
+        }
+        .closing-chain {
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .closing-chain span {
+          font-size: 11px;
+        }
+        .closing-points {
+          grid-template-columns: 1fr;
+          gap: 22px;
+          padding: 23px 0;
+        }
+        .closing-actions {
+          flex-wrap: wrap;
+        }
+        .presenter-notes {
+          bottom: 108px;
+          right: 16px;
+          left: 16px;
+          max-width: none;
+          padding: 19px;
+        }
+        .presenter-notes p {
+          font-size: 13px;
+        }
+        .top button {
+          font-size: 10px;
+          padding: 5px 8px;
+        }
+      }
+      @media (max-height: 760px) and (min-width: 761px) {
+        .top {
+          height: 60px;
+        }
+        .slide {
+          padding-top: 24px;
+          padding-bottom: 24px;
+          min-height: calc(100svh - 135px);
+        }
+        .chapter-footer {
+          min-height: 75px;
+        }
+        .scene-head {
+          margin-bottom: 18px;
+        }
+        h1 {
+          font-size: 48px;
+          margin: 18px 0;
+        }
+        h2 {
+          font-size: 34px;
+        }
+        .hero-art {
+          max-width: 420px;
+          margin: auto;
+        }
+        .hero-bottom {
+          margin-top: 15px;
+        }
+        .system-figure {
+          padding: 20px;
+        }
+        .sys-node {
+          padding-top: 17px;
+          padding-bottom: 17px;
+        }
+        .control-arrows {
+          height: 25px;
+        }
+        .system-detail {
+          min-height: 50px;
+          margin-top: 14px;
+        }
+        .code-lines {
+          font-size: 12px;
+          padding: 10px 0;
+        }
+        .evidence-paper {
+          margin: 15px 0;
+          padding: 16px 20px;
+        }
+        .experiment-controls {
+          padding: 19px 25px;
+        }
+        .guard-control {
+          margin: 18px 0;
+          padding-top: 18px;
+        }
+        .cycle-graphic {
+          max-height: 340px;
+        }
+        .research-point {
+          padding: 14px 18px;
+        }
+        .closing h2 {
+          font-size: 43px;
+        }
+        .closing-points {
+          margin: 22px 0;
+          padding: 20px 0;
+        }
+        .closing-chain {
+          margin: 22px 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *:before,
+        *:after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+      @media print {
+        body {
+          background: white;
+          color: #142a2b;
+          --ink: #142a2b;
+          --muted: #42595a;
+          --mint: #21624c;
+          --line: #8faaa777;
+        }
+        .top,
+        .chapter-footer,
+        .presenter-notes,
+        .slide-count-bar,
+        .toast,
+        .hero-actions,
+        .closing-actions,
+        .kbd-hint {
+          display: none !important;
+        }
+        .slide,
+        .slide.active {
+          display: block !important;
+          min-height: auto;
+          padding: 24px;
+          break-after: page;
+        }
+        .slide:last-of-type {
+          break-after: auto;
+        }
+        .system-figure,
+        .code-scene,
+        .experiment-controls,
+        .blind-side,
+        .sys-node,
+        .verdict-detail,
+        .research-point {
+          background: #eef2ed;
+        }
+        .diagram-label,
+        .cycle-node text {
+          fill: #142a2b;
+        }
+        .hero-art {
+          max-width: 340px;
+        }
+        .case-layout,
+        .experiment-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .hero {
+          grid-template-columns: 1fr 1fr;
+        }
+        .cycle-graphic {
+          max-width: 300px;
+        }
+        .code-lines {
+          font-size: 10px;
+        }
+        .formula {
+          background: #e3e9df;
+          color: #4b5c39;
+        }
+      }
+      .workflow-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .workflow-tabs button {
+        padding: 10px 16px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        cursor: pointer;
+      }
+      .workflow-tabs button[aria-pressed="true"] {
+        background: #a8e1c41a;
+        color: var(--mint);
+        border-color: var(--mint);
+      }
+      .workflow-handoff {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+      }
+      .workflow-card {
+        min-width: 0;
+        padding: 22px 26px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #ffffff04;
+      }
+      .workflow-card small {
+        color: var(--mint);
+        font: 11px var(--mono);
+        letter-spacing: 1px;
+      }
+      .workflow-card h3 {
+        font-size: 24px;
+        margin: 13px 0;
+      }
+      .workflow-card p {
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--muted);
+        min-height: 54px;
+      }
+      .workflow-card pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        margin: 18px 0 0;
+        padding: 16px;
+        background: #09171c;
+        color: #c3ddd0;
+        font: 12px/1.8 var(--mono);
+        min-height: 128px;
+      }
+      .workflow-action {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .workflow-action p {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.8;
+        flex: 1;
+        min-width: 180px;
+      }
+      .workflow-action button {
+        font-size: 13px;
+        padding: 12px 18px;
+      }
+      .workflow-boundary {
+        font-size: 12px;
+        line-height: 1.8;
+        color: var(--muted);
+        margin-top: 16px;
+      }
+      #workflow-tour[hidden],
+      #system-map[hidden],
+      #workflow-action[hidden],
+      #flow-save[hidden],
+      #flow-resume[hidden],
+      #flow-return[hidden] {
+        display: none;
+      }
+      .workflow-slide .scene-head {
+        margin-bottom: 22px;
+      }
+      .workflow-slide #system-map .system-figure {
+        padding: 18px 22px;
+      }
+      @media (max-width: 760px) {
+        .workflow-handoff {
+          grid-template-columns: 1fr;
+        }
+        .workflow-card {
+          padding: 20px;
+        }
+        .workflow-card h3 {
+          font-size: 22px;
+        }
+        .workflow-tabs button {
+          padding: 9px 12px;
+          font-size: 12px;
+        }
+      }
+
+      .length-presets {display:flex;align-items:center;gap:9px;margin:12px 0;color:var(--muted);font-size:12px}
+      .length-presets button {background:transparent;border:1px solid var(--line);border-radius:4px;padding:3px 14px;color:var(--mint)}
+      #reading-dialog {width:min(1080px,calc(100vw - 32px));max-height:88vh;padding:0;border:1px solid #8cae9f;border-radius:12px;background:#f4f6f1;color:#20353c;overflow:auto}
+      #reading-dialog::backdrop {background:#061017cc}
+      .reading-bar {position:sticky;top:0;z-index:1;background:#12232b;color:#e7eee7;padding:15px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+      .reading-bar button {color:#c8e8d7;border:1px solid #5a796b;background:transparent;border-radius:4px;padding:7px 14px;white-space:nowrap}
+      .reading-content {padding:30px 38px;overflow-wrap:anywhere;font-size:17px;line-height:1.95}
+      .reading-content h1 {font-size:30px;letter-spacing:0;line-height:1.5;margin:0 0 24px}
+      .reading-content h2 {font-size:24px;letter-spacing:0;margin:32px 0 16px;scroll-margin-top:85px}
+      .reading-content h3 {font-size:20px;margin:24px 0 12px}
+      .reading-content p {margin:16px 0}
+      .reading-content aside {padding:12px 18px;background:#e2ece3;border-left:3px solid #659378;font-size:14px;margin:24px 0}
+      .reading-content nav {display:flex;gap:8px 20px;flex-wrap:wrap;font-size:14px;padding-bottom:20px;border-bottom:1px solid #bfd0c5}
+      .reading-content .table-wrap,.reading-content pre {overflow-x:auto}
+      .reading-content table {width:100%;border-collapse:collapse;font-size:14px}
+      .reading-content th,.reading-content td {padding:10px;border-bottom:1px solid #c4d6c9;vertical-align:top;text-align:left}
+      .reading-content th {background:#e2ece3}
+      .reading-content pre {background:#12232b;color:#d5e9dc;padding:18px;font:13px/1.8 Consolas,monospace}
+      .reading-content code {overflow-wrap:anywhere}
+      @media(max-width:760px){.top {height:112px;flex-wrap:wrap;padding:12px 20px;gap:8px}.brand{width:100%}.top-right{width:100%;justify-content:space-between;gap:6px}.top button{font-size:10px;padding:5px 8px}.reading-content{padding:18px}.reading-content h1{font-size:25px}.reading-bar{padding:12px 18px}}
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="brand-symbol">◈</span>
+        <div>
+          OpenHarmony Audit Agent<small
+            >BINNNN LAB · INTERACTIVE EXPLAINER</small
+          >
+        </div>
+      </div>
+      <div class="top-right">
+        <button type="button" data-reading="guide">环境与操作</button><button type="button" data-reading="speech">逐页讲稿</button
+        ><button id="notes-toggle" aria-pressed="false" title="讲解提示（N）">
+          讲解提示</button
+        ><button id="fullscreen" title="全屏（F）">全屏 ↗</button>
+      </div>
+    </header>
+    <main>
+      <section
+        class="slide active"
+        data-title="从源码审计开始"
+        aria-label="第 1 章：从源码审计开始"
+      >
+        <div class="hero">
+          <div>
+            <div class="eyebrow">OPENHARMONY · 源码漏洞挖掘</div>
+            <h1>从代码审计，<br />到有依据的<br /><em>漏洞判断。</em></h1>
+            <p class="intro">
+              跟随一个抽象 Parcel
+              案例，了解审计工作流怎样发现问题、组织复核，并按需调用 CodeQL-AI。
+            </p>
+            <div class="hero-actions">
+              <button class="primary" id="begin">开始演示 <span>→</span></button
+              ><button class="outline" id="jump-case">直接看案例</button>
+            </div>
+            <p class="footnote">
+              8 个章节 · 讲稿约 10–12 分钟<br />Parcel 教学示例 · 源码审计与路径条件
+            </p>
+          </div>
+          <div class="hero-art">
+            <svg
+              viewBox="0 0 520 455"
+              role="img"
+              aria-label="源码审计形成候选，经过反证与按需验证，输出可复核结论"
+            >
+              <defs>
+                <pattern
+                  id="grid"
+                  width="25"
+                  height="25"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <circle cx="1" cy="1" r=".7" fill="#a8e1c4" opacity=".15" />
+                </pattern>
+                <linearGradient id="trail" x1="0" y1="0" x2="1" y2="1">
+                  <stop stop-color="#ead492" />
+                  <stop offset="1" stop-color="#a8e1c4" />
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width="520" height="455" fill="url(#grid)" />
+              <circle
+                cx="260"
+                cy="230"
+                r="170"
+                stroke="#a8e1c413"
+                fill="none"
+              />
+              <circle
+                cx="260"
+                cy="230"
+                r="119"
+                stroke="#a8e1c41c"
+                stroke-dasharray="3 7"
+                fill="none"
+              />
+              <path
+                d="M88 120 C180 120 160 230 250 230 S340 340 435 340"
+                stroke="url(#trail)"
+                fill="none"
+                stroke-width="1.5"
+              />
+              <circle class="moving-dot" r="4" />
+              <g transform="translate(30,66)">
+                <rect
+                  width="164"
+                  height="100"
+                  rx="7"
+                  fill="#1d2b32"
+                  stroke="#ead49277"
+                />
+                <text x="17" y="25" class="diagram-mono">01 / FINDING</text>
+                <text x="17" y="52" class="diagram-label" font-size="19">
+                  审计候选
+                </text>
+                <text x="17" y="79" class="diagram-mono">source → sink</text>
+                <circle cx="139" cy="26" r="4" fill="#ead492" class="pulsing" />
+              </g>
+              <g transform="translate(178,181)">
+                <rect
+                  width="168"
+                  height="107"
+                  rx="7"
+                  fill="#27443f"
+                  stroke="#a8e1c4aa"
+                />
+                <text x="17" y="25" class="diagram-mono">02 / EVIDENCE</text>
+                <text x="17" y="54" class="diagram-label" font-size="19">
+                  汇总调查依据
+                </text>
+                <text x="17" y="82" class="diagram-mono">
+                  审计 · 反证 · 复核
+                </text>
+              </g>
+              <g transform="translate(328,314)">
+                <rect
+                  width="164"
+                  height="100"
+                  rx="7"
+                  fill="#1d2b32"
+                  stroke="#a8e1c477"
+                />
+                <text x="17" y="25" class="diagram-mono">03 / DECISION</text>
+                <text x="17" y="54" class="diagram-label" font-size="19">
+                  记录复核结论
+                </text>
+                <text x="17" y="80" class="diagram-mono">
+                  版本 · 条件 · 依据
+                </text>
+              </g>
+              <text x="350" y="111" class="diagram-mono">角色协作发现候选</text>
+              <text x="350" y="130" class="diagram-mono">触发条件需要复核</text>
+              <text x="42" y="326" class="diagram-mono">模型判断辅助分析</text>
+              <text x="42" y="345" class="diagram-mono">结论依据验证证据</text>
+            </svg>
+            <div class="hero-art-caption">
+              <span>THE JOURNEY OF A FINDING</span
+              ><span>PARCEL TEACHING EXAMPLE</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-bottom">
+          <span>AUDIT WORKFLOW · 任务与角色</span><span class="rule"></span
+          ><span>CODEQL-AI · 分析与复核</span><span class="rule"></span
+          ><span>统一候选与证据</span>
+        </div>
+      </section>
+      <section
+        class="slide workflow-slide"
+        data-title="两个工具如何协作"
+        aria-label="第 2 章：两个工具如何协作"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">01 / THE UNIFIED IDEA</div>
+          <h2>审计工作流主导，验证工具按需介入。</h2>
+          <p class="intro">
+            主体从源码发现候选、组织反证与盲验证；遇到具体技术问题时，调用
+            CodeQL-AI 辅助检查。
+          </p>
+        </div>
+        <div class="workflow-tabs" role="group" aria-label="整合流程">
+          <button data-flow="plan" aria-pressed="true">01 任务拆分</button>
+          <button data-flow="roles" aria-pressed="false">02 角色协作</button>
+          <button data-flow="call" aria-pressed="false">03 调用与回写</button>
+          <button data-flow="checkpoint" aria-pressed="false">
+            04 断点续作
+          </button>
+          <button data-flow="map" aria-pressed="false">整体架构</button>
+        </div>
+        <div id="workflow-tour">
+          <div class="workflow-handoff" aria-live="polite">
+            <article class="workflow-card">
+              <small id="flow-left-owner"></small>
+              <h3 id="flow-left-title"></h3>
+              <p id="flow-left-description"></p>
+              <pre id="flow-left-data"></pre>
+            </article>
+            <article class="workflow-card">
+              <small id="flow-right-owner"></small>
+              <h3 id="flow-right-title"></h3>
+              <p id="flow-right-description"></p>
+              <pre id="flow-right-data"></pre>
+            </article>
+          </div>
+          <div class="workflow-action" id="workflow-action">
+            <button class="primary" id="flow-return">演示证据返回</button>
+            <button class="outline" id="flow-save">保存检查点并中断</button>
+            <button class="primary" id="flow-resume">恢复继续</button>
+            <p id="flow-status" role="status"></p>
+          </div>
+          <p class="workflow-boundary">
+            本页交接示例：分配任务 → 汇总候选 → 按需核查 → 保存与恢复。
+          </p>
+        </div>
+        <div id="system-map" hidden>
+          <div class="system-figure">
+            <div class="orchestrator">
+              <span>AUDIT-WORKFLOW-PROMPTS</span>
+              <div>
+                <h3>统一审计编排</h3>
+                <p>角色分工 → 候选冻结 → 独立盲验证 → checkpoint</p>
+              </div>
+              <span>组织 / 调度 / 追溯</span>
+            </div>
+            <div class="control-arrows">
+              <span>↓ 分派发现</span><span>↓ 冻结假设</span
+              ><span>↓ 调用复核</span><span>↓ 汇总证据</span>
+            </div>
+            <div class="system-row">
+              <button
+                class="sys-node"
+                data-system="discovery"
+                aria-pressed="false"
+              >
+                <small>01 / AUDIT</small><strong>源码审计</strong
+                ><span>入口 · 不变量 · 变体<br />可参考静态告警</span></button
+              ><span class="arrow">→</span>
+              <button
+                class="sys-node"
+                data-system="candidate"
+                aria-pressed="true"
+              >
+                <small>02 / SEMANTICS</small><strong>候选包</strong
+                ><span
+                  >入口、调用链、不变量<br />将可疑点变成可检验假设</span
+                ></button
+              ><span class="arrow">→</span>
+              <button
+                class="sys-node"
+                data-system="enrichment"
+                aria-pressed="false"
+              >
+                <small>03 / OPTIONAL</small><strong>CodeQL-AI 辅助</strong>
+                <div class="enrich-stack">
+                  <span>FP Experience</span><span>Sanitizer</span
+                  ><span>QL Optimizer</span><span>Symbolic</span>
+                </div></button
+              ><span class="arrow">→</span>
+              <button
+                class="sys-node"
+                data-system="decision"
+                aria-pressed="false"
+              >
+                <small>04 / DECISION</small><strong>证据审核</strong
+                ><span>结论、证据引用<br />适用范围与未解假设</span>
+              </button>
+            </div>
+            <div class="loop-line">
+              ↶ 经验回写，服务下一轮审计
+              <span>经验提供调查线索，总控核对当前代码</span>
+            </div>
+          </div>
+          <div
+            class="system-detail"
+            id="system-detail"
+            aria-live="polite"
+          ></div>
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="跟随一个 Parcel 案例"
+        aria-label="第 3 章：跟随一个 Parcel 案例"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">02 / A FINDING IN MOTION</div>
+          <h2>同一候选，交给不同角色处理。</h2>
+          <p class="intro">
+            沿着 Parcel 教学代码，看入口、数据流、反证和复核角色怎样交接。
+          </p>
+        </div>
+        <div class="case-layout">
+          <div class="code-scene">
+            <div class="code-header">
+              <span>abstract / parcel_example.cpp</span
+              ><span>CWE-787 · 抽象场景</span>
+            </div>
+            <div class="code-lines" id="case-code"></div>
+            <div class="code-annotation" id="code-annotation"></div>
+          </div>
+          <div class="evidence-story">
+            <div class="step-kicker" id="case-kicker"></div>
+            <h3 id="case-title"></h3>
+            <p id="case-description"></p>
+            <div class="evidence-paper">
+              <div class="paper-header">
+                <span id="paper-type"></span><span>DEMO-001 / 教学示例</span>
+              </div>
+              <code id="paper-content"></code>
+            </div>
+            <div
+              class="case-step-controls"
+              id="case-steps"
+              role="group"
+              aria-label="案例演示步骤"
+            ></div>
+            <div class="case-role" id="case-role"></div>
+          </div>
+        </div>
+        <div class="principle-strip">
+          <strong id="case-takeaway"></strong
+          ><span>使用下方“继续演示”或键盘 →，逐步展开案例。</span>
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="亲手改变路径约束"
+        aria-label="第 4 章：亲手改变路径约束"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">03 / MAKE THE CONSTRAINT VISIBLE</div>
+          <h2>同一条路径，为什么有时成立、有时被阻断？</h2>
+          <p class="intro">
+            拖动输入长度，再开启容量检查，直观看到约束如何改变可达性。
+          </p>
+        </div>
+        <div class="experiment-grid">
+          <div class="experiment-controls">
+            <label for="length">输入长度 n（简化整数模型）</label>
+            <div class="value-row">
+              <strong id="length-value">96</strong><span>目标容量 C = 64</span>
+            </div>
+            <input
+              id="length"
+              type="range"
+              min="0"
+              max="256"
+              value="96"
+              step="1"
+            />
+            <div class="range-labels">
+              <span>0</span><span>64</span><span>128</span><span>192</span
+              ><span>256</span>
+            </div>
+            <div class="length-presets" role="group" aria-label="常用长度"><span>切换长度</span><button data-length="32">32</button><button data-length="64">64</button><button data-length="96">96</button></div>
+            <label class="guard-control"
+              ><input id="guard" type="checkbox" /><span
+                ><strong>加入完整的容量检查</strong
+                ><small>if (n &gt; C) return; 必须支配所有复制路径</small></span
+              ></label
+            >
+            <div class="formula" id="formula"></div>
+            <p class="caution">
+              模型设定：外部提供整数 n，按 n 复制到容量为 64 的目标；观察长度与检查条件的关系。
+            </p>
+          </div>
+          <div class="experiment-result">
+            <div class="buffer-labels">
+              <span>目标缓冲区与输入占用</span><span>可视域 0–256</span>
+            </div>
+            <div class="buffer" id="buffer">
+              <div class="safe-zone"></div>
+              <div class="buffer-fill" id="buffer-fill"></div>
+              <div class="buffer-blocked">✓ 检查阻断了本次复制</div>
+            </div>
+            <div class="result-kicker">CURRENT INPUT / 当前输入</div>
+            <div class="result-word" id="input-result"></div>
+            <p class="result-description" id="input-description"></p>
+            <div
+              class="solver-note"
+              id="domain-result"
+              aria-live="polite"
+            ></div>
+            <p class="caution">
+              计算方式：浏览器逐一检查 0–256 的整数，寻找同时满足路径条件与越界条件的值。
+            </p>
+          </div>
+        </div>
+        <div class="principle-strip">
+          <strong>符号复核的核心</strong
+          ><span
+            >把“可能有问题”改写为“在这些明确的路径与环境约束下，是否存在满足危险条件的输入”。</span
+          >
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="为什么需要独立复核"
+        aria-label="第 5 章：为什么需要独立复核"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">04 / CHALLENGE THE HYPOTHESIS</div>
+          <h2>独立验证：依据源码和输入重建调用路径。</h2>
+          <p class="intro">
+            工作流控制验证者可见的信息。盲验证完成后，按能力进入历史核查、PoC
+            计划与人工复核。
+          </p>
+        </div>
+        <div class="blind-diagram">
+          <div class="blind-side">
+            <h3>发现者的候选包</h3>
+            <p>冻结后保留来源与版本，后续追加证据。</p>
+            <div class="facts">
+              <span class="fact">源码位置</span
+              ><span class="fact">调用上下文</span
+              ><span class="fact">目标快照</span
+              ><span class="fact excluded">“这一定是漏洞”</span>
+            </div>
+          </div>
+          <div class="blind-wall">⇢<small>隔离结论</small></div>
+          <div class="blind-side">
+            <h3>验证者独立重建</h3>
+            <p>从事实重新追踪路径、边界与保护条件。</p>
+            <div class="facts">
+              <span class="fact">重建不变量</span
+              ><span class="fact">主动寻找反证</span
+              ><span class="fact">声明未解假设</span>
+            </div>
+          </div>
+        </div>
+        <div class="verdict-cards" id="verdict-cards">
+          <button
+            class="verdict-card"
+            data-verdict="needs"
+            aria-pressed="false"
+          >
+            <small>01 / 前提缺失</small><strong>继续补证</strong
+            ><code>NEEDS_EVIDENCE</code></button
+          ><button
+            class="verdict-card"
+            data-verdict="static"
+            aria-pressed="true"
+          >
+            <small>02 / 仅静态成立</small><strong>保留假设</strong
+            ><code>STATIC_ONLY</code></button
+          ><button
+            class="verdict-card"
+            data-verdict="confirmed"
+            aria-pressed="false"
+          >
+            <small>03 / 确定性复核</small><strong>限定范围确认</strong
+            ><code>CONFIRMED</code></button
+          ><button
+            class="verdict-card"
+            data-verdict="rejected"
+            aria-pressed="false"
+          >
+            <small>04 / 决定性反证</small><strong>排除候选</strong
+            ><code>REJECTED</code>
+          </button>
+        </div>
+        <div
+          class="verdict-detail"
+          id="verdict-detail"
+          aria-live="polite"
+        ></div>
+        <div class="principle-strip">
+          <strong>结论对应的材料</strong
+          ><span
+            >独立复核记录、路径验证或复现材料，以及对应的代码版本、环境与适用条件。</span
+          >
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="经验如何进入下一轮"
+        aria-label="第 6 章：经验如何进入下一轮"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">05 / CLOSE THE LOOP CAREFULLY</div>
+          <h2>误报经验的记录、验证与复用。</h2>
+          <p class="intro">
+            工作流提交已复核的反证；CodeQL-AI
+            提取模式并接受回归检查；下一轮总控核对适用范围。
+          </p>
+        </div>
+        <div class="feedback-figure">
+          <svg
+            class="cycle-graphic"
+            viewBox="0 0 500 385"
+            role="group"
+            aria-label="经验的三个阶段，点击节点查看"
+          >
+            <defs>
+              <marker
+                id="arrowhead"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 10 5 0 10z" fill="#a8e1c4" />
+              </marker>
+            </defs>
+            <path
+              d="M250 93 C405 93 430 190 350 265"
+              fill="none"
+              stroke="#a8e1c46b"
+              stroke-width="1.5"
+              marker-end="url(#arrowhead)"
+            />
+            <path
+              d="M310 300 L175 300"
+              fill="none"
+              stroke="#a8e1c46b"
+              stroke-width="1.5"
+              marker-end="url(#arrowhead)"
+            />
+            <path
+              d="M115 245 C55 164 107 92 165 92"
+              fill="none"
+              stroke="#a8e1c46b"
+              stroke-dasharray="5 6"
+              stroke-width="1.5"
+              marker-end="url(#arrowhead)"
+            />
+            <text x="250" y="200" text-anchor="middle" class="diagram-mono">
+              KNOWLEDGE FEEDBACK
+            </text>
+            <text x="250" y="222" text-anchor="middle" class="diagram-mono">
+              每次复用，都重新检查适用性
+            </text>
+            <g
+              class="cycle-node"
+              data-cycle="0"
+              role="button"
+              tabindex="0"
+              aria-label="登记候选经验"
+              aria-pressed="true"
+            >
+              <rect x="155" y="43" width="190" height="90" rx="7" />
+              <text x="175" y="72" class="cycle-small">01 / CANDIDATE</text>
+              <text x="175" y="105">登记候选经验</text>
+            </g>
+            <g
+              class="cycle-node"
+              data-cycle="1"
+              role="button"
+              tabindex="0"
+              aria-label="正反例回归验证"
+              aria-pressed="false"
+            >
+              <rect x="290" y="258" width="190" height="90" rx="7" />
+              <text x="310" y="287" class="cycle-small">02 / REGRESSION</text>
+              <text x="310" y="320">正反例回归验证</text>
+            </g>
+            <g
+              class="cycle-node"
+              data-cycle="2"
+              role="button"
+              tabindex="0"
+              aria-label="受限复用经验"
+              aria-pressed="false"
+            >
+              <rect x="20" y="258" width="190" height="90" rx="7" />
+              <text x="40" y="287" class="cycle-small">03 / REUSE</text>
+              <text x="40" y="320">受限复用经验</text>
+            </g>
+          </svg>
+          <div class="cycle-description">
+            <div class="step-kicker" id="cycle-kicker"></div>
+            <h3 id="cycle-title"></h3>
+            <p id="cycle-description"></p>
+            <div class="cycle-tags" id="cycle-tags"></div>
+            <div class="formula" id="cycle-formula"></div>
+            <button class="outline" id="cycle-next">演示下一环节 →</button>
+            <p class="caution">
+              经验流程示例：记录保护关系，检查正反例，按适用条件复用。
+            </p>
+          </div>
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="怎样检验这套方法"
+        aria-label="第 7 章：怎样检验这套方法"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">06 / FROM A DEMO TO A TESTABLE METHOD</div>
+          <h2>通过对照实验评估方法效果。</h2>
+          <p class="intro">
+            评估方案：对比主体单独运行和主体加辅助验证，观察候选质量、复核时间与资源开销。
+          </p>
+        </div>
+        <div class="research-grid">
+          <div class="research-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>对照组</th>
+                  <th>加入的机制</th>
+                  <th>要回答的问题</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>A / PRIMARY</td>
+                  <td>完整主体审计工作流</td>
+                  <td>候选质量、覆盖与复核成本如何？</td>
+                </tr>
+                <tr>
+                  <td>B / ASSISTED</td>
+                  <td>主体＋按需 CodeQL-AI</td>
+                  <td>疑难判断是否获得额外验证？</td>
+                </tr>
+                <tr>
+                  <td>C / REFERENCE</td>
+                  <td>单独 CodeQL（外部参照）</td>
+                  <td>两种发现方式各覆盖哪些问题？</td>
+                </tr>
+                <tr>
+                  <td>D / ABLATION</td>
+                  <td>分别移除角色、反证或辅助验证</td>
+                  <td>各项机制的独立贡献是什么？</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="research-points">
+            <article class="research-point">
+              <span>01</span>
+              <div>
+                <h3>固定代码、模型和预算</h3>
+                <p>
+                  锁定代码快照、规则、模型版本、算力与 token
+                  预算。历史信息按任务时间范围提供。
+                </p>
+              </div>
+            </article>
+            <article class="research-point">
+              <span>02</span>
+              <div>
+                <h3>同时观察收益与代价</h3>
+                <p>
+                  统计候选准确性、已知基准检出情况、任务耗时、内存与人工复核成本。
+                </p>
+              </div>
+            </article>
+            <article class="research-point">
+              <span>03</span>
+              <div>
+                <h3>记录失败、超时与重试</h3>
+                <p>
+                  经验误匹配、符号超时、跨线程建模失败都要记录。失败案例与成功案例同样进入评估。
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="principle-strip">
+          <strong>评估重点</strong
+          ><span
+            >主体发现了哪些问题，辅助检查查清了哪些条件，以及完成这些工作花了多少时间和资源。</span
+          >
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="回到最初的问题"
+        aria-label="第 8 章：回到最初的问题"
+        hidden
+      >
+        <div class="closing">
+          <div class="eyebrow">07 / EVIDENCE MAKES THE DIFFERENCE</div>
+          <h2>
+            定位问题，<br />核对条件，<span class="accent"
+              >整理报告。</span
+            >
+          </h2>
+          <p class="intro">
+            主体工作流发现候选、组织角色、推进反证与独立复核。<br />CodeQL-AI
+            按需补充验证依据，结论由主体汇总。
+          </p>
+          <div class="closing-chain">
+            <span>Finding</span><i>→</i><span>CandidatePacket</span><i>→</i
+            ><span>Evidence</span><i>→</i><span>Decision</span>
+          </div>
+          <div class="closing-points">
+            <div>
+              <strong>主体：审计工作流</strong>
+              <p>源码调查、变体发现、盲验证与检查点。</p>
+            </div>
+            <div>
+              <strong>辅助：CodeQL-AI</strong>
+              <p>对具体问题提供静态检查与路径复核。</p>
+            </div>
+            <div>
+              <strong>经验复用</strong>
+              <p>通过回归验证的经验，在适用范围内复用。</p>
+            </div>
+          </div>
+          <div class="closing-actions">
+            <button class="primary" id="restart">↺ 重新演示</button
+            ><button class="outline" id="return-experiment">
+              再试一次约束实验
+            </button>
+          </div>
+          <p class="footnote">
+            <button class="outline" data-reading="guide">环境、安装与操作</button> <button class="outline" data-reading="speech">查看逐页讲稿</button><br />单文件离线演示 · 复制 HTML 到其他电脑即可查看
+          </p>
+        </div>
+      </section>
+    </main>
+    <aside class="presenter-notes" id="notes" hidden>
+      <h3>讲解提示 / PRESENTER NOTES</h3>
+      <p id="notes-text"></p>
+    </aside>
+    <footer class="chapter-footer">
+      <div class="chapter-info">
+        <span id="chapter-number">01 / 08</span
+        ><strong id="chapter-title">从源码审计开始</strong>
+      </div>
+      <nav class="chapter-dots" id="chapters" aria-label="演示章节"></nav>
+      <div class="nav-controls">
+        <button id="auto" aria-pressed="false" title="每 9 秒推进一步">
+          自动播放</button
+        ><button id="prev" aria-label="上一步">←</button
+        ><button id="next">继续演示 →</button>
+      </div>
+    </footer>
+    <div class="slide-count-bar" aria-hidden="true">
+      <span id="progress"></span>
+    </div>
+    <div class="toast" id="toast" role="status" hidden></div>
+
+    <dialog id="reading-dialog" aria-labelledby="reading-title">
+      <div class="reading-bar"><strong id="reading-title">环境与操作</strong><button id="close-reading" type="button">返回演示</button></div>
+      <div class="reading-content" id="reading-content"></div>
+    </dialog>
+    <!-- RECORDING_CONTENT_START -->
+<template id="guide-template"><nav aria-label="文档目录"><a href="#part-1">打开和录制</a><a href="#part-2">运行环境</a><a href="#part-3">安装</a><a href="#part-4">常用命令</a><a href="#part-5">网页操作</a><a href="#part-6">示例设定</a></nav><h1 id="part-0">环境与操作</h1>
+<h2 id="part-1">打开和录制</h2>
+<p>将 03-recording-demo.html 保存到电脑，双击后用 Chrome、Edge、Firefox 或 Safari 打开。样式、图形、交互、环境说明和逐页讲稿都包含在这个文件中，支持离线查看。Windows、macOS 和 Linux 都可使用现代浏览器打开。</p>
+<p>录屏时全屏展示网页，按自己的语速点击“继续演示”。第三页分五个步骤，第四页使用 32 / 64 / 96 快捷按钮和容量检查开关。顶部“逐页讲稿”可以查看全文；也可以在另一个窗口打开单独提供的讲稿文件。</p>
+<h2 id="part-2">运行环境</h2>
+<div class="table-wrap"><table><tr><th>用途</th><th>环境</th></tr><tr><td>网页演示</td><td>现代浏览器；单个 HTML 文件离线打开</td></tr><tr><td>目标校验与任务准备</td><td>Python 3.10+、pip；从源码目录安装基础包</td></tr><tr><td>主体审计</td><td>Claude Code、可用模型与认证、目标源码；在 workflow 配置运行命令和模型</td></tr><tr><td>按需辅助检查</td><td>CodeQL CLI、数据库和查询包；CodeQL-AI 对应的 FastMCP、angr 等依赖与目标产物</td></tr></table></div>
+<p>模型认证通过环境变量配置。审计目标填写源码路径、代码版本、分析单元和威胁模型。</p>
+<h2 id="part-3">安装</h2>
+<p>在源码根目录执行以下 Windows PowerShell 命令。macOS / Linux 的虚拟环境解释器路径为 .venv/bin/python。</p>
+<pre><code>python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\python.exe -m openharmony_audit --help</code></pre>
+<h2 id="part-4">常用命令</h2>
+<div class="table-wrap"><table><tr><th>命令</th><th>用途</th><th>产物</th></tr><tr><td>workflow validate</td><td>检查目标和工作流配置</td><td>校验结果</td></tr><tr><td>workflow plan</td><td>查看任务分工</td><td>worker 和分析单元的分配计划</td></tr><tr><td>workflow prepare</td><td>创建任务包</td><td>plan.json、assignment.json、角色与检查点提示词</td></tr><tr><td>workflow run</td><td>启动已准备的审计任务</td><td>会话日志与任务状态</td></tr><tr><td>workflow status</td><td>查看任务进度</td><td>各 worker 的当前状态</td></tr></table></div>
+<p>下面两条命令用于抽象配置的校验与任务准备；--allow-missing-source 适用于这组抽象路径。</p>
+<pre><code>.\.venv\Scripts\python.exe -m openharmony_audit workflow validate --workflow config/workflow.audit.example.json --target config/target.openharmony.abstract.json
+.\.venv\Scripts\python.exe -m openharmony_audit workflow prepare --workflow config/workflow.audit.example.json --target config/target.openharmony.abstract.json --run-root reports/run-data --allow-missing-source</code></pre>
+<p>实际审计时填入目标源码与模型配置，prepare 使用实际源码校验，随后执行：</p>
+<pre><code>.\.venv\Scripts\python.exe -m openharmony_audit workflow run --run-root reports/run-data
+.\.venv\Scripts\python.exe -m openharmony_audit workflow status --run-root reports/run-data</code></pre>
+<h2 id="part-5">网页操作</h2>
+<ul><li>点击底部章节数字可跳转。左右方向键、PageUp / PageDown 可以推进或回看。</li><li>第三页点击“展开下一步”，依次查看五个角色步骤。</li><li>第四页点击 32、64、96 快捷按钮，或拖动长度滑块，再切换容量检查。</li><li>N 显示本页操作提示，F 切换全屏，Escape 关闭说明或提示。</li><li>“重新演示”恢复初始状态。网页刷新也会重新初始化示例。</li></ul>
+<h2 id="part-6">示例设定</h2>
+<p>演示使用 Parcel 长度检查教学案例。任务交接通过网页状态变化呈现；约束实验计算 0–256 的整数输入，目标容量为 64。第七页展示评估方案，实际审计通过上面的命令在源码环境中运行。
+</p></template>
+<template id="speech-template"><nav aria-label="文档目录"><a href="#part-1">第 1 页：工具介绍与运行环境</a><a href="#part-2">第 2 页：任务分工与交接</a><a href="#part-3">第 3 页：跟着角色检查一段代码</a><a href="#part-9">第 4 页：改变长度，观察路径条件</a><a href="#part-10">第 5 页：独立复核后怎样记录结论</a><a href="#part-11">第 6 页：把调查结果用到下一次审计</a><a href="#part-12">第 7 页：怎样比较工具效果</a><a href="#part-13">第 8 页：结束</a></nav><h1 id="part-0">OpenHarmony Audit Agent 逐页录屏讲稿</h1>
+<aside>录制准备：打开 03-recording-demo.html，另开 03-narration.html 放在旁边。录屏选择演示窗口，关闭自动播放，按自己的语速点击。下面的正文可以直接读，绿色框里的操作提示留给自己看。全程约 10–12 分钟，可按试读速度调整。</aside>
+<h2 id="part-1">第 1 页：工具介绍与运行环境</h2>
+<aside>操作：停留在封面，开始录屏。</aside>
+<p>大家好，下面介绍我们的 OpenHarmony 代码审计工具。</p>
+<p>做代码审计时，经常会遇到这样的情况：某一行代码看起来有风险，但要判断它能否触发，还得沿着调用关系，把输入、权限和保护条件查清楚。代码量大了以后，这些调查工作也需要分工和记录。</p>
+<p>我们的工具以审计工作流为主体。它把任务分给不同角色，让大家分别查入口、数据流和对象生命周期，再把调查结果放到同一份候选记录里，继续做反证检查和独立复核。</p>
+<p>CodeQL-AI 在这个过程中提供辅助。比如，一个函数到底有没有限制输入长度，某条路径上的条件能否同时满足，主体就可以把这类具体问题交给它检查。</p>
+<aside>操作：点击页面顶部“环境与操作”。指向“运行环境”，读下面两段。</aside>
+<p>工具主体使用 Python 三点十及以上版本。安装源码包后，可以校验配置、划分任务和生成审计任务包。实际审计通过 Claude Code 调用配置好的模型，并读取目标源码。模型认证信息通过环境变量配置。</p>
+<p>需要辅助验证时，再配置 CodeQL 数据库、查询包和相应的分析环境。这份演示网页可以直接用浏览器打开，图形、交互和讲稿都装在文件里，复制到另一台电脑也能查看。</p>
+<aside>操作：指向“常用命令”，读下面一段。</aside>
+<p>操作上，validate 用来检查配置，plan 查看任务分工，prepare 生成每个工作单元的任务包。准备好源码和模型后，用 run 启动任务，用 status 查看进度。这些命令也保存在页面里，使用时可以对照。</p>
+<aside>操作：点击“返回演示”，再点击“开始演示”。</aside>
+<p>下面用一个 Parcel 长度检查的教学例子，说明各个角色怎样配合，以及辅助工具在哪一步发挥作用。</p>
+<h2 id="part-2">第 2 页：任务分工与交接</h2>
+<aside>操作：点击“01 任务拆分”。</aside>
+<p>这一页从任务分工开始看。</p>
+<p>总控记录代码版本和审计范围，再把 IPC、NAPI、权限检查这些部分分给不同的工作单元。每个单元都有自己的范围、任务说明和输出位置，后面可以按组件查看进度。</p>
+<aside>操作：点击“02 角色协作”。</aside>
+<p>在一个工作单元里，几个角色会从不同角度查同一个问题。</p>
+<p>入口角色追踪输入是谁提供的，攻击者能控制哪些参数。数据流角色检查这些参数传到了哪里，目标容量有多大，对象在使用时是否还有效。反证角色则查调用方限制、权限检查和保护函数。</p>
+<p>总控把结果整理成一份候选。这里的编号是 DEMO-001，版本是第一版。后面的检查都会带上这个编号和版本，方便对照同一个问题。</p>
+<aside>操作：点击“03 调用与回写”。</aside>
+<p>假设现在要查的是：长度检查能否覆盖这次复制操作？总控会把这个问题连同源码位置、候选编号和版本，交给适合的辅助工具。</p>
+<aside>操作：点击“演示证据返回”，指向右侧新增的 DEMO-E01。</aside>
+<p>点击后，右边出现一条示例证据。它关联回刚才的候选。主体接着检查返回材料，结合其他角色的调查结果，安排下一步复核。</p>
+<aside>操作：点击“04 断点续作”，点击“保存检查点并中断”；停顿两秒，点击“恢复继续”。</aside>
+<p>审计时间比较长时，可以把候选版本、已有证据和待办事项一起保存。这里演示保存和恢复。恢复后，候选编号、版本和证据数量都保留下来，任务可以从记录的位置继续。</p>
+<aside>操作：点击“整体架构”。</aside>
+<p>整体关系就是图上这样：主体负责发现问题、组织调查和复核；辅助工具回答其中的具体技术问题，检查结果回到主体，由主体整理结论。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-3">第 3 页：跟着角色检查一段代码</h2>
+<h3 id="part-4">步骤 1：找到输入和复制操作</h3>
+<aside>操作：确认右侧显示 STEP 01 / 05。指向左侧第 3 行和第 7 行。</aside>
+<p>看这段教学代码。程序从 Parcel 中读取长度 n，再按这个长度，把数据复制进一个六十四字节的缓冲区。</p>
+<p>入口角色要查的是，这个长度从哪里来，外部调用方能把它设置成多大。右侧记录了输入来源和复制操作，后面的角色就可以沿着这些位置继续查。</p>
+<h3 id="part-5">步骤 2：写清楚容量条件</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 02 / 05。</aside>
+<p>数据流角色把容量关系写出来：复制长度要小于等于目标容量。这里容量是六十四，所以要重点检查 n 大于六十四时会发生什么。</p>
+<p>这就是我们说的安全不变量。把它写清楚以后，调查就有了具体问题：谁能控制 n，这个值经过了哪些处理，最后是否用于复制。</p>
+<h3 id="part-6">步骤 3：固定候选记录</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 03 / 05。</aside>
+<p>总控把代码位置、调用关系、容量条件和待查问题保存下来，形成第一版候选。</p>
+<p>例如，调用方有没有限制长度，入口要求什么权限，这些都放进同一份记录。后面补充证据时，可以清楚地看到它回答了哪个问题。</p>
+<h3 id="part-7">步骤 4：检查保护条件</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 04 / 05。</aside>
+<p>反证角色从保护条件入手。它会检查调用方有没有做长度限制，权限检查是否挡住了对应的调用者，以及保护函数是否覆盖这条复制路径。</p>
+<p>如果保护函数的处理比较复杂，主体就可以让 CodeQL-AI 帮忙检查函数和路径。历史误报经验也可以帮助定位值得查看的地方，再沿着当前代码核对。</p>
+<h3 id="part-8">步骤 5：安排独立复核</h3>
+<aside>操作：点击“展开下一步”，显示 STEP 05 / 05。</aside>
+<p>到了这一步，独立复核角色会重新检查调用路径和容量条件。</p>
+<p>这个示例把当前状态记为 STATIC_ONLY，意思是已有源码分析依据，下一项任务是完成路径验证或复现。这样接手的人就知道，已经查清了什么，接下来该做什么。</p>
+<aside>操作：再次点击“继续演示”，进入第四页。</aside>
+<h2 id="part-9">第 4 页：改变长度，观察路径条件</h2>
+<aside>操作：把长度设置为 96，容量检查保持关闭。可以点击“96”快捷按钮。</aside>
+<p>这一页把刚才的容量问题展开来看。</p>
+<p>现在长度是九十六，目标容量是六十四。按这个长度复制，会超出三十二个字节。右侧用红色标出了超出的部分。</p>
+<aside>操作：点击长度快捷按钮“32”，停顿两秒。</aside>
+<p>我把长度改成三十二。这次输入在容量以内。再看下面的范围检查，它仍然能找到六十五这样的越界输入。</p>
+<p>所以，检查路径时要把允许输入的范围一起考虑进去。这个页面检查的是零到二百五十六之间的整数。</p>
+<aside>操作：点击“96”，然后勾选“加入完整的容量检查”。</aside>
+<p>现在加上长度检查。长度超过六十四时，程序直接返回，复制操作就执行不到了。</p>
+<p>可以把它写成两个条件：到达复制操作，要求 n 小于等于六十四；发生越界，要求 n 大于六十四。两个条件放在一起，就出现了冲突。</p>
+<p>这也是辅助路径验证要回答的问题：在给定的路径条件下，是否还存在能够触发危险操作的输入。主体给出要检查的条件，辅助工具负责求解，结果再交回主体分析。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-10">第 5 页：独立复核后怎样记录结论</h2>
+<aside>操作：指向上方左右两组信息。</aside>
+<p>为了让复核有独立判断的空间，验证者拿到的是源码位置、调用上下文和代码版本，再从这些信息出发，重新追踪路径和保护条件。</p>
+<p>复核结束后，结果分成四种状态。</p>
+<aside>操作：点击“继续补证”。</aside>
+<p>第一种，继续补证。比如输入由谁控制、入口权限是什么，还要继续调查，记录里会写清下一步检查内容。</p>
+<aside>操作：点击“保留假设”。</aside>
+<p>第二种，保留假设。源码和语义分析已经支持这个候选，接下来安排路径验证或复现。</p>
+<aside>操作：点击“限定范围确认”。</aside>
+<p>第三种，确认候选。独立复核完成，并且有对应的路径验证或复现材料。记录里同时写明代码版本、验证环境和适用条件。</p>
+<aside>操作：点击“排除候选”。</aside>
+<p>第四种，排除候选。比如查到了完整的容量检查，相关复制路径都受它保护，就把这条反证连同判断依据保存下来。</p>
+<p>这四种状态把后续工作分清楚了：哪些继续查，哪些安排验证，哪些可以整理报告，哪些已经有排除依据。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-11">第 6 页：把调查结果用到下一次审计</h2>
+<aside>操作：点击图中的“登记候选经验”。</aside>
+<p>一次审计结束后，有些结果值得保存下来。</p>
+<p>例如，某个函数已经检查过长度，但原来的查询规则没有识别出这个保护。这时可以记录函数检查了什么、在哪些调用路径上有效，以及对应的代码版本。</p>
+<aside>操作：点击“正反例回归验证”。</aside>
+<p>修改查询规则后，要拿两类样例检查。一类带有完整保护，另一类保留危险条件。我们希望减少前一类的误报，同时继续找到后一类的问题。</p>
+<p>还可以加入不同容量、绕过路径和版本变化的样例，检查这条经验在哪些条件下适用。</p>
+<aside>操作：点击“受限复用经验”。</aside>
+<p>通过回归检查后，后续任务就可以参考这条经验。总控对照当前代码和调用条件，决定怎样使用。这样，前一次调查中查清的函数和保护关系，就能帮助下一次审计。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-12">第 7 页：怎样比较工具效果</h2>
+<aside>操作：指向左侧表格，按 A、B、C、D 四行讲解。</aside>
+<p>评估时，我们把主体工作流单独运行作为主要基线，再加入按需辅助验证，比较两种设置的结果。</p>
+<p>重点看两件事：辅助检查帮助查清了哪些疑难问题，以及为此增加了多少时间和资源开销。</p>
+<p>单独运行 CodeQL 可以作为另一个参照，看看不同方法各自覆盖哪些问题。还可以分别去掉角色分工、反证检查或辅助验证，观察每个环节的作用。</p>
+<aside>操作：指向右侧三项。</aside>
+<p>比较时固定代码版本、模型和任务预算。记录候选质量、已知基准中的检出情况、人工复核时间，以及整个任务的耗时和内存。失败、超时和重试也一起统计。</p>
+<p>通过这样的安排，可以把主体本身的效果、辅助验证的收益和运行成本分别看清楚。</p>
+<aside>操作：点击底部“继续演示”。</aside>
+<h2 id="part-13">第 8 页：结束</h2>
+<aside>操作：停留在最后一页，指向下方三个分工栏目。</aside>
+<p>这套工具的主要流程就介绍到这里。</p>
+<p>审计工作流负责从源码中发现问题，组织角色调查，保存候选并安排独立复核。CodeQL-AI 针对具体的函数和路径提供辅助检查。查清的误报和保护模式经过回归验证后，再供后续任务参考。</p>
+<p>整个过程中，源码位置、调用关系、触发条件和验证材料都跟着同一个候选保存。整理报告时，就可以据此填写漏洞分类、影响范围、复现过程和修复建议。</p>
+<p>以上是我们的工具介绍和流程演示，谢谢大家。</p>
+<aside>操作：停留三秒，结束录屏。
+</aside></template>
+<!-- RECORDING_CONTENT_END -->
+    <script>
+      "use strict";
+      const $ = (s) => document.querySelector(s),
+        $$ = (s) => [...document.querySelectorAll(s)];
+      const slides = $$(".slide");
+      let chapter = 0,
+        caseStep = 0,
+        cycleStep = 0,
+        autoTimer = null,
+        toastTimer = null;
+      const caseLines = [
+        "void CopyPayload(Parcel& data) {",
+        "  const size_t capacity = 64;",
+        "  uint32_t n = data.ReadUint32();",
+        "  const char* src = data.ReadBuffer(n);",
+        "  char buffer[capacity];",
+        "  // Is every copy guarded by n <= capacity?",
+        "  memcpy(buffer, src, n);",
+        "}",
+      ];
+      const caseFrames = [
+  {
+    "title": "追踪输入和复制操作。",
+    "description": "入口角色沿着 Parcel 长度参数找到 memcpy，记录输入来源、源码位置和调用关系。",
+    "type": "Source review",
+    "content": "producer: entrypoint-boundary\nsource: Parcel.ReadUint32()\nsink: memcpy(..., n)\nrecord: teaching example",
+    "lines": [
+      2,
+      6
+    ],
+    "role": "主体工作流 · entrypoint-boundary",
+    "note": "检查要点：输入由谁提供，长度能取哪些值，这次复制从哪里调用。",
+    "takeaway": "入口调查把输入参数和危险操作联系起来。"
+  },
+  {
+    "title": "写清复制长度与目标容量。",
+    "description": "数据流角色核对 n 的传递过程和目标容量，将越界条件写成 n > capacity。",
+    "type": "Candidate hypothesis",
+    "content": "question: who controls n?\ncapacity: 64\ninvariant: n <= capacity\nviolation: n > capacity",
+    "lines": [
+      1,
+      2,
+      4,
+      6
+    ],
+    "role": "主体工作流 · entrypoint-boundary + dataflow-lifetime",
+    "note": "检查要点：长度的来源、目标的容量，以及长度在复制前经过的处理。",
+    "takeaway": "把容量关系写清楚，后续检查有了具体条件。"
+  },
+  {
+    "title": "保存第一版候选。",
+    "description": "总控把代码位置、调用关系、不变量和待查事项放进同一份候选记录。后续材料引用它的编号和版本。",
+    "type": "Frozen CandidatePacket",
+    "content": "candidate_id: DEMO-001\nsnapshot: teaching-example\nrevision: 1\nquestions: caller guards, IPC permission",
+    "lines": [
+      0,
+      2,
+      6
+    ],
+    "role": "主体工作流 · chain-composer / 总控",
+    "note": "候选记录：源码位置、调用路径、版本、调查结果和下一步问题。",
+    "takeaway": "每份检查结果都能对应到具体候选。"
+  },
+  {
+    "title": "检查调用方限制和保护条件。",
+    "description": "反证角色检查长度限制、入口权限和保护函数；需要进一步核对函数或路径时，由总控调用 CodeQL-AI。",
+    "type": "Counterevidence checklist",
+    "content": "[?] caller limits n to 64\n[?] IPC access permissions\n[?] guard covers the copy\nreview: current code and conditions",
+    "lines": [
+      0,
+      5,
+      6
+    ],
+    "role": "主体反证角色 → 按需辅助 → 总控",
+    "note": "检查要点：保护条件写在哪里，适用于谁，能否覆盖这条复制路径。",
+    "takeaway": "沿当前路径核对保护条件。"
+  },
+  {
+    "title": "独立复核，记录下一步验证任务。",
+    "description": "验证角色重新追踪调用关系和容量条件。示例候选记为 STATIC_ONLY，待办项为路径验证或复现。",
+    "type": "Decision / teaching example",
+    "content": "verdict: STATIC_ONLY\nbasis: source and semantic review\nnext: path verification or reproduction\ncandidate: DEMO-001 / r1",
+    "lines": [
+      5,
+      6
+    ],
+    "role": "主体工作流 · blind-verifier",
+    "note": "下一页把容量条件展开，观察输入和保护逻辑如何影响路径。",
+    "takeaway": "把调查依据和待办事项一起交给复核人员。"
+  }
+];
+      const notes = [
+  "介绍主体与辅助的分工；打开“环境与操作”说明依赖和命令；关闭后点击“开始演示”。",
+  "依次点击任务拆分、角色协作、调用与回写；演示证据返回，保存检查点并恢复，最后查看整体架构。",
+  "共五个步骤：输入、容量条件、保存候选、检查保护、独立复核。每次点击“展开下一步”。",
+  "点击 96，说明超出容量；点击 32，观察输入域中的 65；点击 96 并开启容量检查，解释两个条件冲突。",
+  "介绍验证者收到的源码、上下文和版本；依次点击四种结论，说明各自对应的材料和下一步工作。",
+  "依次点击登记经验、正反例回归、受限复用；用长度检查函数的例子说明经验怎样帮助后续审计。",
+  "介绍评估方案：主体单独运行与加入辅助作对比；固定版本、模型和预算，记录质量、耗时、内存和失败。",
+  "按主体工作流、辅助检查、经验复用三个栏目收尾。读完结束语后停留三秒。"
+];
+      const systemDetails = {
+        discovery: [
+          "主体工作流 · 候选发现",
+          "审计角色从源码入口、安全不变量和生命周期提出候选。已有 SARIF 告警可作为补充调查线索。",
+        ],
+        candidate: [
+          "工作流 · 语义拆解",
+          "源码调查形成入口、攻击者控制量、调用链、不变量与反证问题。总控合并同根因候选、固定版本并组织盲验证；需要时调用辅助工具。",
+        ],
+        enrichment: [
+          "CodeQL-AI · 按需辅助验证",
+          "误报经验提出线索；sanitizer 检查保护关系；QL 优化修补分析模型；符号复核检查约束内可达性。所有输出都应带来源。",
+        ],
+        decision: [
+          "证据审核 · 判定结论",
+          "总控核对证据对应的候选和版本，根据源码调查、独立复核与验证材料，记录结论和后续任务。",
+        ],
+      };
+      const verdictDetails = {
+  "needs": [
+    "继续查清基础条件。",
+    "确认输入控制、对象状态和调用路径，把下一步调查事项写进记录。"
+  ],
+  "static": [
+    "已有源码和语义分析依据。",
+    "保存不变量、攻击者控制、危险操作和反证检查结果，安排路径验证或复现。"
+  ],
+  "confirmed": [
+    "独立复核与确定性验证材料齐备。",
+    "记录有效的路径验证、PoC 执行或其他确定性复核结果，同时写明代码版本、环境与适用条件。"
+  ],
+  "rejected": [
+    "决定性反证支持排除当前候选。",
+    "例如完整的容量检查覆盖相关复制路径。将保护条件、检查范围和判断依据一并保存。"
+  ]
+};
+      const cycleFrames = [
+        [
+          "01 / CANDIDATE",
+          "记录候选经验及适用条件。",
+          "记录本次反证的语义条件、证据来源和适用范围。即使看起来像已有误报，也要重新检查当前调用路径。",
+          ["status: candidate", "confidence: low"],
+          "pattern: guard enforces n <= capacity\nrequired: guard dominates the copy",
+        ],
+        [
+          "02 / REGRESSION",
+          "减少误报，也要保住危险样例。",
+          "对有保护的负例和缺少保护的正例分别验证候选 QL 修补。加入绕过路径、不同容量和版本变化，检查是否过度泛化。",
+          ["guarded: negative", "unguarded: positive"],
+          "expected: guarded sample is excluded\nexpected: unguarded sample is still detected",
+        ],
+        [
+          "03 / REUSE",
+          "通过验证后，在限定范围内复用。",
+          "通过回归检查后记录经验状态。下一轮核对函数语义、规则版本、调用路径和代码版本，按匹配的条件使用。",
+          ["status: validated / example", "scope: explicit"],
+          "review: guarded and unguarded examples\nreuse: match function, path and version",
+        ],
+      ];
+      let flowMode = "plan";
+      let flowState = {
+        candidate_id: "DEMO-001",
+        revision: 1,
+        snapshot_id: "abstract-example",
+        evidence_refs: [],
+        paused: false,
+      };
+      let flowCheckpoint = null;
+      function renderFlow(mode) {
+        flowMode = mode;
+        $$("[data-flow]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.flow === mode)),
+        );
+        $("#system-map").hidden = mode !== "map";
+        $("#workflow-tour").hidden = mode === "map";
+        if (mode === "map") return;
+        const candidate = `candidate: ${flowState.candidate_id} / r${flowState.revision}\nsnapshot: ${flowState.snapshot_id}\nevidence_refs: ${flowState.evidence_refs.join(", ") || "[]"}`;
+        const frames = {
+          plan: [
+            "主体 / AUDIT WORKFLOW",
+            "确定范围与任务分片",
+            "总控固定代码快照与攻击者边界，按组件分派审计任务。源码与安全不变量可以直接作为输入。",
+            "snapshot: abstract-example\nunits: IPC / NAPI / permission\nseed: source review\nCodeQL required: no",
+            "主体 / WORKER ASSIGNMENT",
+            "各自调查，统一交接",
+            "入口、数据流、反证角色返回源码依据。总控合并同根因候选，限制并发写入范围。",
+            "worker-1: IPC / Parcel\nworker-2: NAPI / permission\nroles: boundary / lifetime / counterevidence\noutput: assignment + role artifacts",
+          ],
+          roles: [
+            "主体 / ROLE COORDINATION",
+            "把安全假设拆成检查任务",
+            "入口角色核对攻击者控制；数据流角色核对容量和生命周期；反证角色检查权限及保护条件。",
+            "entrypoint → n 是否可控？\ndataflow → 目标容量是否为 64？\ncounterevidence → 调用方是否限制 n？\nchain-composer → 组织调用链与依据",
+            "主体 / FROZEN CANDIDATE",
+            "总控发布固定版本的候选",
+            "候选冻结后保留原始问题与未解假设。辅助检查追加证据；实质修改假设需要新 revision。",
+            candidate + "\ninvariant: n ≤ capacity",
+          ],
+          call: [
+            "主体 → 可选辅助 / REQUEST",
+            "交给工具一个具体问题",
+            "当前问题：保护条件能否覆盖复制路径？总控选用适合的辅助能力，并附上候选编号、版本与输入位置。",
+            "caller: counterevidence / controller\nprovider: CodeQL-AI sanitizer / symbolic\nquestion: guard covers relevant paths?\ncandidate: DEMO-001 / r1",
+            "可选辅助 → 主体 / EVIDENCE",
+            "结果回到原候选，由主体复核",
+            "总控检查执行状态、来源、版本和适用范围，将返回材料关联到候选，交给独立角色复核。",
+            candidate +
+              (flowState.evidence_refs.length
+                ? "\nDEMO-E01: teaching example"
+                : "\nstatus: 尚未演示证据返回"),
+          ],
+          checkpoint: [
+            "主体 / CHECKPOINT",
+            "保存进度与未完成事项",
+            "总控保存候选版本、关联证据和下一步任务。点击按钮，观察保存与恢复时的记录变化。",
+            (flowCheckpoint && Object.entries(JSON.parse(flowCheckpoint)).map(([key, value]) => key + ": " + JSON.stringify(value)).join("\n")) ||
+              "checkpoint: 尚未保存\nnext: 独立盲验证 → 历史核查\nthen: PoC 计划 → 人工复核\n模型上下文可重建，产物负责交接",
+            "主体 / RESUME",
+            "恢复候选，继续待办任务",
+            "恢复时读取候选编号、版本和已有证据，按记录继续处理待办任务。",
+            candidate +
+              `\nstate: ${flowState.paused ? "已中断（模拟）" : "可继续（模拟）"}`,
+          ],
+        };
+        const frame = frames[mode];
+        [
+          "left-owner",
+          "left-title",
+          "left-description",
+          "left-data",
+          "right-owner",
+          "right-title",
+          "right-description",
+          "right-data",
+        ].forEach((id, i) => ($("#flow-" + id).textContent = frame[i]));
+        $("#workflow-action").hidden = !["call", "checkpoint"].includes(mode);
+        $("#flow-return").hidden = mode !== "call";
+        $("#flow-save").hidden = mode !== "checkpoint";
+        $("#flow-resume").hidden = mode !== "checkpoint";
+        $("#flow-return").disabled =
+          flowState.paused || flowState.evidence_refs.length > 0;
+        $("#flow-save").disabled = flowState.paused;
+        $("#flow-resume").disabled = !flowState.paused || !flowCheckpoint;
+        $("#flow-status").textContent = flowState.paused
+          ? "检查点已保存在本页内存。点击恢复后继续。"
+          : `当前候选 DEMO-001 / r1 · 关联 ${flowState.evidence_refs.length} 条模拟辅助证据 · 主体负责后续验证与报告`;
+      }
+      $("#flow-return").addEventListener("click", () => {
+        stopAuto();
+        if (!flowState.paused && !flowState.evidence_refs.includes("DEMO-E01"))
+          flowState.evidence_refs.push("DEMO-E01");
+        renderFlow("call");
+      });
+      $("#flow-save").addEventListener("click", () => {
+        stopAuto();
+        flowCheckpoint = JSON.stringify(
+          { ...flowState, paused: false },
+          null,
+          2,
+        );
+        flowState.paused = true;
+        renderFlow("checkpoint");
+      });
+      $("#flow-resume").addEventListener("click", () => {
+        stopAuto();
+        if (flowCheckpoint) flowState = JSON.parse(flowCheckpoint);
+        renderFlow("checkpoint");
+      });
+      function toast(text) {
+        $("#toast").textContent = text;
+        $("#toast").hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => ($("#toast").hidden = true), 3000);
+      }
+      function stopAuto() {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        $("#auto").textContent = "自动播放";
+        $("#auto").setAttribute("aria-pressed", "false");
+      }
+      function renderChapter() {
+        slides.forEach((s, i) => {
+          s.hidden = i !== chapter;
+          s.classList.toggle("active", i === chapter);
+        });
+        $("#chapter-number").textContent =
+          `${String(chapter + 1).padStart(2, "0")} / 08`;
+        $("#chapter-title").textContent = slides[chapter].dataset.title;
+        $("#notes-text").textContent = notes[chapter];
+        $$("[data-chapter]").forEach((b) => {
+          b.classList.toggle("active", Number(b.dataset.chapter) === chapter);
+          if (Number(b.dataset.chapter) === chapter)
+            b.setAttribute("aria-current", "step");
+          else b.removeAttribute("aria-current");
+        });
+        $("#progress").style.width = `${((chapter + 1) / 8) * 100}%`;
+        $("#prev").disabled = chapter === 0;
+        $("#next").disabled = chapter === 7;
+        $("#next").textContent =
+          chapter === 2 && caseStep < 4 ? "展开下一步 →" : "继续演示 →";
+        try {
+          history.replaceState(null, "", `#chapter-${chapter + 1}`);
+        } catch {}
+        window.scrollTo(0, 0);
+        if (chapter === 7) stopAuto();
+      }
+      function goTo(index, manual = true) {
+        if (manual) stopAuto();
+        chapter = Math.max(0, Math.min(7, index));
+        renderChapter();
+      }
+      function advance(manual = true) {
+        if (manual) stopAuto();
+        if (chapter === 2 && caseStep < 4) {
+          caseStep++;
+          renderCase();
+          renderChapter();
+        } else goTo(chapter + 1, false);
+      }
+      function previous() {
+        stopAuto();
+        if (chapter === 2 && caseStep > 0) {
+          caseStep--;
+          renderCase();
+          renderChapter();
+        } else {
+          if (chapter === 3) {
+            caseStep = 4;
+            renderCase();
+          }
+          goTo(chapter - 1, false);
+        }
+      }
+      function renderCase() {
+        const frame = caseFrames[caseStep];
+        $("#case-kicker").textContent = `STEP 0${caseStep + 1} / 05`;
+        $("#case-title").textContent = frame.title;
+        $("#case-description").textContent = frame.description;
+        $("#paper-type").textContent = frame.type;
+        $("#paper-content").textContent = frame.content;
+        $("#code-annotation").textContent = frame.note;
+        $("#case-role").textContent = frame.role;
+        $("#case-takeaway").textContent = frame.takeaway;
+        $$("#case-code .code-line").forEach((line, i) => {
+          line.classList.toggle("focus", frame.lines.includes(i));
+          line.classList.toggle("warning", i === 6 && frame.lines.includes(i));
+        });
+        $$("[data-case]").forEach((b) => {
+          b.classList.toggle("active", Number(b.dataset.case) === caseStep);
+          b.setAttribute(
+            "aria-pressed",
+            String(Number(b.dataset.case) === caseStep),
+          );
+        });
+      }
+      function renderSystem(key) {
+        $$("[data-system]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.system === key)),
+        );
+        const [title, text] = systemDetails[key];
+        $("#system-detail").replaceChildren();
+        const strong = document.createElement("strong");
+        strong.textContent = title;
+        const span = document.createElement("span");
+        span.textContent = text;
+        $("#system-detail").append(strong, span);
+      }
+      function renderVerdict(key) {
+        $$("[data-verdict]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.verdict === key)),
+        );
+        const [title, text] = verdictDetails[key];
+        $("#verdict-detail").replaceChildren();
+        const strong = document.createElement("strong");
+        strong.textContent = title + " ";
+        $("#verdict-detail").append(strong, document.createTextNode(text));
+      }
+      function renderExperiment() {
+        const n = Number($("#length").value),
+          guard = $("#guard").checked,
+          capacity = 64;
+        const blocked = guard && n > capacity;
+        const unsafe = !blocked && n > capacity;
+        $("#length-value").textContent = n;
+        $("#buffer-fill").style.width = `${(n / 256) * 100}%`;
+        $("#buffer-fill").style.setProperty(
+          "--safe-fill",
+          `${Math.min(1, capacity / Math.max(1, n)) * 100}%`,
+        );
+        $("#buffer-fill").classList.toggle("overflow", unsafe);
+        $("#buffer").classList.toggle("blocked", blocked);
+        $("#formula").textContent = guard
+          ? "0 ≤ n ≤ 256 ∧ n ≤ 64 ∧ n > 64"
+          : "0 ≤ n ≤ 256 ∧ n > 64";
+        const small = document.createElement("small");
+        small.textContent = "输入域 ∧ 路径约束 ∧ 危险条件";
+        $("#formula").append(small);
+        $("#input-result").textContent = blocked
+          ? "当前输入被保护条件阻断"
+          : unsafe
+            ? "当前输入违反容量不变量"
+            : "当前输入满足容量不变量";
+        $("#input-result").style.color = unsafe
+          ? "var(--coral)"
+          : "var(--mint)";
+        $("#input-description").textContent = blocked
+          ? `n = ${n} 大于容量 64，完整检查使该输入无法到达复制操作。`
+          : unsafe
+            ? `n = ${n} 大于容量 64。在这个简化模型中，复制会超出目标容量 ${n - capacity} 个单位。`
+            : `n = ${n} 在容量 64 以内。下方继续检查整个输入域中的越界条件。`;
+        let witness = null;
+        for (let value = 0; value <= 256; value++) {
+          if ((!guard || value <= capacity) && value > capacity) {
+            witness = value;
+            break;
+          }
+        }
+        $("#domain-result").replaceChildren();
+        const b = document.createElement("b");
+        b.textContent =
+          witness === null
+            ? "输入域 0–256：无满足危险条件的值。"
+            : "输入域 0–256：存在危险条件的见证。";
+        $("#domain-result").append(
+          b,
+          document.createTextNode(
+            witness === null
+              ? " 路径要求 n ≤ 64，而危险条件要求 n > 64，两者冲突。"
+              : ` 例如 n = ${witness}，该输入满足 n > 64 的越界条件。`,
+          ),
+        );
+      }
+      function renderCycle(index) {
+        cycleStep = index;
+        $$("[data-cycle]").forEach((b) =>
+          b.setAttribute(
+            "aria-pressed",
+            String(Number(b.dataset.cycle) === index),
+          ),
+        );
+        const [kicker, title, description, tags, formula] = cycleFrames[index];
+        $("#cycle-kicker").textContent = kicker;
+        $("#cycle-title").textContent = title;
+        $("#cycle-description").textContent = description;
+        $("#cycle-formula").textContent = formula;
+        $("#cycle-tags").replaceChildren(
+          ...tags.map((t) => {
+            const span = document.createElement("span");
+            span.textContent = t;
+            return span;
+          }),
+        );
+        $("#cycle-next").textContent =
+          index === 2 ? "↶ 回到候选经验" : "演示下一环节 →";
+      }
+      function openReading(kind) {
+        stopAuto();
+        const speech = kind === "speech";
+        $("#reading-title").textContent = speech ? "逐页录屏讲稿" : "环境与操作";
+        $("#reading-content").replaceChildren($(speech ? "#speech-template" : "#guide-template").content.cloneNode(true));
+        $("#reading-dialog").showModal();
+        $("#reading-dialog").scrollTop = 0;
+      }
+      $("#close-reading").addEventListener("click", () => $("#reading-dialog").close());
+      $("#reading-content").addEventListener("click", e => {
+        const anchor = e.target.closest('a[href^="#"]');
+        if (anchor) { e.preventDefault(); $("#reading-content").querySelector(anchor.getAttribute("href"))?.scrollIntoView({block:"start"}); }
+      });
+      function toggleNotes() {
+        const visible = $("#notes").hidden;
+        $("#notes").hidden = !visible;
+        $("#notes-toggle").setAttribute("aria-pressed", String(visible));
+      }
+      async function toggleFullscreen() {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else if (document.documentElement.requestFullscreen)
+            await document.documentElement.requestFullscreen();
+          else toast("此浏览器不支持全屏，可使用浏览器的全屏功能。");
+        } catch {
+          toast("全屏未开启，可继续使用普通窗口演示。");
+        }
+      }
+      $("#chapters").replaceChildren(
+        ...slides.map((s, i) => {
+          const b = document.createElement("button");
+          b.className = "chapter-dot";
+          b.dataset.chapter = i;
+          b.textContent = String(i + 1).padStart(2, "0");
+          b.title = s.dataset.title;
+          b.setAttribute("aria-label", `第 ${i + 1} 章：${s.dataset.title}`);
+          return b;
+        }),
+      );
+      $("#case-code").replaceChildren(
+        ...caseLines.map((text, i) => {
+          const row = document.createElement("div");
+          row.className = "code-line";
+          const no = document.createElement("span");
+          no.className = "line-no";
+          no.textContent = String(i + 1).padStart(2, "0");
+          const code = document.createElement("span");
+          code.className = "line-code";
+          code.textContent = text;
+          row.append(no, code);
+          return row;
+        }),
+      );
+      $("#case-steps").replaceChildren(
+        ...caseFrames.map((f, i) => {
+          const b = document.createElement("button");
+          b.dataset.case = i;
+          b.textContent = i + 1;
+          b.setAttribute("aria-label", `步骤 ${i + 1}：${f.title}`);
+          return b;
+        }),
+      );
+      const stepHint = document.createElement("small");
+      stepHint.textContent = "点击数字可回看";
+      $("#case-steps").append(stepHint);
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest("button,[data-cycle]");
+        if (!b) return;
+        if (b.dataset.length !== undefined) { stopAuto(); $("#length").value = b.dataset.length; renderExperiment(); }
+        if (b.dataset.reading) openReading(b.dataset.reading);
+        if (b.dataset.chapter !== undefined) goTo(Number(b.dataset.chapter));
+        if (b.dataset.case !== undefined) {
+          stopAuto();
+          caseStep = Number(b.dataset.case);
+          renderCase();
+          renderChapter();
+        }
+        if (b.dataset.system) renderSystem(b.dataset.system);
+        if (b.dataset.flow) {
+          stopAuto();
+          renderFlow(b.dataset.flow);
+        }
+        if (b.dataset.verdict) renderVerdict(b.dataset.verdict);
+        if (b.dataset.cycle !== undefined) renderCycle(Number(b.dataset.cycle));
+      });
+      $("#begin").addEventListener("click", () => goTo(1));
+      $("#jump-case").addEventListener("click", () => {
+        caseStep = 0;
+        renderCase();
+        goTo(2);
+      });
+      $("#next").addEventListener("click", () => advance());
+      $("#prev").addEventListener("click", previous);
+      $("#restart").addEventListener("click", () => {
+        flowState = {
+          candidate_id: "DEMO-001",
+          revision: 1,
+          snapshot_id: "abstract-example",
+          evidence_refs: [],
+          paused: false,
+        };
+        flowCheckpoint = null;
+        renderFlow("plan");
+        caseStep = 0;
+        renderCase();
+        renderCycle(0);
+        $("#guard").checked = false;
+        $("#length").value = 96;
+        renderExperiment();
+        renderSystem("candidate");
+        renderVerdict("static");
+        goTo(0);
+      });
+      $("#return-experiment").addEventListener("click", () => goTo(3));
+      $("#notes-toggle").addEventListener("click", toggleNotes);
+      $("#fullscreen").addEventListener("click", toggleFullscreen);
+      $("#cycle-next").addEventListener("click", () =>
+        renderCycle((cycleStep + 1) % 3),
+      );
+      $("#length").addEventListener("input", () => {
+        stopAuto();
+        renderExperiment();
+      });
+      $("#guard").addEventListener("change", () => {
+        stopAuto();
+        renderExperiment();
+      });
+      $("#auto").addEventListener("click", () => {
+        if (autoTimer) {
+          stopAuto();
+          return;
+        }
+        if (chapter === 7) {
+          caseStep = 0;
+          renderCase();
+          goTo(0, false);
+        }
+        autoTimer = setInterval(() => advance(false), 9000);
+        $("#auto").textContent = "暂停播放";
+        $("#auto").setAttribute("aria-pressed", "true");
+      });
+      document.addEventListener("keydown", (e) => {
+        if ($("#reading-dialog").open) return;
+        if (
+          e.target.matches("input,textarea,select") ||
+          e.altKey ||
+          e.ctrlKey ||
+          e.metaKey
+        )
+          return;
+        const cycle = e.target.closest("[data-cycle]");
+        if (cycle && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          renderCycle(Number(cycle.dataset.cycle));
+          return;
+        }
+        if (e.key === " " && e.target.closest("button,a")) return;
+        if (["ArrowRight", "PageDown", " "].includes(e.key)) {
+          e.preventDefault();
+          advance();
+        } else if (["ArrowLeft", "PageUp"].includes(e.key)) {
+          e.preventDefault();
+          previous();
+        } else if (e.key.toLowerCase() === "n") toggleNotes();
+        else if (e.key.toLowerCase() === "f") toggleFullscreen();
+        else if (e.key === "Escape") {
+          $("#notes").hidden = true;
+          $("#notes-toggle").setAttribute("aria-pressed", "false");
+          stopAuto();
+        }
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopAuto();
+      });
+      document.addEventListener(
+        "fullscreenchange",
+        () =>
+          ($("#fullscreen").textContent = document.fullscreenElement
+            ? "退出全屏 ↙"
+            : "全屏 ↗"),
+      );
+      window.addEventListener("hashchange", () => {
+        const match = location.hash.match(/^#chapter-([1-8])$/);
+        if (match) goTo(Number(match[1]) - 1);
+      });
+      renderCase();
+      renderExperiment();
+      renderFlow("plan");
+      renderSystem("candidate");
+      renderVerdict("static");
+      renderCycle(0);
+      const initial = location.hash.match(/^#chapter-([1-8])$/);
+      goTo(initial ? Number(initial[1]) - 1 : 0);
+    </script>
+  </body>
+</html>
