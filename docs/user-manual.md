@@ -126,7 +126,7 @@ SARIF 路径替换为实际文件。normalize-sarif 输出统一 Finding 记录�
 
 ## 6. HTML 与视频使用
 
-frontend/demo.html 展示八章技术原理与流程。deliverables/03-recording-demo.html 为独立离线版，内嵌样式、交互、环境说明与讲稿，可直接复制到其他电脑打开。
+frontend/demo.html 展示八章技术原理与流程。deliverables/工具原理与流程交互说明.html 为独立离线版，内嵌样式、交互、环境说明与讲稿，可直接复制到其他电脑打开。
 
 双击 HTML 用浏览器打开。方向键、PageUp / PageDown 翻页，N 显示提示，F 全屏，Escape 关闭提示并暂停播放。第二章演示交接与恢复，第三章展示角色调查，第四章可调整长度和保护条件。
 

@@ -2,7 +2,7 @@
 
 ## 使用文件
 
-- deliverables/03-recording-demo.html：用于录屏的单文件网页，内含环境说明和完整讲稿。
+- deliverables/工具原理与流程交互说明.html：用于录屏的单文件网页，内含环境说明和完整讲稿。
 - deliverables/03-narration.html：单独打开的讲稿阅读页。
 - deliverables/03-narration.md：可编辑讲稿。
 - deliverables/03-recording-kit.zip：上述文件及打开说明的打包版本。

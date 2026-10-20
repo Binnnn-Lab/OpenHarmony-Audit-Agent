@@ -22,7 +22,7 @@ OpenHarmony-Audit-Agent 以 **audit-workflow-prompts 审计工作流为主体**�
 
 ### HTML 原理与流程演示（保留）
 
-[录屏材料包](deliverables/03-recording-kit.zip) 包含可直接转发的单文件演示 HTML 和逐页口语讲稿。打开 [录屏网页](deliverables/03-recording-demo.html)，照着 [讲稿](deliverables/03-narration.html) 操作并自行录制即可。演示文件内嵌环境说明与完整讲稿，复制到其他电脑后可直接用浏览器离线打开。
+[录屏材料包](deliverables/03-recording-kit.zip) 包含可直接转发的单文件演示 HTML 和逐页口语讲稿。打开 [录屏网页](deliverables/工具原理与流程交互说明.html)，照着 [讲稿](deliverables/03-narration.html) 操作并自行录制即可。演示文件内嵌环境说明与完整讲稿，复制到其他电脑后可直接用浏览器离线打开。
 
 [逐页录屏讲解稿](frontend/narration.html) 对应八章 DEMO，正文直接朗读，操作提示单独标注，全程约 10–12 分钟；[Markdown 原稿](frontend/NARRATION.md) 便于修改或打印。[工具使用说明书](frontend/manual.html) 另有详细依赖、安装和故障处理说明。
 

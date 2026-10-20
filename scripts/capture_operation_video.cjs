@@ -29,7 +29,7 @@ function duration(file){const r=spawnSync(ffmpeg,['-hide_banner','-i',file],{enc
    const raw=path.join(out,name+'.webm'),clip=path.join(out,name+'.mp4');
    if(process.env.RESUME_VIDEO==='1'&&fs.existsSync(clip)){clips.push(clip);continue;}
    if(s.demo){
-     await page.goto(pathToFileURL(path.join(root,'deliverables/03-recording-demo.html')).href+'#chapter-4');
+     await page.goto(pathToFileURL(path.join(root,'deliverables/工具原理与流程交互说明.html')).href+'#chapter-4');
      await page.click('[data-chapter="3"]');
      await page.evaluate(()=>{const marker=document.createElement('div');marker.id='cursor';marker.style.cssText='position:fixed;width:24px;height:24px;border:2px solid #d6f6e5;background:#9edabb44;border-radius:50%;z-index:99;pointer-events:none;display:none';document.body.append(marker);});
    }else{

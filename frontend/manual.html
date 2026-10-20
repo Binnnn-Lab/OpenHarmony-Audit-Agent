@@ -57,7 +57,7 @@ $run = &quot;reports/parcel-run-01&quot;
 <p>SARIF 路径替换为实际文件。normalize-sarif 输出统一 Finding 记录，report 按内置模板生成技术说明书。具体漏洞报告使用候选、证据和复核记录编写。旧 prepare、validate-target 为兼容入口，完整工作流使用 workflow 子命令。</p>
 
 <h2 id="part-9">6. HTML 与视频使用</h2>
-<p>frontend/demo.html 展示八章技术原理与流程。deliverables/03-recording-demo.html 为独立离线版，内嵌样式、交互、环境说明与讲稿，可直接复制到其他电脑打开。</p>
+<p>frontend/demo.html 展示八章技术原理与流程。deliverables/工具原理与流程交互说明.html 为独立离线版，内嵌样式、交互、环境说明与讲稿，可直接复制到其他电脑打开。</p>
 <p>双击 HTML 用浏览器打开。方向键、PageUp / PageDown 翻页，N 显示提示，F 全屏，Escape 关闭提示并暂停播放。第二章演示交接与恢复，第三章展示角色调查，第四章可调整长度和保护条件。</p>
 <p>deliverables/03-operation-demo.mp4 为 8 分 34 秒的 Parcel 运行记录回放与原理交互视频。03-operation-replay.html 可独立查看记录；03-operation-voiceover.html 提供时间码讲稿，与 MP4 放在同一目录即可播放视频。</p>
 <p>本地服务命令为 python scripts/serve_demo.py，访问 http://127.0.0.1:8765/demo.html；--port 可修改端口，Ctrl+C 停止服务。原理交互使用教学示例，实际记录位于 reports/operation-demo/。</p>
@@ -68,4 +68,5 @@ $run = &quot;reports/parcel-run-01&quot;
 <pre><code>&amp; $py -m unittest discover -s tests -v
 &amp; $py -m pip install -e &quot;.[benchmark]&quot;
 &amp; $py scripts/measure_command.py --output reports/perf-run.json --scope source-audit --snapshot YOUR_COMMIT -- $py -m openharmony_audit workflow run --run-root reports/parcel-run-02</code></pre>
-<p>parcel-run-02 需按第 4 节完成 prepare。测量 JSON 包含墙钟时间、采样进程树 RSS、环境和退出码，命令输出保存至同名 stdout.log。现有实测值及统计口径见工具性能说明。</p><footer>OpenHarmony-Audit-Agent · 工具文档</footer></main></body></html>
+<p>parcel-run-02 需按第 4 节完成 prepare。测量 JSON 包含墙钟时间、采样进程树 RSS、环境和退出码，命令输出保存至同名 stdout.log。现有实测值及统计口径见工具性能说明。
+</p><footer>OpenHarmony-Audit-Agent · 工具文档</footer></main></body></html>

@@ -8,7 +8,7 @@ const { pathToFileURL } = require("node:url");
 (async () => {
   const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'oh-recording-'));
   const entry = path.join(isolated, 'recording.html');
-  const portable = path.resolve(__dirname, '../../deliverables/03-recording-demo.html');
+  const portable = path.resolve(__dirname, '../../deliverables/工具原理与流程交互说明.html');
   assert.equal(fs.readFileSync(portable,'utf8'),fs.readFileSync(path.resolve(__dirname,'../demo.html'),'utf8'));
   fs.copyFileSync(portable,entry);
   const browser = await puppeteer.launch({

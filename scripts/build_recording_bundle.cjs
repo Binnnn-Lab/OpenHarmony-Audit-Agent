@@ -19,7 +19,7 @@ const marker = /<!-- RECORDING_CONTENT_START -->[\s\S]*?<!-- RECORDING_CONTENT_E
 if (!marker.test(demo)) throw new Error('Recording template marker is missing');
 demo = demo.replace(marker, '<!-- RECORDING_CONTENT_START -->\n'+content+'\n<!-- RECORDING_CONTENT_END -->');
 fs.writeFileSync('frontend/demo.html',demo);
-fs.writeFileSync('deliverables/03-recording-demo.html',demo);
+fs.writeFileSync('deliverables/工具原理与流程交互说明.html',demo);
 let speech = fs.readFileSync('frontend/narration.html','utf8');
 speech = speech.replace(/<header>[\s\S]*?<\/header>/,'<header>OpenHarmony Audit Agent · 逐页录屏讲稿<br>正文直接朗读 · 绿色框为操作提示 · 章节与演示网页一一对应</header>');
 fs.writeFileSync('deliverables/03-narration.html',speech);

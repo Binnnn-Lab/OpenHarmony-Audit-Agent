@@ -21,10 +21,10 @@
 | 编号 | 文件 | 当前状态 |
 |---|---|---|
 | 1 | deliverables/01-source.zip | 自包含源码、提示词、配置、测试及复现脚本；主入口已完成工程检查，完整目标环境审计仍需联调 |
-| 2 | deliverables/02-technical-manual.pdf | 覆盖主体原理、代码模块与函数、辅助接口、证据与判断、验证方法、来源和限制 |
-| 3 | deliverables/03-user-manual.pdf；03-operation-demo.mp4 | 使用说明、实际小范围源码审计记录视频；另附时间码配音稿和离线回放 |
+| 2 | deliverables/工具源代码技术说明书.pdf | 覆盖主体原理、代码模块与函数、辅助接口、证据与判断、验证方法、来源和限制 |
+| 3 | deliverables/工具使用说明书.pdf；03-operation-demo.mp4 | 使用说明、实际小范围源码审计记录视频；另附时间码配音稿和离线回放 |
 | 4 | 独立漏洞分析材料 | 内容包括真实漏洞、可执行 PoC、影响版本及修复材料 |
-| 5 | deliverables/05-performance.pdf；reports/performance/；reports/operation-demo/ | 已有规划测试和 Parcel 限定函数审计测量；大规模全仓扫描尚无实测数据 |
+| 5 | deliverables/工具性能说明.pdf；reports/performance/；reports/operation-demo/ | 已有规划测试和 Parcel 限定函数审计测量；大规模全仓扫描尚无实测数据 |
 
 操作演示视频长 8 分 34 秒，展示官方 c_utils 固定版本的配置、准备、Codex 源码检查、产物与资源测量。检查范围为三个目标函数及四个直接辅助函数，候选数量为 0；配套讲稿按视频时间码排列。详细范围和原始记录见 docs/operation-video.md。
 
