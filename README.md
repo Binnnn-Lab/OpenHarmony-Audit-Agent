@@ -12,6 +12,8 @@ OpenHarmony-Audit-Agent 将角色化代码审计工作流与 CodeQL-AI 的静态
 
 [工具使用说明书（HTML）](frontend/manual.html) 包含依赖环境、安装步骤、命令输入输出、DEMO 操作和故障处理。DEMO 视频尚未录制，说明书末尾提供录制提纲；HTML 演示不能替代视频文件。
 
+[逐页录屏讲解稿](frontend/narration.html) 可配合八章 DEMO 直接朗读，动作提示单独标注；[Markdown 原稿](frontend/NARRATION.md) 便于修改或打印。
+
 直接用浏览器打开 [frontend/demo.html](frontend/demo.html)，无需安装依赖或联网。八个章节串起两个工具的分工、Parcel 案例、路径约束实验、独立验证、经验反馈和实验设计，支持键盘推进、全屏、自动播放与讲解提示。讲解顺序见 [演示说明](frontend/DEMO.md)。
 
 也可通过下方本地服务访问 http://127.0.0.1:8765/demo.html。
