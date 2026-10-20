@@ -9,7 +9,7 @@
 - 固定提交：`b807d3dadb7dbb7639fe85b3a5f72da18d318da2`。
 - 目标文件：`base/src/parcel.cpp`，参考 `base/include/parcel.h`。
 - 范围：WriteBuffer、EnsureWritableCapacity、WriteDataBytes 及四个直接辅助函数。
-- 运行时：Codex CLI 0.159.2，模型配置为 `gpt-6-astra`，Python 3.14.0。
+- 运行时：Codex CLI 0.163.0-alpha.10.2，模型配置为 `gpt-6-astra`，Python 3.14.0。
 - 本次采用单个 worker，顺序做入口、数据流及保护条件检查。
 - 结果：源码检查完成，候选数量 0，实际生成四份检查产物。
 - 实测：129.60 秒；本地进程树最大采样 RSS 385.45 MiB；配置采样间隔 20 ms。

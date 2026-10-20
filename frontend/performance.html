@@ -1,23 +1,29 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>工具性能说明</title><style>
 *{box-sizing:border-box}body{margin:0;overflow-wrap:anywhere;background:#f4f6f1;color:#20353c;font:16px/1.85 "Segoe UI","Microsoft YaHei",sans-serif}header{background:#12232b;color:#d4e7dc;padding:24px max(24px,calc((100vw - 1000px)/2));font-size:14px;line-height:2}header a{color:#b8e7d1;margin-right:20px}main{max-width:1056px;margin:auto;padding:28px}nav{display:flex;gap:8px 22px;flex-wrap:wrap;font-size:14px;border-bottom:1px solid #cbd9d0;padding-bottom:24px}a{color:#23624e;text-underline-offset:4px}h1{font-size:32px;line-height:1.5}h2{font-size:26px;margin-top:44px;padding-top:22px;border-top:1px solid #cad7ce;scroll-margin-top:20px}h3{font-size:22px}p{margin:18px 0;}aside{font-size:15px;line-height:1.85;background:#e5eee6;border-left:3px solid #659378;color:#4e6458;padding:14px 18px;margin:24px 0}code{font-family:Consolas,monospace;font-size:.88em;overflow-wrap:anywhere}pre{background:#12232b;color:#e3eee5;overflow:auto;padding:20px;font:13px/1.8 Consolas,monospace}pre code{font-size:inherit;overflow-wrap:normal}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid #cbd9d0;padding:12px}th{background:#e4ece5}li{margin:8px 0}footer{font-size:13px;border-top:1px solid #cad7ce;padding:24px 0;margin-top:40px;color:#566b64}@media(max-width:600px){main{padding:20px}p{font-size:16px}h1{font-size:27px}h2{font-size:23px}}@media print{header,nav{display:none}body{background:white}main{max-width:none;padding:0}p{font-size:11pt}h2,h3{break-after:avoid}tr,aside{break-inside:avoid}pre{white-space:pre-wrap;background:#eee;color:#222}a{color:inherit}}
-</style></head><body><header>OpenHarmony Audit Agent · 主体审计 / 按需辅助验证<br><a href="demo.html" target="_blank" rel="noopener">原理 DEMO</a><a href="manual.html">使用说明书</a><a href="narration.html">逐页讲稿</a><a href="performance.html">性能说明</a></header><main><nav aria-label="文档目录"><a href="#part-1">1. 测试环境与方法</a><a href="#part-2">2. 规划模块实测结果</a><a href="#part-3">3. 完整审计需要补测的数据</a><a href="#part-4">4. 可复现测量入口</a><a href="#part-5">5. 已有机制与局限</a></nav><h1 id="part-0">OpenHarmony-Audit-Agent 工具性能说明</h1>
-<p>对应题目一交付件 5。当前提供规划模块的实测工程数据、测量方法和完整任务复测入口。大规模 OpenHarmony 源码审计的端到端耗时与内存尚无实测，因此本说明书还不能独立满足该交付件的完整数据要求。</p>
-<h2 id="part-1">1. 测试环境与方法</h2>
-<ul><li>操作系统：Windows-11-10.0.26200-SP0；架构：AMD64。</li><li>处理器报告：Intel64 Family 6 Model 197 Stepping 2, GenuineIntel；逻辑 CPU：16。</li><li>物理内存总量：31.50 GiB；这属于主机配置。</li><li>Python：3.12.14；工作流配置：config/workflow.audit.example.json；并发分片目标为 2 个 worker。</li><li>输入规模：1,000、10,000、50,000 个合成 analysis unit。权重按 i mod 7 + 1 生成，输入规格哈希保存在原始记录中。</li><li>每个进程重复规划 20 次，每种规模启动 3 个独立进程。脚本内部统计规划时间，外部采样间隔为 20 ms。</li></ul>
-<p>内存使用同一时刻父进程及其存活子进程 RSS 之和的最大采样值；可能重复计入共享页面，也可能漏掉短暂峰值或短生命周期子进程。监控进程与远端模型内存不在统计范围内。墙钟时间包含进程启动和输入构造，单次规划时间只统计 build_plan 循环。所有输出原始记录见 reports/performance/。</p>
+</style></head><body><header>OpenHarmony Audit Agent · 主体审计 / 按需辅助验证<br><a href="demo.html" target="_blank" rel="noopener">原理 DEMO</a><a href="manual.html">使用说明书</a><a href="narration.html">逐页讲稿</a><a href="performance.html">性能说明</a></header><main><nav aria-label="文档目录"><a href="#part-1">1. 测试环境与统计口径</a><a href="#part-2">2. 规划模块实测结果</a><a href="#part-3">3. Parcel 源码审计实测结果</a><a href="#part-4">4. 测量与复现方法</a><a href="#part-5">5. 成本控制与适用范围</a></nav><h1 id="part-0">OpenHarmony-Audit-Agent 工具性能说明</h1>
+<p>本说明记录任务规划与限定函数源码审计的耗时、内存占用和测量方法。测试数据来自本地进程采样，原始记录保存在 reports/performance/ 与 reports/operation-demo/。两组测试分别衡量任务分配开销和实际源码审计成本。</p>
+<h2 id="part-1">1. 测试环境与统计口径</h2>
+<div class="table-wrap"><table><tr><th>项目</th><th>配置与方法</th></tr><tr><td>操作系统</td><td>Windows 11，版本 10.0.26200，AMD64</td></tr><tr><td>处理器</td><td>Intel64 Family 6 Model 197 Stepping 2，GenuineIntel；16 个逻辑 CPU</td></tr><tr><td>物理内存</td><td>31.50 GiB</td></tr><tr><td>规划测试</td><td>Python 3.12.14；目标分片数为 2 个 worker</td></tr><tr><td>源码审计</td><td>Python 3.14.0；Codex CLI 0.163.0-alpha.10.2；配置模型 gpt-6-astra；1 个 worker</td></tr><tr><td>内存采样</td><td>配置间隔 20 ms；采集父进程与存活子进程 RSS 之和</td></tr></table></div>
+<p>墙钟时间从被测进程启动统计至退出，包含进程启动和任务执行。规划测试另在 build_plan 循环内部统计单次规划时间。内存指标为采样峰值，本机监控进程与远端模型服务内存不计入；共享页面可能重复计数，短暂峰值和短生命周期子进程可能未被采到。</p>
 <h2 id="part-2">2. 规划模块实测结果</h2>
+<p>输入为 1,000、10,000、50,000 个合成 analysis unit，权重按 i mod 7 + 1 生成。每个进程重复规划 20 次，每种规模运行 3 个独立进程，输入规格哈希随原始记录保存。</p>
 <div class="table-wrap"><table><tr><th>合成单元数</th><th>每进程规划次数</th><th>单次规划秒数（3 次运行中位数）</th><th>整个进程秒数（中位数）</th><th>最大观测 RSS（MiB）</th></tr><tr><td>1,000</td><td>20</td><td>0.000673</td><td>0.134</td><td>20.06</td></tr><tr><td>10,000</td><td>20</td><td>0.009920</td><td>0.320</td><td>30.22</td></tr><tr><td>50,000</td><td>20</td><td>0.096826</td><td>2.104</td><td>68.70</td></tr></table></div>
-<p>以上 9 个进程均正常退出。source_files_scanned、model_calls、codeql_calls 均为 0。未报告规划 P95：每组仅 3 个进程，样本不足以代表尾部性能。不同环境和任务内容会改变结果，不能按单元数量线性外推源码审计耗时。</p>
-<h2 id="part-3">3. 完整审计需要补测的数据</h2>
-<div class="table-wrap"><table><tr><th>指标</th><th>当前状态</th><th>正式记录内容</th></tr><tr><td>源码规模与覆盖</td><td>未实测</td><td>版本清单、文件数、LOC、实际读取/审计单元、排除项</td></tr><tr><td>主体端到端审计耗时</td><td>未实测</td><td>同一目标从启动到报告的墙钟时间，含失败与重试</td></tr><tr><td>主体进程树内存</td><td>未实测</td><td>采样 RSS 及口径，远端模型资源另列</td></tr><tr><td>可选 CodeQL 建库与查询</td><td>未实测</td><td>命令、规则与版本、冷/热缓存、阶段耗时、内存</td></tr><tr><td>辅助验证开销</td><td>未实测</td><td>每次调用时间、有效完成数、超时和失败、P50/P95</td></tr><tr><td>模型使用量</td><td>未实测</td><td>模型版本、请求数、输入/输出 token、重试与费用口径</td></tr><tr><td>主体与增强版对照</td><td>未实测</td><td>相同快照、预算与复核标准下比较增量成本与收益</td></tr></table></div>
-<h2 id="part-4">4. 可复现测量入口</h2>
-<p>安装基础包和可选 benchmark 依赖后，从源码根目录执行。使用已有、配置正确的真实任务时，最后一条命令会运行实际 Agent，需具备模型认证与配额。</p>
+<p>9 个进程均正常退出。该组测试执行任务规划，source_files_scanned、model_calls 和 codeql_calls 均为 0。表中中位数用于描述现有样本；每组 3 个进程的样本量适合观察规划开销，不用于估计尾部延迟或源码审计吞吐量。</p>
+
+<h2 id="part-3">3. Parcel 源码审计实测结果</h2>
+<p>测试目标为 OpenHarmony 官方 commonlibrary_c_utils 仓库，commit 为 b807d3dadb7dbb7639fe85b3a5f72da18d318da2。主文件 base/src/parcel.cpp 共 1,686 行。审计范围为 WriteBuffer、EnsureWritableCapacity、WriteDataBytes 三个函数，以及 GetWritableBytes、CalcNewCapacity、GetPadSize、WritePadBytes 四个直接辅助函数；同时查阅 parcel.h 中的声明和成员定义。</p>
+<div class="table-wrap"><table><tr><th>指标</th><th>实测值</th></tr><tr><td>任务类型</td><td>bounded-parcel-source-review，限定函数源码审计</td></tr><tr><td>运行次数与并发</td><td>1 次运行，1 个 worker；顺序检查入口、数据流和保护条件</td></tr><tr><td>端到端墙钟时间</td><td>129.60 秒</td></tr><tr><td>本机进程树采样峰值 RSS</td><td>385.45 MiB（404,168,704 字节）</td></tr><tr><td>配置采样间隔与采样数</td><td>20 ms；4,136 个样本</td></tr><tr><td>进程退出码</td><td>0</td></tr><tr><td>任务状态</td><td>SOURCE_REVIEW_COMPLETE；worker 为 COMPLETE</td></tr><tr><td>候选数量</td><td>0</td></tr><tr><td>原始记录</td><td>reports/operation-demo/measurement.json、session.json 及审计产物</td></tr></table></div>
+<p>计时覆盖准备完成后的 workflow run，包括模型请求等待、源码审阅、产物写入和状态收尾。该次运行采用源码审计路径，独立盲验证、CodeQL、编译及 PoC 执行均未启用。单次结果用于描述指定函数范围的运行成本，未计算 P50、P95 或并发扩展比。</p>
+
+<h2 id="part-4">4. 测量与复现方法</h2>
+<p>在源码根目录安装 benchmark 依赖后执行测量命令。实际审计使用有效的源码快照、模型认证及新建运行目录；YOUR_COMMIT 替换为目标版本。</p>
 <pre><code>python -m pip install -e &quot;.[benchmark]&quot;
 python scripts/measure_command.py --output reports/planner-measurement.json --scope synthetic-planner-only --snapshot synthetic-v1 -- python scripts/benchmark_planner.py --units 50000 --iterations 20
 python scripts/measure_command.py --output reports/audit-measurement.json --scope source-audit --snapshot YOUR_COMMIT -- python -m openharmony_audit workflow run --run-root reports/run-data</code></pre>
-<p>measure_command.py 使用参数数组启动子进程，不经 shell 拼接。JSON 记录墙钟时间、峰值采样 RSS、采样间隔、退出码及硬件信息；stdout.log 保存命令输出。输入命令不能包含明文密钥，日志应在交付前检查。重跑应使用独立运行目录，避免终态跳过导致误把恢复检查时间当完整审计时间。</p>
-<p>可选静态建库、查询和辅助调用应分别使用同一测量入口。总墙钟时间从完整任务起止计算；并行任务时间不能简单累加为端到端时间。完成率分母包含失败与超时样本，耗尽预算的运行单独标识。</p>
-<h2 id="part-5">5. 已有机制与局限</h2>
-<p>主体按单元分片，保留检查点并限定角色调查范围。CodeQL-AI 聚焦需要复核的函数或路径，目标是控制额外成本；实际收益需测量。局部符号执行仍可能出现状态膨胀。</p>
-<p>源码中的 timeout 默认值属于配置，不是完成耗时保证。来源 path_executor.py 虽有 timeout=120 参数，但探索逻辑主要使用 LengthLimiter(max_length=2000)，未实现对应墙钟超时；不能写成“每条路径 120 秒内完成”。LengthLimiter 也不是总状态数或内存上限。</p>
-<p>最终提交交付件 5 前，需要补入大规模目标的快照、规模、任务命令、硬件配置、耗时与内存原始记录。当前说明保留这一缺口，未以源码行数估算或合成元数据代替扫描性能。</p><footer>本文依据当前工程实现编写，实际运行结果与抽象演示分别标注。</footer></main></body></html>
+<p>measure_command.py 通过参数数组启动子进程，JSON 输出记录墙钟时间、采样峰值 RSS、采样间隔、退出码和硬件配置，stdout.log 保存命令输出。凭据通过认证目录或环境变量提供。独立运行目录用于区分完整审计与已完成任务的状态检查。</p>
+<p>全仓评测按目标快照记录文件数、LOC、实际审计范围、排除项、并发数、模型请求量与 token。CodeQL 建库、查询和辅助验证分别计量，冷缓存与热缓存分别记录。端到端时间取任务整体起止时间；完成率统计包含失败和超时，预算耗尽单独标识。</p>
+<h2 id="part-5">5. 成本控制与适用范围</h2>
+<p>主体按分析单元分片并保存检查点，通过角色职责和调查范围约束任务规模。CodeQL-AI 聚焦候选中的具体函数或路径。辅助能力的增量成本可在相同快照、模型预算与复核标准下，与主体单独运行进行对照测量。</p>
+<p>局部符号执行的成本受分支数量和建模范围影响。当前 path_executor.py 接口包含 timeout=120 参数，探索逻辑使用 LengthLimiter(max_length=2000) 限制路径长度，对应墙钟超时控制尚未实现。实际耗时和内存以外部采样结果为准。</p>
+<p>现有数据覆盖合成任务规划和限定函数源码审计。大规模代码库全量扫描、CodeQL 建库与查询、跨版本回归及多 worker 扩展性尚无实测数据，需按相应任务范围独立测量。
+</p><footer>OpenHarmony-Audit-Agent · 工具文档</footer></main></body></html>

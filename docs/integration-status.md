@@ -13,7 +13,7 @@
 | 统一契约 | `contracts/models.py` | CandidatePacket、Evidence、Decision 等可序列化对象；冻结由协议及 revision 约定实现，并非不可变数据库 |
 | 证据判定 | `evidence/decision_gate.py` | 源码审计可形成 STATIC_ONLY；确认需关联同版本、已复核的确定性记录与独立复核标志；支持决定性反证分支 |
 | 运行时 | `runtimes/`、`generic_runner.py` | 独立 HTTP 适配器可单独使用；主体 runner 接入 Claude Code 和 Codex CLI，OpenAI-compatible HTTP 尚未接入该 runner |
-| 输出报告 | `reporting/` | 生成技术说明书；真实漏洞材料的字段与报告接入由后续数据补齐 |
+| 输出报告 | `reporting/` | 生成技术说明书；具体漏洞报告按候选、证据和复核记录组织 |
 
 ## 主体能够独立推进的工作
 

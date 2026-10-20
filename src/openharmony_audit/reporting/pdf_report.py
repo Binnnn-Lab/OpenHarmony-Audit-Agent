@@ -14,7 +14,7 @@ def build_pdf(markdown_path: str | Path, output_path: str | Path, font_path: str
     from reportlab.lib.units import mm
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
     target = Path(output_path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -39,17 +39,22 @@ def build_pdf(markdown_path: str | Path, output_path: str | Path, font_path: str
 
     lines = Path(markdown_path).read_text(encoding="utf-8").splitlines()
     title = next((line[2:] for line in lines if line.startswith("# ")), Path(markdown_path).stem)
-    story = [Paragraph("OPENHARMONY AUDIT AGENT / 题目一交付资料", label_style)]
+    story = [Paragraph("OPENHARMONY AUDIT AGENT / 工具文档", label_style)]
     width = A4[0] - 36 * mm
-    i, in_code = 0, False
+    i = 0
     while i < len(lines):
         line = lines[i].strip()
         i += 1
         if line.startswith("```"):
-            in_code = not in_code
-            story.append(Spacer(1, 5))
-        elif in_code:
-            story.append(Paragraph(escape(lines[i - 1]).replace(" ", "&#160;"), code_style))
+            code_lines = [Spacer(1, 5)]
+            while i < len(lines) and not lines[i].strip().startswith("```"):
+                code_lines.append(Paragraph(escape(lines[i]).replace(" ", "&#160;"), code_style))
+                i += 1
+            i += 1
+            code_lines.append(Spacer(1, 5))
+            story.append(KeepTogether(code_lines))
+        elif line == "<!-- pagebreak -->":
+            story.append(PageBreak())
         elif not line:
             continue
         elif line.startswith("# "):
@@ -95,6 +100,6 @@ def build_pdf(markdown_path: str | Path, output_path: str | Path, font_path: str
 
     doc = SimpleDocTemplate(str(target), pagesize=A4, rightMargin=18 * mm, leftMargin=18 * mm,
                             topMargin=18 * mm, bottomMargin=23 * mm, title=title,
-                            author="", subject="题目一工程交付材料")
+                            author="", subject=title)
     doc.build(story, onFirstPage=page_decoration, onLaterPages=page_decoration)
     return target

@@ -2620,8 +2620,8 @@
 <p>将 03-recording-demo.html 保存到电脑，双击后用 Chrome、Edge、Firefox 或 Safari 打开。样式、图形、交互、环境说明和逐页讲稿都包含在这个文件中，支持离线查看。Windows、macOS 和 Linux 都可使用现代浏览器打开。</p>
 <p>录屏时全屏展示网页，按自己的语速点击“继续演示”。第三页分五个步骤，第四页使用 32 / 64 / 96 快捷按钮和容量检查开关。顶部“逐页讲稿”可以查看全文；也可以在另一个窗口打开单独提供的讲稿文件。</p>
 <h2 id="part-2">运行环境</h2>
-<div class="table-wrap"><table><tr><th>用途</th><th>环境</th></tr><tr><td>网页演示</td><td>现代浏览器；单个 HTML 文件离线打开</td></tr><tr><td>目标校验与任务准备</td><td>Python 3.10+、pip；从源码目录安装基础包</td></tr><tr><td>主体审计</td><td>Claude Code、可用模型与认证、目标源码；在 workflow 配置运行命令和模型</td></tr><tr><td>按需辅助检查</td><td>CodeQL CLI、数据库和查询包；CodeQL-AI 对应的 FastMCP、angr 等依赖与目标产物</td></tr></table></div>
-<p>模型认证通过环境变量配置。审计目标填写源码路径、代码版本、分析单元和威胁模型。</p>
+<div class="table-wrap"><table><tr><th>用途</th><th>环境</th></tr><tr><td>网页演示</td><td>现代浏览器；单个 HTML 文件离线打开</td></tr><tr><td>目标校验与任务准备</td><td>Python 3.10+、pip；从源码目录安装基础包</td></tr><tr><td>主体审计</td><td>Codex CLI 或 Claude Code、可用模型与认证、目标源码；在 workflow 配置运行命令和模型</td></tr><tr><td>按需辅助检查</td><td>CodeQL CLI、数据库和查询包；CodeQL-AI 对应的 FastMCP、angr 等依赖与目标产物</td></tr></table></div>
+<p>模型认证使用 CLI 认证目录或环境变量。Codex 配置示例为 config/workflow.codex.example.json。审计目标填写源码路径、代码版本、分析单元和威胁模型。</p>
 <h2 id="part-3">安装</h2>
 <p>在源码根目录执行以下 Windows PowerShell 命令。macOS / Linux 的虚拟环境解释器路径为 .venv/bin/python。</p>
 <pre><code>python -m venv .venv
@@ -2649,7 +2649,7 @@
 <p>我们的工具以审计工作流为主体。它把任务分给不同角色，让大家分别查入口、数据流和对象生命周期，再把调查结果放到同一份候选记录里，继续做反证检查和独立复核。</p>
 <p>CodeQL-AI 在这个过程中提供辅助。比如，一个函数到底有没有限制输入长度，某条路径上的条件能否同时满足，主体就可以把这类具体问题交给它检查。</p>
 <aside>操作：点击页面顶部“环境与操作”。指向“运行环境”，读下面两段。</aside>
-<p>工具主体使用 Python 三点十及以上版本。安装源码包后，可以校验配置、划分任务和生成审计任务包。实际审计通过 Claude Code 调用配置好的模型，并读取目标源码。模型认证信息通过环境变量配置。</p>
+<p>工具主体使用 Python 三点十及以上版本。安装源码包后，可以校验配置、划分任务和生成审计任务包。实际审计可以通过 Codex 或 Claude Code 调用配置好的模型，并读取目标源码。模型认证使用命令行工具的登录信息或环境变量。</p>
 <p>需要辅助验证时，再配置 CodeQL 数据库、查询包和相应的分析环境。这份演示网页可以直接用浏览器打开，图形、交互和讲稿都装在文件里，复制到另一台电脑也能查看。</p>
 <aside>操作：指向“常用命令”，读下面一段。</aside>
 <p>操作上，validate 用来检查配置，plan 查看任务分工，prepare 生成每个工作单元的任务包。准备好源码和模型后，用 run 启动任务，用 status 查看进度。这些命令也保存在页面里，使用时可以对照。</p>

@@ -10,7 +10,7 @@ OpenHarmony-Audit-Agent 以 **audit-workflow-prompts 审计工作流为主体**�
 
 ## 题目一交付材料
 
-见 [官方要求与交付清单](docs/competition-checklist.md)。技术说明书、使用说明书、原型视频、性能说明和源码包整理在 `deliverables/`。具体漏洞材料由团队后续提供。性能资料中的规划模块数据不能替代大规模源码审计实测；清单明确列出这一缺口。
+技术说明书、使用说明书、演示视频、性能说明和源码包位于 `deliverables/`，文件用途见 [材料目录](deliverables/README.md)。性能说明包含合成单元规划测试和 Parcel 限定函数审计的实测数据。官方要求对照见 [要求与清单](docs/competition-checklist.md)。
 
 ## 快速开始
 

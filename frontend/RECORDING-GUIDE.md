@@ -12,10 +12,10 @@
 |---|---|
 | 网页演示 | 现代浏览器；单个 HTML 文件离线打开 |
 | 目标校验与任务准备 | Python 3.10+、pip；从源码目录安装基础包 |
-| 主体审计 | Claude Code、可用模型与认证、目标源码；在 workflow 配置运行命令和模型 |
+| 主体审计 | Codex CLI 或 Claude Code、可用模型与认证、目标源码；在 workflow 配置运行命令和模型 |
 | 按需辅助检查 | CodeQL CLI、数据库和查询包；CodeQL-AI 对应的 FastMCP、angr 等依赖与目标产物 |
 
-模型认证通过环境变量配置。审计目标填写源码路径、代码版本、分析单元和威胁模型。
+模型认证使用 CLI 认证目录或环境变量。Codex 配置示例为 config/workflow.codex.example.json。审计目标填写源码路径、代码版本、分析单元和威胁模型。
 
 ## 安装
 

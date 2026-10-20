@@ -13,12 +13,12 @@
 | 3 原理录制材料 | 03-recording-kit.zip | 保留：单文件原理演示网页、逐页口语讲稿及打开说明 |
 | 3 演示网页 | 03-recording-demo.html | 内嵌样式、图形、交互、环境说明和讲稿；可单独复制到其他电脑离线打开 |
 | 3 逐页讲稿 | 03-narration.html、03-narration.md | 八页正文直接朗读，操作提示单独标注 |
-| 5 性能说明 | 05-performance.pdf | 规划模块实测及完整审计测量方法；实际大规模源码扫描数据待补 |
+| 5 性能说明 | 05-performance.pdf | 合成单元规划测试、Parcel 限定函数审计实测及资源采样方法 |
 
 配音时解压 03-operation-video-kit.zip，打开 03-operation-voiceover.html，按各段时间码读正文。视频和讲稿 HTML 放在同一目录，可边看边录。操作回放 03-operation-replay.html 为单文件，也可独立离线打开。完整制作说明见 docs/operation-video.md。
 
-旧版字幕视频 03-demo-captioned.mp4、SRT、原理 HTML 和逐页讲稿保留存档。本次推荐使用已制作的操作演示视频并补入本人配音。
+原理 HTML 与逐页讲稿提供交互讲解；03-demo-captioned.mp4 及对应 SRT 为原理操作演示存档。03-operation-demo.mp4 展示实际任务记录回放与原理交互。
 
-第 4 项漏洞分析报告由团队后续提供。第 5 项尚缺真实大规模审计耗时与内存，当前工程测量不能替代。完整对照见 docs/competition-checklist.md。
+源码、说明书、视频与运行记录构成工具材料。性能数据的测量范围为合成任务规划和限定函数审计；大规模全仓扫描尚无实测数据。官方要求对照见 docs/competition-checklist.md。
 
-校验：SHA256SUMS.txt 记录交付文件哈希。提交前按当届上传页面确认命名与模板，填入真实队长姓名。来源归属与重构范围见 NOTICE.md。
+SHA256SUMS.txt 记录文件校验值。来源归属与重构范围见 NOTICE.md。
