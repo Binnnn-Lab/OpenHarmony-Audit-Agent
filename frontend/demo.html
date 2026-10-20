@@ -1,0 +1,2947 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#111c24" />
+    <title>从一条告警开始 · OpenHarmony 审计原理演示</title>
+    <style>
+      :root {
+        --bg: #111c24;
+        --panel: #192831;
+        --ink: #f0eee5;
+        --muted: #9cacae;
+        --mint: #a8e1c4;
+        --yellow: #ead492;
+        --coral: #e8a18a;
+        --line: #ffffff1c;
+        --mono: Consolas, "SFMono-Regular", monospace;
+        --sans: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        line-height: 1.65;
+      }
+      button,
+      a,
+      input {
+        touch-action: manipulation;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      a {
+        color: inherit;
+        text-underline-offset: 4px;
+      }
+      button:focus-visible,
+      a:focus-visible,
+      input:focus-visible,
+      summary:focus-visible {
+        outline: 3px solid var(--yellow);
+        outline-offset: 5px;
+      }
+      button {
+        color: inherit;
+      }
+      p,
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+      }
+      button {
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      button:not(:disabled):active {
+        transform: translateY(1px);
+      }
+      .top {
+        height: 78px;
+        padding: 0 4.5vw;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .brand-symbol {
+        font-size: 30px;
+        color: var(--mint);
+      }
+      .brand small {
+        display: block;
+        font-size: 9px;
+        font-weight: 400;
+        letter-spacing: 2px;
+        color: var(--muted);
+      }
+      .top-right {
+        display: flex;
+        gap: 23px;
+        align-items: center;
+      }
+      .edition {
+        font: 10px var(--mono);
+        color: var(--muted);
+        letter-spacing: 1.5px;
+      }
+      .top button {
+        border: 1px solid var(--line);
+        background: transparent;
+        border-radius: 5px;
+        padding: 6px 10px;
+        font-size: 11px;
+      }
+      .top button:hover {
+        background: #ffffff10;
+      }
+      .slide {
+        display: none;
+        max-width: 1600px;
+        margin: auto;
+        padding: 40px 5.5vw 32px;
+        min-height: calc(100svh - 162px);
+      }
+      .slide.active {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        animation: enter 0.45s ease;
+      }
+      .eyebrow {
+        font: 11px var(--mono);
+        letter-spacing: 2px;
+        color: var(--mint);
+        display: flex;
+        gap: 14px;
+        align-items: center;
+      }
+      .eyebrow:before {
+        content: "";
+        height: 1px;
+        width: 24px;
+        background: var(--mint);
+      }
+      h1 {
+        font-size: clamp(42px, 4.8vw, 76px);
+        font-weight: 500;
+        letter-spacing: -3px;
+        line-height: 1.24;
+        margin: 25px 0;
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--mint);
+      }
+      h2 {
+        font-size: clamp(30px, 3vw, 47px);
+        font-weight: 500;
+        letter-spacing: -1.8px;
+        line-height: 1.35;
+        margin: 14px 0 10px;
+      }
+      h3 {
+        font-size: 19px;
+        font-weight: 500;
+      }
+      .intro {
+        font-size: 16px;
+        color: var(--muted);
+        line-height: 1.9;
+        max-width: 900px;
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        align-items: center;
+        gap: 5vw;
+      }
+      .hero .intro {
+        font-size: 17px;
+        max-width: 540px;
+      }
+      .accent {
+        color: var(--mint);
+      }
+      .primary,
+      .outline {
+        border-radius: 5px;
+        padding: 12px 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        font-size: 13px;
+        text-decoration: none;
+      }
+      .primary {
+        background: var(--mint);
+        border: 1px solid var(--mint);
+        color: #183329;
+        font-weight: 600;
+      }
+      .primary:hover {
+        background: #c5f2db;
+      }
+      .outline {
+        border: 1px solid #ffffff33;
+        background: none;
+        color: var(--ink);
+      }
+      .outline:hover {
+        background: #ffffff0a;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 30px 0 24px;
+      }
+      .footnote {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+      .hero-art {
+        position: relative;
+        min-width: 0;
+      }
+      .hero-art svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .diagram-label {
+        font-family: var(--sans);
+        fill: var(--ink);
+      }
+      .diagram-mono {
+        font-family: var(--mono);
+        fill: var(--muted);
+        font-size: 10px;
+      }
+      .hero-art-caption {
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .pulsing {
+        animation: pulse 3s ease-in-out infinite;
+      }
+      .moving-dot {
+        offset-path: path(
+          "M 88 120 C 180 120 160 230 250 230 S 340 340 435 340"
+        );
+        animation: travel 7s linear infinite;
+        fill: var(--mint);
+      }
+      .hero-bottom {
+        margin-top: 45px;
+        display: flex;
+        gap: 30px;
+        align-items: center;
+      }
+      .hero-bottom span {
+        font: 10px var(--mono);
+        color: #8fa5a7;
+        letter-spacing: 1px;
+      }
+      .hero-bottom .rule {
+        height: 1px;
+        background: var(--line);
+        flex: 1;
+      }
+      .scene-head {
+        margin-bottom: 28px;
+      }
+      .chapter-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+        min-height: 84px;
+        background: #111c24f5;
+        backdrop-filter: blur(16px);
+        border-top: 1px solid var(--line);
+        padding: 18px 4.5vw;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 22px;
+      }
+      .chapter-info {
+        min-width: 170px;
+      }
+      .chapter-info span {
+        font: 11px var(--mono);
+        color: var(--mint);
+        margin-right: 12px;
+      }
+      .chapter-info strong {
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .chapter-dots {
+        display: flex;
+        gap: 10px;
+      }
+      .chapter-dot {
+        width: 28px;
+        height: 25px;
+        background: none;
+        border: 0;
+        border-bottom: 2px solid #ffffff22;
+        position: relative;
+        color: #839599;
+        font: 9px var(--mono);
+      }
+      .chapter-dot.active {
+        border-color: var(--mint);
+        color: var(--mint);
+      }
+      .nav-controls {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+      }
+      .nav-controls button {
+        border: 1px solid var(--line);
+        background: none;
+        border-radius: 5px;
+        min-height: 36px;
+        padding: 7px 13px;
+        font-size: 12px;
+      }
+      .nav-controls #next {
+        background: var(--mint);
+        color: #15362a;
+        border-color: var(--mint);
+      }
+      .nav-controls #auto[aria-pressed="true"] {
+        color: var(--yellow);
+        border-color: #ead49266;
+      }
+      .presenter-notes {
+        position: fixed;
+        bottom: 96px;
+        right: 4.5vw;
+        z-index: 30;
+        background: #e9e9da;
+        color: #34453e;
+        padding: 22px 25px;
+        max-width: 500px;
+        border-radius: 6px;
+        box-shadow: 0 12px 45px #0005;
+        border-left: 3px solid var(--mint);
+      }
+      .presenter-notes[hidden] {
+        display: none;
+      }
+      .presenter-notes h3 {
+        font-size: 12px;
+        letter-spacing: 1px;
+        color: #708374;
+        margin-bottom: 10px;
+      }
+      .presenter-notes p {
+        font-size: 14px;
+        line-height: 1.9;
+      }
+      .principle-strip {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 18px 22px;
+        border: 1px solid var(--line);
+        background: #ffffff04;
+        margin-top: 24px;
+        border-radius: 5px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .principle-strip strong {
+        color: var(--mint);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .system-figure {
+        padding: 24px 28px;
+        background: linear-gradient(150deg, #1c3036, #17242d);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+      .orchestrator {
+        padding: 14px 24px;
+        border: 1px solid #a8e1c45c;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        background: #a8e1c409;
+      }
+      .orchestrator span {
+        font: 11px var(--mono);
+        color: var(--mint);
+      }
+      .orchestrator h3 {
+        font-size: 19px;
+      }
+      .orchestrator p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 5px;
+      }
+      .control-arrows {
+        height: 37px;
+        display: flex;
+        justify-content: space-around;
+        padding: 0 8%;
+        color: #7c9a90;
+      }
+      .system-row {
+        display: grid;
+        grid-template-columns: 1fr 30px 1.25fr 30px 1.5fr 30px 1fr;
+        align-items: stretch;
+        gap: 9px;
+      }
+      .sys-node {
+        padding: 21px 16px;
+        border: 1px solid var(--line);
+        background: #111c2480;
+        border-radius: 5px;
+        text-align: left;
+        min-width: 0;
+      }
+      .sys-node small {
+        font: 10px var(--mono);
+        color: #91a6a5;
+        display: block;
+        margin-bottom: 18px;
+      }
+      .sys-node strong {
+        font-size: 17px;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 10px;
+      }
+      .sys-node span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .sys-node[aria-pressed="true"] {
+        border-color: var(--mint);
+        box-shadow: 0 0 0 1px #a8e1c414;
+      }
+      .arrow {
+        display: grid;
+        place-items: center;
+        color: var(--mint);
+        font-size: 20px;
+      }
+      .enrich-stack {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 15px;
+      }
+      .enrich-stack span {
+        font: 10px var(--mono);
+        padding: 7px 3px;
+        background: #ffffff07;
+        text-align: center;
+        color: var(--mint);
+      }
+      .loop-line {
+        margin-top: 22px;
+        padding-top: 16px;
+        border-top: 1px dashed #a8e1c43f;
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        font-size: 12px;
+        color: #91b3a3;
+      }
+      .system-detail {
+        min-height: 48px;
+        margin-top: 20px;
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .system-detail strong {
+        color: var(--yellow);
+        font-size: 14px;
+        font-weight: 500;
+        min-width: 155px;
+      }
+      .case-layout {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 28px;
+      }
+      .code-scene {
+        background: #0e171e;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 22px;
+        background: #ffffff04;
+        border-bottom: 1px solid var(--line);
+        font: 11px var(--mono);
+        color: var(--muted);
+      }
+      .code-header span:last-child {
+        font: 10px var(--sans);
+        color: var(--yellow);
+      }
+      .code-lines {
+        padding: 20px 0;
+        font: clamp(11px, 1.05vw, 15px)/2.05 var(--mono);
+        flex: 1;
+      }
+      .code-line {
+        display: flex;
+        padding: 0 22px;
+        border-left: 3px solid transparent;
+        min-height: 30px;
+      }
+      .code-line.focus {
+        background: #a8e1c414;
+        border-color: var(--mint);
+        color: var(--mint);
+      }
+      .code-line.warning {
+        background: #ead49212;
+        border-color: var(--yellow);
+        color: var(--yellow);
+      }
+      .line-no {
+        color: #6a8187;
+        flex-shrink: 0;
+        width: 28px;
+        user-select: none;
+      }
+      .line-code {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .code-annotation {
+        padding: 15px 20px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 12px;
+        min-height: 68px;
+      }
+      .evidence-story {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 8px 0;
+      }
+      .step-kicker {
+        font: 11px var(--mono);
+        color: var(--mint);
+        letter-spacing: 1px;
+      }
+      .evidence-story h3 {
+        font-size: 28px;
+        line-height: 1.45;
+        margin: 13px 0;
+      }
+      .evidence-story p {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.9;
+      }
+      .evidence-paper {
+        margin: 22px 0 18px;
+        background: #e9ebdf;
+        color: #263d35;
+        border-radius: 5px;
+        padding: 20px 23px;
+        box-shadow: 5px 5px 0 #a8e1c419;
+        min-height: 156px;
+      }
+      .paper-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid #344e3826;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+        font: 10px var(--mono);
+        color: #71806c;
+      }
+      .evidence-paper code {
+        font: 12px/1.9 var(--mono);
+        white-space: pre-wrap;
+        display: block;
+        overflow-wrap: anywhere;
+      }
+      .case-step-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+      }
+      .case-step-controls button {
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        background: none;
+        font: 11px var(--mono);
+      }
+      .case-step-controls button.active {
+        background: var(--mint);
+        color: #18362b;
+        border-color: var(--mint);
+      }
+      .case-step-controls small {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .case-role {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 21px;
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .case-role:before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        background: var(--mint);
+        border-radius: 50%;
+      }
+      .experiment-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+      .experiment-controls {
+        padding: 27px 30px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 6px;
+      }
+      .experiment-controls label {
+        display: block;
+        font-size: 14px;
+        color: var(--muted);
+      }
+      .value-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 13px;
+      }
+      .value-row strong {
+        font: 44px var(--mono);
+        color: var(--mint);
+      }
+      .value-row span {
+        font: 12px var(--mono);
+        color: var(--muted);
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: var(--mint);
+        margin: 20px 0 9px;
+      }
+      .range-labels {
+        display: flex;
+        justify-content: space-between;
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .guard-control {
+        display: flex !important;
+        gap: 16px;
+        align-items: center;
+        margin: 23px 0;
+        border-top: 1px solid var(--line);
+        padding-top: 23px;
+        cursor: pointer;
+      }
+      .guard-control input {
+        appearance: none;
+        width: 42px;
+        height: 24px;
+        flex-shrink: 0;
+        margin: 0;
+        border-radius: 20px;
+        background: #54666b;
+        position: relative;
+      }
+      .guard-control input:before {
+        content: "";
+        height: 16px;
+        width: 16px;
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        border-radius: 50%;
+        background: #f1f0e5;
+        transition: left 0.2s;
+      }
+      .guard-control input:checked {
+        background: #679e85;
+      }
+      .guard-control input:checked:before {
+        left: 22px;
+      }
+      .guard-control strong {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--ink);
+        display: block;
+      }
+      .guard-control small {
+        font-size: 11px;
+        display: block;
+        margin-top: 3px;
+        color: var(--muted);
+      }
+      .formula {
+        padding: 15px 17px;
+        background: #0f1c22;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font: 13px/1.8 var(--mono);
+        color: var(--yellow);
+        overflow-wrap: anywhere;
+      }
+      .formula small {
+        display: block;
+        color: var(--muted);
+        font: 10px var(--sans);
+        margin-top: 8px;
+      }
+      #cycle-formula {
+        white-space: pre-wrap;
+      }
+      .experiment-result {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+      }
+      .buffer-labels {
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 11px;
+        margin-bottom: 12px;
+      }
+      .buffer {
+        height: 88px;
+        position: relative;
+        display: flex;
+        border: 1px solid #a8e1c44a;
+        border-radius: 5px;
+        overflow: hidden;
+        background: repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent calc(6.25% - 1px),
+          #ffffff0d calc(6.25% - 1px),
+          #ffffff0d 6.25%
+        );
+      }
+      .safe-zone {
+        width: 25%;
+        height: 100%;
+        border-right: 2px dashed var(--mint);
+        background: #a8e1c40a;
+        position: relative;
+        z-index: 2;
+      }
+      .safe-zone:after {
+        content: "容量 64";
+        position: absolute;
+        top: 8px;
+        right: 6px;
+        font: 10px var(--mono);
+        color: var(--mint);
+      }
+      .buffer-fill {
+        position: absolute;
+        bottom: 0;
+        height: 47%;
+        width: 37.5%;
+        background: #a8e1c488;
+        transition:
+          width 0.4s,
+          background 0.4s;
+      }
+      .buffer-fill.overflow {
+        background: linear-gradient(
+          90deg,
+          #8eb99c 0 var(--safe-fill),
+          #da947dcc var(--safe-fill)
+        );
+      }
+      .buffer-blocked {
+        position: absolute;
+        inset: 0;
+        display: none;
+        place-items: center;
+        background: #15252ceb;
+        font-size: 16px;
+        color: var(--mint);
+        z-index: 3;
+      }
+      .buffer.blocked .buffer-blocked {
+        display: grid;
+      }
+      .result-kicker {
+        font: 10px var(--mono);
+        letter-spacing: 1px;
+        color: var(--muted);
+        margin-top: 27px;
+      }
+      .result-word {
+        font-size: 31px;
+        font-weight: 500;
+        margin: 10px 0;
+        color: var(--yellow);
+      }
+      .result-description {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.9;
+        min-height: 58px;
+      }
+      .solver-note {
+        padding: 13px 16px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        margin-top: 18px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .solver-note b {
+        color: var(--mint);
+        font-weight: 500;
+      }
+      .caution {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 15px;
+      }
+      .blind-diagram {
+        display: grid;
+        grid-template-columns: 1fr 70px 1fr;
+        gap: 15px;
+        align-items: center;
+        margin-top: 2px;
+      }
+      .blind-side {
+        padding: 20px 24px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: var(--panel);
+      }
+      .blind-side h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+      .blind-side p {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .facts {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin: 15px 0 0;
+      }
+      .fact {
+        font: 10px var(--mono);
+        border: 1px solid #ffffff20;
+        border-radius: 3px;
+        padding: 5px 9px;
+        color: var(--mint);
+      }
+      .fact.excluded {
+        color: #e4a08a;
+        background: repeating-linear-gradient(
+          135deg,
+          transparent 0,
+          transparent 5px,
+          #e4a08a09 5px,
+          #e4a08a09 6px
+        );
+        text-decoration: line-through;
+      }
+      .blind-wall {
+        text-align: center;
+        color: var(--yellow);
+        font-size: 25px;
+      }
+      .blind-wall small {
+        display: block;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .verdict-cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin: 23px 0 16px;
+      }
+      .verdict-card {
+        padding: 17px 15px;
+        border: 1px solid var(--line);
+        background: none;
+        border-radius: 5px;
+        text-align: left;
+      }
+      .verdict-card[aria-pressed="true"] {
+        background: #a8e1c40d;
+        border-color: var(--mint);
+      }
+      .verdict-card small {
+        font: 10px var(--mono);
+        color: var(--muted);
+      }
+      .verdict-card strong {
+        font-size: 17px;
+        font-weight: 500;
+        display: block;
+        margin: 9px 0;
+      }
+      .verdict-card code {
+        font: 10px var(--mono);
+        color: var(--mint);
+      }
+      .verdict-detail {
+        padding: 19px 23px;
+        border-left: 2px solid var(--yellow);
+        background: #ead49208;
+        color: var(--muted);
+        font-size: 14px;
+        min-height: 95px;
+        line-height: 1.9;
+      }
+      .verdict-detail strong {
+        color: var(--yellow);
+        font-weight: 500;
+      }
+      .feedback-figure {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 38px;
+        align-items: center;
+      }
+      .cycle-graphic {
+        width: 100%;
+        max-width: 490px;
+        display: block;
+        margin: auto;
+      }
+      .cycle-node {
+        cursor: pointer;
+      }
+      .cycle-node rect {
+        fill: #1b2e35;
+        stroke: #ffffff30;
+        transition:
+          stroke 0.3s,
+          fill 0.3s;
+      }
+      .cycle-node[aria-pressed="true"] rect {
+        fill: #284b43;
+        stroke: var(--mint);
+      }
+      .cycle-node text {
+        font-family: var(--sans);
+        fill: var(--ink);
+        font-size: 16px;
+      }
+      .cycle-node .cycle-small {
+        font: 10px var(--mono);
+        fill: var(--muted);
+      }
+      .cycle-description .step-kicker {
+        margin-bottom: 12px;
+      }
+      .cycle-description h3 {
+        font-size: 27px;
+        margin-bottom: 15px;
+      }
+      .cycle-description p {
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.9;
+      }
+      .cycle-tags {
+        display: flex;
+        gap: 9px;
+        margin: 25px 0;
+      }
+      .cycle-tags span {
+        font: 11px var(--mono);
+        color: var(--mint);
+        padding: 7px 11px;
+        border: 1px solid #a8e1c43d;
+        border-radius: 4px;
+      }
+      .cycle-description .outline {
+        margin-top: 15px;
+      }
+      .research-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 28px;
+      }
+      .research-table {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .research-table table {
+        border-collapse: collapse;
+        width: 100%;
+        text-align: left;
+        font-size: 13px;
+      }
+      .research-table th {
+        font-weight: 500;
+        color: var(--muted);
+        font-size: 11px;
+        padding: 16px 21px;
+        background: #ffffff04;
+        border-bottom: 1px solid var(--line);
+      }
+      .research-table td {
+        padding: 19px 21px;
+        border-bottom: 1px solid var(--line);
+      }
+      .research-table tr:last-child td {
+        border-bottom: 0;
+      }
+      .research-table td:first-child {
+        font: 11px var(--mono);
+        color: var(--mint);
+      }
+      .research-table small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 4px;
+      }
+      .research-points {
+        display: grid;
+        gap: 15px;
+      }
+      .research-point {
+        padding: 18px 21px;
+        background: #ffffff04;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        display: flex;
+        gap: 18px;
+      }
+      .research-point > span {
+        font: 11px var(--mono);
+        color: var(--yellow);
+        padding-top: 5px;
+      }
+      .research-point h3 {
+        font-size: 16px;
+        margin-bottom: 6px;
+      }
+      .research-point p {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .closing {
+        max-width: 1080px;
+        margin: auto;
+        text-align: center;
+      }
+      .closing .eyebrow {
+        justify-content: center;
+      }
+      .closing h2 {
+        font-size: clamp(38px, 4.5vw, 66px);
+        margin-top: 25px;
+        line-height: 1.3;
+      }
+      .closing .intro {
+        margin: 20px auto;
+      }
+      .closing-chain {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        margin: 35px 0;
+      }
+      .closing-chain span {
+        color: var(--mint);
+        font: 14px var(--mono);
+      }
+      .closing-chain i {
+        font-style: normal;
+        color: #658376;
+      }
+      .closing-points {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 23px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        padding: 26px 0;
+        margin: 30px 0;
+        text-align: left;
+      }
+      .closing-points strong {
+        font-size: 16px;
+        font-weight: 500;
+      }
+      .closing-points p {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 7px;
+      }
+      .closing-actions {
+        display: flex;
+        justify-content: center;
+        gap: 14px;
+        margin-bottom: 19px;
+      }
+      .kbd-hint {
+        font-size: 10px;
+        color: var(--muted);
+        text-align: center;
+        margin: 14px 0 0;
+      }
+      .slide-count-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 2px;
+        z-index: 40;
+        background: #263b42;
+      }
+      .slide-count-bar span {
+        display: block;
+        height: 100%;
+        background: var(--mint);
+        width: 12.5%;
+        transition: width 0.3s;
+      }
+      .toast {
+        position: fixed;
+        top: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        background: #e9ebdf;
+        color: #294436;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 45;
+        box-shadow: 0 4px 20px #0003;
+        max-width: 90vw;
+      }
+      .toast[hidden] {
+        display: none;
+      }
+      @keyframes enter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      @keyframes travel {
+        from {
+          offset-distance: 0%;
+        }
+        to {
+          offset-distance: 100%;
+        }
+      }
+      @media (min-width: 1700px) {
+        .slide {
+          padding-top: 55px;
+          padding-bottom: 55px;
+        }
+        .scene-head {
+          margin-bottom: 40px;
+        }
+        .case-layout,
+        .experiment-grid {
+          gap: 55px;
+        }
+        .code-line {
+          min-height: 37px;
+        }
+        .sys-node {
+          padding: 27px 21px;
+        }
+        .system-figure {
+          padding: 38px;
+        }
+        .system-detail {
+          font-size: 16px;
+        }
+        .intro {
+          font-size: 19px;
+        }
+        .evidence-story p,
+        .cycle-description p {
+          font-size: 18px;
+        }
+        .research-table td {
+          padding: 24px;
+        }
+        .research-point {
+          padding: 24px;
+        }
+        .research-point p {
+          font-size: 14px;
+        }
+      }
+      @media (max-width: 1050px) {
+        .top {
+          padding: 0 26px;
+        }
+        .slide {
+          padding: 28px 32px;
+        }
+        .chapter-footer {
+          padding: 16px 26px;
+          gap: 15px;
+        }
+        .chapter-info {
+          min-width: 120px;
+        }
+        .chapter-dots {
+          gap: 4px;
+        }
+        .chapter-dot {
+          width: 23px;
+        }
+        .hero {
+          gap: 15px;
+          grid-template-columns: 1fr 1fr;
+        }
+        h1 {
+          font-size: 45px;
+        }
+        .hero .intro {
+          font-size: 15px;
+        }
+        .system-row {
+          grid-template-columns: 1fr 18px 1fr 18px 1.25fr 18px 1fr;
+          gap: 5px;
+        }
+        .sys-node {
+          padding: 16px 10px;
+        }
+        .sys-node strong {
+          font-size: 14px;
+        }
+        .sys-node span {
+          font-size: 11px;
+        }
+        .enrich-stack {
+          grid-template-columns: 1fr;
+        }
+        .system-figure {
+          padding: 23px;
+        }
+        .evidence-story h3 {
+          font-size: 23px;
+        }
+        .evidence-story p {
+          font-size: 13px;
+        }
+        .case-layout {
+          gap: 20px;
+        }
+        .code-line {
+          padding-left: 13px;
+          padding-right: 13px;
+        }
+        .research-table th,
+        .research-table td {
+          padding: 15px 13px;
+        }
+        .research-grid {
+          gap: 18px;
+        }
+        .cycle-description p {
+          font-size: 14px;
+        }
+        .closing-chain {
+          gap: 12px;
+        }
+        .closing-chain span {
+          font-size: 12px;
+        }
+      }
+      @media (max-width: 760px) {
+        .top-right {
+          flex-shrink: 0;
+        }
+        .top button {
+          white-space: nowrap;
+        }
+        .brand {
+          font-size: 11px;
+          gap: 7px;
+        }
+        .brand small {
+          font-size: 7px;
+          letter-spacing: 1px;
+        }
+        #cycle-formula {
+          white-space: pre-wrap;
+        }
+        .top {
+          height: 65px;
+          padding: 0 20px;
+        }
+        .edition {
+          display: none;
+        }
+        .top-right {
+          gap: 9px;
+        }
+        .slide {
+          padding: 27px 23px;
+          min-height: calc(100svh - 153px);
+        }
+        .slide.active {
+          justify-content: flex-start;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .hero-art {
+          max-width: 470px;
+          margin: auto;
+          width: 100%;
+        }
+        h1 {
+          font-size: 46px;
+          letter-spacing: -2px;
+        }
+        .hero .intro {
+          max-width: 100%;
+        }
+        .hero-bottom {
+          margin-top: 24px;
+          gap: 15px;
+        }
+        .hero-bottom span {
+          font-size: 8px;
+        }
+        .chapter-footer {
+          padding: 12px 17px;
+          min-height: 88px;
+          flex-wrap: wrap;
+          gap: 9px;
+        }
+        .chapter-info {
+          min-width: 0;
+        }
+        .chapter-info strong {
+          font-size: 11px;
+        }
+        .chapter-dots {
+          order: 3;
+          width: 100%;
+          justify-content: center;
+          height: 19px;
+        }
+        .chapter-dot {
+          height: 16px;
+          padding: 0 3px;
+        }
+        .nav-controls button {
+          font-size: 10px;
+          padding: 5px 9px;
+          min-height: 30px;
+        }
+        .nav-controls {
+          gap: 6px;
+        }
+        .eyebrow {
+          font-size: 9px;
+          letter-spacing: 1px;
+        }
+        h2 {
+          font-size: 30px;
+          letter-spacing: -1px;
+        }
+        .intro {
+          font-size: 13px;
+        }
+        .scene-head {
+          margin-bottom: 22px;
+        }
+        .system-row {
+          grid-template-columns: 1fr;
+        }
+        .arrow {
+          height: 23px;
+          transform: rotate(90deg);
+          font-size: 16px;
+        }
+        .sys-node small {
+          margin-bottom: 9px;
+        }
+        .sys-node strong {
+          font-size: 17px;
+        }
+        .sys-node span {
+          font-size: 12px;
+        }
+        .enrich-stack {
+          grid-template-columns: 1fr 1fr;
+        }
+        .system-figure {
+          padding: 20px;
+        }
+        .orchestrator {
+          padding: 15px;
+          display: block;
+        }
+        .orchestrator span {
+          display: block;
+          margin-bottom: 8px;
+        }
+        .orchestrator h3 {
+          font-size: 17px;
+        }
+        .system-detail {
+          display: block;
+          font-size: 12px;
+        }
+        .system-detail strong {
+          display: block;
+          margin-bottom: 8px;
+        }
+        .loop-line {
+          display: block;
+          text-align: center;
+          font-size: 11px;
+        }
+        .loop-line span {
+          display: block;
+          margin-top: 5px;
+        }
+        .principle-strip {
+          font-size: 12px;
+          align-items: flex-start;
+          display: block;
+          padding: 16px;
+        }
+        .principle-strip strong {
+          display: block;
+          margin-bottom: 6px;
+        }
+        .case-layout,
+        .experiment-grid,
+        .feedback-figure,
+        .research-grid {
+          grid-template-columns: 1fr;
+        }
+        .code-lines {
+          font-size: 12px;
+        }
+        .evidence-story h3 {
+          font-size: 24px;
+        }
+        .case-step-controls {
+          margin-top: 10px;
+        }
+        .evidence-story p {
+          font-size: 14px;
+        }
+        .code-header {
+          font-size: 10px;
+          padding: 13px 15px;
+        }
+        .experiment-controls {
+          padding: 22px;
+        }
+        .buffer {
+          height: 78px;
+        }
+        .result-word {
+          font-size: 26px;
+        }
+        .experiment-grid {
+          gap: 24px;
+        }
+        .blind-diagram {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .blind-wall {
+          transform: none;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 12px;
+          font-size: 22px;
+        }
+        .blind-wall small {
+          font-size: 10px;
+        }
+        .verdict-cards {
+          grid-template-columns: 1fr 1fr;
+          gap: 9px;
+        }
+        .verdict-card strong {
+          font-size: 16px;
+        }
+        .verdict-card code {
+          font-size: 9px;
+        }
+        .verdict-detail {
+          font-size: 13px;
+        }
+        .feedback-figure {
+          gap: 23px;
+        }
+        .cycle-graphic {
+          max-width: 410px;
+        }
+        .cycle-description h3 {
+          font-size: 25px;
+        }
+        .research-table table {
+          font-size: 12px;
+        }
+        .closing h2 {
+          font-size: 35px;
+          letter-spacing: -1px;
+        }
+        .closing-chain {
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .closing-chain span {
+          font-size: 11px;
+        }
+        .closing-points {
+          grid-template-columns: 1fr;
+          gap: 22px;
+          padding: 23px 0;
+        }
+        .closing-actions {
+          flex-wrap: wrap;
+        }
+        .presenter-notes {
+          bottom: 108px;
+          right: 16px;
+          left: 16px;
+          max-width: none;
+          padding: 19px;
+        }
+        .presenter-notes p {
+          font-size: 13px;
+        }
+        .top button {
+          font-size: 10px;
+          padding: 5px 8px;
+        }
+      }
+      @media (max-height: 760px) and (min-width: 761px) {
+        .top {
+          height: 60px;
+        }
+        .slide {
+          padding-top: 24px;
+          padding-bottom: 24px;
+          min-height: calc(100svh - 135px);
+        }
+        .chapter-footer {
+          min-height: 75px;
+        }
+        .scene-head {
+          margin-bottom: 18px;
+        }
+        h1 {
+          font-size: 48px;
+          margin: 18px 0;
+        }
+        h2 {
+          font-size: 34px;
+        }
+        .hero-art {
+          max-width: 420px;
+          margin: auto;
+        }
+        .hero-bottom {
+          margin-top: 15px;
+        }
+        .system-figure {
+          padding: 20px;
+        }
+        .sys-node {
+          padding-top: 17px;
+          padding-bottom: 17px;
+        }
+        .control-arrows {
+          height: 25px;
+        }
+        .system-detail {
+          min-height: 50px;
+          margin-top: 14px;
+        }
+        .code-lines {
+          font-size: 12px;
+          padding: 10px 0;
+        }
+        .evidence-paper {
+          margin: 15px 0;
+          padding: 16px 20px;
+        }
+        .experiment-controls {
+          padding: 19px 25px;
+        }
+        .guard-control {
+          margin: 18px 0;
+          padding-top: 18px;
+        }
+        .cycle-graphic {
+          max-height: 340px;
+        }
+        .research-point {
+          padding: 14px 18px;
+        }
+        .closing h2 {
+          font-size: 43px;
+        }
+        .closing-points {
+          margin: 22px 0;
+          padding: 20px 0;
+        }
+        .closing-chain {
+          margin: 22px 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *:before,
+        *:after {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+      @media print {
+        body {
+          background: white;
+          color: #142a2b;
+          --ink: #142a2b;
+          --muted: #42595a;
+          --mint: #21624c;
+          --line: #8faaa777;
+        }
+        .top,
+        .chapter-footer,
+        .presenter-notes,
+        .slide-count-bar,
+        .toast,
+        .hero-actions,
+        .closing-actions,
+        .kbd-hint {
+          display: none !important;
+        }
+        .slide,
+        .slide.active {
+          display: block !important;
+          min-height: auto;
+          padding: 24px;
+          break-after: page;
+        }
+        .slide:last-of-type {
+          break-after: auto;
+        }
+        .system-figure,
+        .code-scene,
+        .experiment-controls,
+        .blind-side,
+        .sys-node,
+        .verdict-detail,
+        .research-point {
+          background: #eef2ed;
+        }
+        .diagram-label,
+        .cycle-node text {
+          fill: #142a2b;
+        }
+        .hero-art {
+          max-width: 340px;
+        }
+        .case-layout,
+        .experiment-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .hero {
+          grid-template-columns: 1fr 1fr;
+        }
+        .cycle-graphic {
+          max-width: 300px;
+        }
+        .code-lines {
+          font-size: 10px;
+        }
+        .formula {
+          background: #e3e9df;
+          color: #4b5c39;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="brand-symbol">◈</span>
+        <div>
+          OpenHarmony Audit Agent<small
+            >BINNNN LAB · INTERACTIVE EXPLAINER</small
+          >
+        </div>
+      </div>
+      <div class="top-right">
+        <span class="edition">METHOD DEMO / 2026</span
+        ><button id="notes-toggle" aria-pressed="false" title="讲解提示（N）">
+          讲解提示</button
+        ><button id="fullscreen" title="全屏（F）">全屏 ↗</button>
+      </div>
+    </header>
+    <main>
+      <section
+        class="slide active"
+        data-title="从一条告警开始"
+        aria-label="第 1 章：从一条告警开始"
+      >
+        <div class="hero">
+          <div>
+            <div class="eyebrow">OPENHARMONY · 源码漏洞挖掘</div>
+            <h1>一条告警，<br />如何成为<br /><em>可信的结论？</em></h1>
+            <p class="intro">
+              跟随一个抽象 Parcel 案例，看看静态分析、角色化审计与 CodeQL-AI
+              如何逐步建立证据。
+            </p>
+            <div class="hero-actions">
+              <button class="primary" id="begin">开始演示 <span>→</span></button
+              ><button class="outline" id="jump-case">直接看案例</button>
+            </div>
+            <p class="footnote">
+              8 个章节 · 建议讲解 5–8 分钟<br />抽象示例与方法演示，不调用真实扫描引擎。
+            </p>
+          </div>
+          <div class="hero-art">
+            <svg
+              viewBox="0 0 520 455"
+              role="img"
+              aria-label="一条静态告警穿过审计、反证与复核，形成证据支持的判断"
+            >
+              <defs>
+                <pattern
+                  id="grid"
+                  width="25"
+                  height="25"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <circle cx="1" cy="1" r=".7" fill="#a8e1c4" opacity=".15" />
+                </pattern>
+                <linearGradient id="trail" x1="0" y1="0" x2="1" y2="1">
+                  <stop stop-color="#ead492" />
+                  <stop offset="1" stop-color="#a8e1c4" />
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width="520" height="455" fill="url(#grid)" />
+              <circle
+                cx="260"
+                cy="230"
+                r="170"
+                stroke="#a8e1c413"
+                fill="none"
+              />
+              <circle
+                cx="260"
+                cy="230"
+                r="119"
+                stroke="#a8e1c41c"
+                stroke-dasharray="3 7"
+                fill="none"
+              />
+              <path
+                d="M88 120 C180 120 160 230 250 230 S340 340 435 340"
+                stroke="url(#trail)"
+                fill="none"
+                stroke-width="1.5"
+              />
+              <circle class="moving-dot" r="4" />
+              <g transform="translate(30,66)">
+                <rect
+                  width="164"
+                  height="100"
+                  rx="7"
+                  fill="#1d2b32"
+                  stroke="#ead49277"
+                />
+                <text x="17" y="25" class="diagram-mono">01 / FINDING</text>
+                <text x="17" y="52" class="diagram-label" font-size="19">
+                  静态告警
+                </text>
+                <text x="17" y="79" class="diagram-mono">source → sink</text>
+                <circle cx="139" cy="26" r="4" fill="#ead492" class="pulsing" />
+              </g>
+              <g transform="translate(178,181)">
+                <rect
+                  width="168"
+                  height="107"
+                  rx="7"
+                  fill="#27443f"
+                  stroke="#a8e1c4aa"
+                />
+                <text x="17" y="25" class="diagram-mono">02 / EVIDENCE</text>
+                <text x="17" y="54" class="diagram-label" font-size="19">
+                  证据逐步闭合
+                </text>
+                <text x="17" y="82" class="diagram-mono">
+                  审计 · 反证 · 复核
+                </text>
+              </g>
+              <g transform="translate(328,314)">
+                <rect
+                  width="164"
+                  height="100"
+                  rx="7"
+                  fill="#1d2b32"
+                  stroke="#a8e1c477"
+                />
+                <text x="17" y="25" class="diagram-mono">03 / DECISION</text>
+                <text x="17" y="54" class="diagram-label" font-size="19">
+                  有条件的结论
+                </text>
+                <text x="17" y="80" class="diagram-mono">
+                  范围清晰 · 可追溯
+                </text>
+              </g>
+              <text x="350" y="111" class="diagram-mono">不是每条告警</text>
+              <text x="350" y="130" class="diagram-mono">都意味着真实漏洞</text>
+              <text x="42" y="326" class="diagram-mono">
+                也不是每个模型判断
+              </text>
+              <text x="42" y="345" class="diagram-mono">都能替代验证证据</text>
+            </svg>
+            <div class="hero-art-caption">
+              <span>THE JOURNEY OF A FINDING</span
+              ><span>ILLUSTRATIVE ONLY</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-bottom">
+          <span>STATIC ANALYSIS</span><span class="rule"></span
+          ><span>SEMANTIC AUDIT</span><span class="rule"></span
+          ><span>EVIDENCE-BASED DECISION</span>
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="两个工具如何协作"
+        aria-label="第 2 章：两个工具如何协作"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">01 / THE UNIFIED IDEA</div>
+          <h2>工作流组织问题，分析引擎补充证据。</h2>
+          <p class="intro">
+            CodeQL-AI 的输出作为 Evidence
+            关联到冻结的候选包，由工作流统一组织复核与决策。
+          </p>
+        </div>
+        <div class="system-figure">
+          <div class="orchestrator">
+            <span>AUDIT-WORKFLOW-PROMPTS</span>
+            <div>
+              <h3>统一审计编排</h3>
+              <p>角色分工 → 候选冻结 → 独立盲验证 → checkpoint</p>
+            </div>
+            <span>组织 / 调度 / 追溯</span>
+          </div>
+          <div class="control-arrows">
+            <span>↓ 分派发现</span><span>↓ 冻结假设</span><span>↓ 调用复核</span
+            ><span>↓ 汇总证据</span>
+          </div>
+          <div class="system-row">
+            <button
+              class="sys-node"
+              data-system="discovery"
+              aria-pressed="false"
+            >
+              <small>01 / DISCOVERY</small><strong>CodeQL</strong
+              ><span>SARIF 告警<br />保留静态路径</span></button
+            ><span class="arrow">→</span>
+            <button
+              class="sys-node"
+              data-system="candidate"
+              aria-pressed="true"
+            >
+              <small>02 / SEMANTICS</small><strong>候选包</strong
+              ><span
+                >入口、调用链、不变量<br />将可疑点变成可检验假设</span
+              ></button
+            ><span class="arrow">→</span>
+            <button
+              class="sys-node"
+              data-system="enrichment"
+              aria-pressed="false"
+            >
+              <small>03 / CODEQL-AI</small><strong>证据增强</strong>
+              <div class="enrich-stack">
+                <span>FP Experience</span><span>Sanitizer</span
+                ><span>QL Optimizer</span><span>Symbolic</span>
+              </div></button
+            ><span class="arrow">→</span>
+            <button
+              class="sys-node"
+              data-system="decision"
+              aria-pressed="false"
+            >
+              <small>04 / DECISION</small><strong>证据门禁</strong
+              ><span>结论、证据引用<br />适用范围与未解假设</span>
+            </button>
+          </div>
+          <div class="loop-line">
+            ↶ 经验回写，服务下一轮审计
+            <span>低置信度模式只作线索，不直接抑制告警</span>
+          </div>
+        </div>
+        <div class="system-detail" id="system-detail" aria-live="polite"></div>
+      </section>
+      <section
+        class="slide"
+        data-title="跟随一个 Parcel 案例"
+        aria-label="第 3 章：跟随一个 Parcel 案例"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">02 / A FINDING IN MOTION</div>
+          <h2>沿着这一次复制，逐步收集证据。</h2>
+          <p class="intro">
+            这是手工构造的伪代码。每推进一步，观察左侧的关注点和右侧的证据卡。
+          </p>
+        </div>
+        <div class="case-layout">
+          <div class="code-scene">
+            <div class="code-header">
+              <span>abstract / parcel_example.cpp</span
+              ><span>CWE-787 · 抽象场景</span>
+            </div>
+            <div class="code-lines" id="case-code"></div>
+            <div class="code-annotation" id="code-annotation"></div>
+          </div>
+          <div class="evidence-story">
+            <div class="step-kicker" id="case-kicker"></div>
+            <h3 id="case-title"></h3>
+            <p id="case-description"></p>
+            <div class="evidence-paper">
+              <div class="paper-header">
+                <span id="paper-type"></span><span>DEMO-001 / 模拟记录</span>
+              </div>
+              <code id="paper-content"></code>
+            </div>
+            <div
+              class="case-step-controls"
+              id="case-steps"
+              role="group"
+              aria-label="案例演示步骤"
+            ></div>
+            <div class="case-role" id="case-role"></div>
+          </div>
+        </div>
+        <div class="principle-strip">
+          <strong id="case-takeaway"></strong
+          ><span>使用下方“继续演示”或键盘 →，逐步展开案例。</span>
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="亲手改变路径约束"
+        aria-label="第 4 章：亲手改变路径约束"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">03 / MAKE THE CONSTRAINT VISIBLE</div>
+          <h2>同一条路径，为什么有时成立、有时被阻断？</h2>
+          <p class="intro">
+            拖动输入长度，再开启容量检查，直观看到约束如何改变可达性。
+          </p>
+        </div>
+        <div class="experiment-grid">
+          <div class="experiment-controls">
+            <label for="length">输入长度 n（简化整数模型）</label>
+            <div class="value-row">
+              <strong id="length-value">96</strong><span>目标容量 C = 64</span>
+            </div>
+            <input
+              id="length"
+              type="range"
+              min="0"
+              max="256"
+              value="96"
+              step="1"
+            />
+            <div class="range-labels">
+              <span>0</span><span>64</span><span>128</span><span>192</span
+              ><span>256</span>
+            </div>
+            <label class="guard-control"
+              ><input id="guard" type="checkbox" /><span
+                ><strong>加入完整的容量检查</strong
+                ><small>if (n &gt; C) return; 必须支配所有复制路径</small></span
+              ></label
+            >
+            <div class="formula" id="formula"></div>
+            <p class="caution">
+              前提：n 由外部控制；复制按 n
+              写入；不考虑整数溢出、别名或其他分支。
+            </p>
+          </div>
+          <div class="experiment-result">
+            <div class="buffer-labels">
+              <span>目标缓冲区与输入占用</span><span>可视域 0–256</span>
+            </div>
+            <div class="buffer" id="buffer">
+              <div class="safe-zone"></div>
+              <div class="buffer-fill" id="buffer-fill"></div>
+              <div class="buffer-blocked">✓ 检查阻断了本次复制</div>
+            </div>
+            <div class="result-kicker">CURRENT INPUT / 当前输入</div>
+            <div class="result-word" id="input-result"></div>
+            <p class="result-description" id="input-description"></p>
+            <div
+              class="solver-note"
+              id="domain-result"
+              aria-live="polite"
+            ></div>
+            <p class="caution">
+              浏览器仅枚举 0–256 的整数玩具模型；不调用 SMT
+              求解器，不执行内存写入，也不证明真实 OpenHarmony 代码的安全性。
+            </p>
+          </div>
+        </div>
+        <div class="principle-strip">
+          <strong>符号复核的核心</strong
+          ><span
+            >把“可能有问题”改写为“在这些明确的路径与环境约束下，是否存在满足危险条件的输入”。</span
+          >
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="为什么需要独立复核"
+        aria-label="第 5 章：为什么需要独立复核"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">04 / CHALLENGE THE HYPOTHESIS</div>
+          <h2>把事实传给验证者，把预期结论留在门外。</h2>
+          <p class="intro">
+            独立重建可以减少确认偏差；漏洞确认仍需要有效、范围明确的确定性证据。
+          </p>
+        </div>
+        <div class="blind-diagram">
+          <div class="blind-side">
+            <h3>发现者的候选包</h3>
+            <p>冻结后保留来源与版本，后续追加证据。</p>
+            <div class="facts">
+              <span class="fact">源码位置</span
+              ><span class="fact">调用上下文</span
+              ><span class="fact">目标快照</span
+              ><span class="fact excluded">“这一定是漏洞”</span>
+            </div>
+          </div>
+          <div class="blind-wall">⇢<small>隔离结论</small></div>
+          <div class="blind-side">
+            <h3>验证者独立重建</h3>
+            <p>从事实重新追踪路径、边界与保护条件。</p>
+            <div class="facts">
+              <span class="fact">重建不变量</span
+              ><span class="fact">主动寻找反证</span
+              ><span class="fact">声明未解假设</span>
+            </div>
+          </div>
+        </div>
+        <div class="verdict-cards" id="verdict-cards">
+          <button
+            class="verdict-card"
+            data-verdict="needs"
+            aria-pressed="false"
+          >
+            <small>01 / 前提缺失</small><strong>继续补证</strong
+            ><code>NEEDS_EVIDENCE</code></button
+          ><button
+            class="verdict-card"
+            data-verdict="static"
+            aria-pressed="true"
+          >
+            <small>02 / 仅静态成立</small><strong>保留假设</strong
+            ><code>STATIC_ONLY</code></button
+          ><button
+            class="verdict-card"
+            data-verdict="confirmed"
+            aria-pressed="false"
+          >
+            <small>03 / 确定性复核</small><strong>限定范围确认</strong
+            ><code>CONFIRMED</code></button
+          ><button
+            class="verdict-card"
+            data-verdict="rejected"
+            aria-pressed="false"
+          >
+            <small>04 / 决定性反证</small><strong>排除候选</strong
+            ><code>REJECTED</code>
+          </button>
+        </div>
+        <div
+          class="verdict-detail"
+          id="verdict-detail"
+          aria-live="polite"
+        ></div>
+        <div class="principle-strip">
+          <strong>不能跳过的边界</strong
+          ><span
+            >模型高置信度、盲验证意见和 PoC
+            计划，都不能单独替代确定性复核。符号结果只在模型假设与覆盖范围内有效。</span
+          >
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="经验如何进入下一轮"
+        aria-label="第 6 章：经验如何进入下一轮"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">05 / CLOSE THE LOOP CAREFULLY</div>
+          <h2>让一次反证，成为下一轮更好的问题。</h2>
+          <p class="intro">
+            以“未建模的长度检查”为例，演示经验如何从线索走向可复用模型。
+          </p>
+        </div>
+        <div class="feedback-figure">
+          <svg
+            class="cycle-graphic"
+            viewBox="0 0 500 385"
+            role="group"
+            aria-label="经验的三个阶段，点击节点查看"
+          >
+            <defs>
+              <marker
+                id="arrowhead"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M0 0 10 5 0 10z" fill="#a8e1c4" />
+              </marker>
+            </defs>
+            <path
+              d="M250 93 C405 93 430 190 350 265"
+              fill="none"
+              stroke="#a8e1c46b"
+              stroke-width="1.5"
+              marker-end="url(#arrowhead)"
+            />
+            <path
+              d="M310 300 L175 300"
+              fill="none"
+              stroke="#a8e1c46b"
+              stroke-width="1.5"
+              marker-end="url(#arrowhead)"
+            />
+            <path
+              d="M115 245 C55 164 107 92 165 92"
+              fill="none"
+              stroke="#a8e1c46b"
+              stroke-dasharray="5 6"
+              stroke-width="1.5"
+              marker-end="url(#arrowhead)"
+            />
+            <text x="250" y="200" text-anchor="middle" class="diagram-mono">
+              KNOWLEDGE FEEDBACK
+            </text>
+            <text x="250" y="222" text-anchor="middle" class="diagram-mono">
+              每次复用，都重新检查适用性
+            </text>
+            <g
+              class="cycle-node"
+              data-cycle="0"
+              role="button"
+              tabindex="0"
+              aria-label="登记候选经验"
+              aria-pressed="true"
+            >
+              <rect x="155" y="43" width="190" height="90" rx="7" />
+              <text x="175" y="72" class="cycle-small">01 / CANDIDATE</text>
+              <text x="175" y="105">登记候选经验</text>
+            </g>
+            <g
+              class="cycle-node"
+              data-cycle="1"
+              role="button"
+              tabindex="0"
+              aria-label="正反例回归验证"
+              aria-pressed="false"
+            >
+              <rect x="290" y="258" width="190" height="90" rx="7" />
+              <text x="310" y="287" class="cycle-small">02 / REGRESSION</text>
+              <text x="310" y="320">正反例回归验证</text>
+            </g>
+            <g
+              class="cycle-node"
+              data-cycle="2"
+              role="button"
+              tabindex="0"
+              aria-label="受限复用经验"
+              aria-pressed="false"
+            >
+              <rect x="20" y="258" width="190" height="90" rx="7" />
+              <text x="40" y="287" class="cycle-small">03 / REUSE</text>
+              <text x="40" y="320">受限复用经验</text>
+            </g>
+          </svg>
+          <div class="cycle-description">
+            <div class="step-kicker" id="cycle-kicker"></div>
+            <h3 id="cycle-title"></h3>
+            <p id="cycle-description"></p>
+            <div class="cycle-tags" id="cycle-tags"></div>
+            <div class="formula" id="cycle-formula"></div>
+            <button class="outline" id="cycle-next">演示下一环节 →</button>
+            <p class="caution">
+              状态变化为方法示意，不代表已运行回归测试或写入知识库。
+            </p>
+          </div>
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="怎样检验这套方法"
+        aria-label="第 7 章：怎样检验这套方法"
+        hidden
+      >
+        <div class="scene-head">
+          <div class="eyebrow">06 / FROM A DEMO TO A TESTABLE METHOD</div>
+          <h2>科学性，来自能被检验的假设。</h2>
+          <p class="intro">
+            统一架构提供机制上的合理性；是否真正提升效果，需要在相同版本和预算下做对照。
+          </p>
+        </div>
+        <div class="research-grid">
+          <div class="research-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>对照组</th>
+                  <th>加入的机制</th>
+                  <th>要回答的问题</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>A / BASELINE</td>
+                  <td>CodeQL 原始告警</td>
+                  <td>基线误报和漏报在哪里？</td>
+                </tr>
+                <tr>
+                  <td>B / AUDIT</td>
+                  <td>＋角色化语义审计</td>
+                  <td>语义拆解是否有效？</td>
+                </tr>
+                <tr>
+                  <td>C / EVIDENCE</td>
+                  <td>＋CodeQL-AI 证据增强</td>
+                  <td>误报减少是否牺牲召回？</td>
+                </tr>
+                <tr>
+                  <td>D / ABLATION</td>
+                  <td>分别移除盲验证或经验反馈</td>
+                  <td>收益究竟来自哪个模块？</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="research-points">
+            <article class="research-point">
+              <span>01</span>
+              <div>
+                <h3>固定条件，避免不公平比较</h3>
+                <p>
+                  锁定代码快照、规则、模型版本、算力与 token
+                  预算。历史信息按时间隔离，避免答案泄漏。
+                </p>
+              </div>
+            </article>
+            <article class="research-point">
+              <span>02</span>
+              <div>
+                <h3>同时观察收益与代价</h3>
+                <p>
+                  核验准确率、已知基准上的召回率、误报、时间与人工复核成本。未知真值下不声称完整召回。
+                </p>
+              </div>
+            </article>
+            <article class="research-point">
+              <span>03</span>
+              <div>
+                <h3>允许方法被反驳</h3>
+                <p>
+                  经验误匹配、符号超时、跨线程建模失败都要记录。失败案例与成功案例同样进入评估。
+                </p>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="principle-strip">
+          <strong>当前交付</strong
+          ><span
+            >HTML
+            原理演示、抽象案例与工程结构；上述实验是后续验证设计，目前没有真实漏洞数量、性能提升或比赛得分数据。</span
+          >
+        </div>
+      </section>
+      <section
+        class="slide"
+        data-title="回到最初的问题"
+        aria-label="第 8 章：回到最初的问题"
+        hidden
+      >
+        <div class="closing">
+          <div class="eyebrow">07 / EVIDENCE MAKES THE DIFFERENCE</div>
+          <h2>
+            让漏洞假设，<br />走完一条<span class="accent"
+              >可复核的证据链。</span
+            >
+          </h2>
+          <p class="intro">
+            静态分析发现线索，工作流组织推理，CodeQL-AI 补充反证与复核。<br />证据足够，才在明确范围内给出结论。
+          </p>
+          <div class="closing-chain">
+            <span>Finding</span><i>→</i><span>CandidatePacket</span><i>→</i
+            ><span>Evidence</span><i>→</i><span>Decision</span>
+          </div>
+          <div class="closing-points">
+            <div>
+              <strong>一个统一编排</strong>
+              <p>候选冻结，角色分工，产物可追溯。</p>
+            </div>
+            <div>
+              <strong>一个证据门禁</strong>
+              <p>区分假设、反证与确定性复核。</p>
+            </div>
+            <div>
+              <strong>一个受约束的反馈环</strong>
+              <p>经验先回归，再在限定范围内复用。</p>
+            </div>
+          </div>
+          <div class="closing-actions">
+            <button class="primary" id="restart">↺ 重新演示</button
+            ><button class="outline" id="return-experiment">
+              再试一次约束实验
+            </button>
+          </div>
+          <p class="footnote">
+            原工作台已保留：<a href="index.html#workspace">打开操作界面版本 ↗</a
+            ><br />本文件可离线打开；所有案例和决策均用于解释方法，不构成真实漏洞发现。
+          </p>
+        </div>
+      </section>
+    </main>
+    <aside class="presenter-notes" id="notes" hidden>
+      <h3>讲解提示 / PRESENTER NOTES</h3>
+      <p id="notes-text"></p>
+    </aside>
+    <footer class="chapter-footer">
+      <div class="chapter-info">
+        <span id="chapter-number">01 / 08</span
+        ><strong id="chapter-title">从一条告警开始</strong>
+      </div>
+      <nav class="chapter-dots" id="chapters" aria-label="演示章节"></nav>
+      <div class="nav-controls">
+        <button id="auto" aria-pressed="false" title="每 9 秒推进一步">
+          自动播放</button
+        ><button id="prev" aria-label="上一步">←</button
+        ><button id="next">继续演示 →</button>
+      </div>
+    </footer>
+    <div class="slide-count-bar" aria-hidden="true">
+      <span id="progress"></span>
+    </div>
+    <div class="toast" id="toast" role="status" hidden></div>
+    <script>
+      "use strict";
+      const $ = (s) => document.querySelector(s),
+        $$ = (s) => [...document.querySelectorAll(s)];
+      const slides = $$(".slide");
+      let chapter = 0,
+        caseStep = 0,
+        cycleStep = 0,
+        autoTimer = null,
+        toastTimer = null;
+      const caseLines = [
+        "void CopyPayload(Parcel& data) {",
+        "  const size_t capacity = 64;",
+        "  uint32_t n = data.ReadUint32();",
+        "  const char* src = data.ReadBuffer(n);",
+        "  char buffer[capacity];",
+        "  // Is every copy guarded by n <= capacity?",
+        "  memcpy(buffer, src, n);",
+        "}",
+      ];
+      const caseFrames = [
+        {
+          title: "静态分析先找到一条路径。",
+          description:
+            "外部长度 n 从 Parcel 进入 memcpy 的复制参数。CodeQL 给出候选，我们还不知道它是否真的可触发。",
+          type: "Finding",
+          content:
+            "source: Parcel.ReadUint32()\nsink: memcpy(..., n)\nrule / CWE: illustrative / CWE-787\nverdict: not decided",
+          lines: [2, 6],
+          role: "CodeQL · Discovery",
+          note: "关注输入来源和危险操作。静态路径的存在，不等于路径在真实环境中可达。",
+          takeaway: "告警是线索，还不是结论。",
+        },
+        {
+          title: "把可疑点改写为一个不变量。",
+          description:
+            "入口角色检查攻击者能否控制 n；数据流角色检查目标容量。危险条件被明确写成 n > capacity。",
+          type: "Candidate hypothesis",
+          content:
+            "attacker_control: n (to verify)\ncapacity: 64 (illustrative)\ninvariant: n <= capacity\nviolation: n > capacity",
+          lines: [1, 2, 4, 6],
+          role: "entrypoint-boundary + dataflow-lifetime",
+          note: "只有同时证明控制量、容量与危险操作，才有一个可检验的漏洞假设。",
+          takeaway: "从“看起来危险”，走到“什么条件下危险”。",
+        },
+        {
+          title: "冻结候选，保留未解假设。",
+          description:
+            "将路径与不变量写入 CandidatePacket，绑定目标快照。后续复核补充证据，避免悄悄改写最初的假设。",
+          type: "Frozen CandidatePacket",
+          content:
+            "candidate_id: DEMO-001\nsnapshot: abstract-example (not a commit)\nrevision: 1\nopen_questions: caller guards, IPC permission",
+          lines: [0, 2, 6],
+          role: "chain-composer · Candidate Freeze",
+          note: "真实运行需记录代码 commit、输入哈希与规则版本。本演示不伪造真实来源凭证。",
+          takeaway: "先固定问题，再检验问题。",
+        },
+        {
+          title: "主动寻找能推翻它的证据。",
+          description:
+            "检查调用方是否限制长度、权限是否阻断入口、清洗函数是否覆盖全部路径。CodeQL-AI 帮助匹配经验和检查 sanitizer。",
+          type: "Counterevidence checklist",
+          content:
+            "[?] caller guarantees n <= 64\n[?] IPC policy excludes the attacker\n[?] sanitizer dominates every copy\nexperience match ≠ decisive proof",
+          lines: [0, 5, 6],
+          role: "counterevidence-history + CodeQL-AI",
+          note: "函数名字、单次模型判断或相似误报经验，都不足以排除当前候选。",
+          takeaway: "反证不是附录，而是审计的核心步骤。",
+        },
+        {
+          title: "静态证据齐备后，仍要等待确定性复核。",
+          description:
+            "在本示例的设定中，假定已完成基础检查且未发现决定性反证。缺少真实路径求解或复现时，只能保留为 STATIC_ONLY。",
+          type: "Decision (illustrative)",
+          content:
+            "verdict: STATIC_ONLY\nrequires: valid deterministic verification\npoc_plan: not an execution result\nscope: this abstract example only",
+          lines: [5, 6],
+          role: "blind-verifier + decision-gate",
+          note: "下一章用一个可操作的约束模型，解释符号复核究竟试图回答什么。",
+          takeaway: "有计划，不等于已验证。",
+        },
+      ];
+      const notes = [
+        "开场只讲一个问题：静态扫描会给出告警，但如何让评委相信结论？后面的演示围绕一个抽象案例展开，不宣称已经发现真实 OpenHarmony 漏洞。按 → 或空格推进，N 显示讲解提示，F 进入全屏。",
+        "强调工具的结合点：审计工作流是组织者，CodeQL-AI 是被调用的证据增强能力。点击四个节点可补充职责。统一的数据契约让每次交接可审查，而不是简单串接两个工具。",
+        "本章有五个小步骤。每次按 → 展开一个步骤，再进入下一章。依次指出输入长度、目标容量、复制操作、未解假设与反证问题。避免把玩具示例说成真实源码。",
+        "先保持 n=96、关闭 guard，说明为什么超过容量。将 n 调至 32，说明一个安全输入不能证明不存在其他危险输入。再打开 guard：危险条件与路径条件冲突。明确这里只做有限整数枚举，真实求解仍受模型与覆盖范围限制。",
+        "区分两层独立性：盲验证帮助减少确认偏差，确定性复核检验路径或触发条件。点击四张卡解释四种结论的前提。它们展示目标方法规则，未调用或复刻当前 Python 后端。",
+        "沿三节点循环讲解：新发现先是低置信度候选经验；有 guard 的样例应减少误报，无 guard 的正例仍应被检出；通过后才在范围内复用。点击节点或下一环节按钮。这里只是方法示意，不是已完成的回归验证。",
+        "这里说明科学性如何落地：固定版本、预算与样本，做基线对照和消融。收益需要测量，不能仅凭架构推断精度提升。没有真实真值的未知漏洞集合，不报告全量召回率。",
+        "用三个点收束：统一编排、统一证据门禁、受约束的经验反馈。所有结论都附带证据和适用范围。旧工作台可以作为附录，主要答辩演示使用本 HTML。",
+      ];
+      const systemDetails = {
+        discovery: [
+          "CodeQL · 候选发现",
+          "保留 SARIF 的 ruleId、CWE、source、sink 与 code flow。静态分析为审计提供线索，实际召回率仍取决于规则与建模范围。",
+        ],
+        candidate: [
+          "工作流 · 语义拆解",
+          "把一条告警拆成入口、攻击者控制量、调用链、不变量与反证问题，并在新颖性检查及后续复核前冻结候选。",
+        ],
+        enrichment: [
+          "CodeQL-AI · 证据增强",
+          "误报经验提出线索；sanitizer 检查保护关系；QL 优化修补分析模型；符号复核检查约束内可达性。所有输出都应带来源。",
+        ],
+        decision: [
+          "证据门禁 · 限定结论",
+          "检查证据归属、有效性与覆盖范围；决定性反证可排除候选，基础证据缺失时继续补证，确定性复核不能被模型自评替代。",
+        ],
+      };
+      const verdictDetails = {
+        needs: [
+          "基础前提尚不完整。",
+          "例如：攻击者能否控制 n、对象是否存活或调用链是否可达尚未确定。应补齐证据；更高的模型置信度不会改变这一点。",
+        ],
+        static: [
+          "基础静态与语义证据支持假设。",
+          "不变量、攻击者控制、危险操作和反证检查已齐备，但没有有效确定性复核。这个状态明确保留验证边界，不伪装成已复现漏洞。",
+        ],
+        confirmed: [
+          "在已验证的范围与假设内确认。",
+          "基础证据齐备，并获得有效的符号可达性、PoC 执行或其他确定性复核。SAT 仅说明模型内可满足，不能外推为已在真机成功利用。",
+        ],
+        rejected: [
+          "决定性反证推翻当前候选。",
+          "例如完整容量检查支配相关复制路径，并且模型前提适用。经验相似、单一路径 UNSAT 或符号超时，均不足以证明整个组件安全。",
+        ],
+      };
+      const cycleFrames = [
+        [
+          "01 / CANDIDATE",
+          "先保存线索，不急于学习成结论。",
+          "记录本次反证的语义条件、证据来源和适用范围。即使看起来像已有误报，也要重新检查当前调用路径。",
+          ["status: candidate", "confidence: low"],
+          "pattern: guard enforces n <= capacity\nrequired: guard dominates the copy",
+        ],
+        [
+          "02 / REGRESSION",
+          "减少误报，也要保住危险样例。",
+          "对有保护的负例和缺少保护的正例分别验证候选 QL 修补。加入绕过路径、不同容量和版本变化，检查是否过度泛化。",
+          ["guarded: negative", "unguarded: positive"],
+          "expected: guarded sample is excluded\nexpected: unguarded sample is still detected",
+        ],
+        [
+          "03 / REUSE",
+          "通过验证后，在限定范围内复用。",
+          "只有回归结果支持时才提升经验状态。下一轮仍要核对函数语义、规则版本、路径支配关系与代码版本，失配时回到候选状态。",
+          ["status: validated*", "scope: explicit"],
+          "* conceptual transition, not a test result\nreuse only when applicability is established",
+        ],
+      ];
+      function toast(text) {
+        $("#toast").textContent = text;
+        $("#toast").hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => ($("#toast").hidden = true), 3000);
+      }
+      function stopAuto() {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        $("#auto").textContent = "自动播放";
+        $("#auto").setAttribute("aria-pressed", "false");
+      }
+      function renderChapter() {
+        slides.forEach((s, i) => {
+          s.hidden = i !== chapter;
+          s.classList.toggle("active", i === chapter);
+        });
+        $("#chapter-number").textContent =
+          `${String(chapter + 1).padStart(2, "0")} / 08`;
+        $("#chapter-title").textContent = slides[chapter].dataset.title;
+        $("#notes-text").textContent = notes[chapter];
+        $$("[data-chapter]").forEach((b) => {
+          b.classList.toggle("active", Number(b.dataset.chapter) === chapter);
+          if (Number(b.dataset.chapter) === chapter)
+            b.setAttribute("aria-current", "step");
+          else b.removeAttribute("aria-current");
+        });
+        $("#progress").style.width = `${((chapter + 1) / 8) * 100}%`;
+        $("#prev").disabled = chapter === 0;
+        $("#next").disabled = chapter === 7;
+        $("#next").textContent =
+          chapter === 2 && caseStep < 4 ? "展开下一步 →" : "继续演示 →";
+        try {
+          history.replaceState(null, "", `#chapter-${chapter + 1}`);
+        } catch {}
+        window.scrollTo(0, 0);
+        if (chapter === 7) stopAuto();
+      }
+      function goTo(index, manual = true) {
+        if (manual) stopAuto();
+        chapter = Math.max(0, Math.min(7, index));
+        renderChapter();
+      }
+      function advance(manual = true) {
+        if (manual) stopAuto();
+        if (chapter === 2 && caseStep < 4) {
+          caseStep++;
+          renderCase();
+          renderChapter();
+        } else goTo(chapter + 1, false);
+      }
+      function previous() {
+        stopAuto();
+        if (chapter === 2 && caseStep > 0) {
+          caseStep--;
+          renderCase();
+          renderChapter();
+        } else {
+          if (chapter === 3) {
+            caseStep = 4;
+            renderCase();
+          }
+          goTo(chapter - 1, false);
+        }
+      }
+      function renderCase() {
+        const frame = caseFrames[caseStep];
+        $("#case-kicker").textContent = `STEP 0${caseStep + 1} / 05`;
+        $("#case-title").textContent = frame.title;
+        $("#case-description").textContent = frame.description;
+        $("#paper-type").textContent = frame.type;
+        $("#paper-content").textContent = frame.content;
+        $("#code-annotation").textContent = frame.note;
+        $("#case-role").textContent = frame.role;
+        $("#case-takeaway").textContent = frame.takeaway;
+        $$("#case-code .code-line").forEach((line, i) => {
+          line.classList.toggle("focus", frame.lines.includes(i));
+          line.classList.toggle("warning", i === 6 && frame.lines.includes(i));
+        });
+        $$("[data-case]").forEach((b) => {
+          b.classList.toggle("active", Number(b.dataset.case) === caseStep);
+          b.setAttribute(
+            "aria-pressed",
+            String(Number(b.dataset.case) === caseStep),
+          );
+        });
+      }
+      function renderSystem(key) {
+        $$("[data-system]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.system === key)),
+        );
+        const [title, text] = systemDetails[key];
+        $("#system-detail").replaceChildren();
+        const strong = document.createElement("strong");
+        strong.textContent = title;
+        const span = document.createElement("span");
+        span.textContent = text;
+        $("#system-detail").append(strong, span);
+      }
+      function renderVerdict(key) {
+        $$("[data-verdict]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.verdict === key)),
+        );
+        const [title, text] = verdictDetails[key];
+        $("#verdict-detail").replaceChildren();
+        const strong = document.createElement("strong");
+        strong.textContent = title + " ";
+        $("#verdict-detail").append(strong, document.createTextNode(text));
+      }
+      function renderExperiment() {
+        const n = Number($("#length").value),
+          guard = $("#guard").checked,
+          capacity = 64;
+        const blocked = guard && n > capacity;
+        const unsafe = !blocked && n > capacity;
+        $("#length-value").textContent = n;
+        $("#buffer-fill").style.width = `${(n / 256) * 100}%`;
+        $("#buffer-fill").style.setProperty(
+          "--safe-fill",
+          `${Math.min(1, capacity / Math.max(1, n)) * 100}%`,
+        );
+        $("#buffer-fill").classList.toggle("overflow", unsafe);
+        $("#buffer").classList.toggle("blocked", blocked);
+        $("#formula").textContent = guard
+          ? "0 ≤ n ≤ 256 ∧ n ≤ 64 ∧ n > 64"
+          : "0 ≤ n ≤ 256 ∧ n > 64";
+        const small = document.createElement("small");
+        small.textContent = "输入域 ∧ 路径约束 ∧ 危险条件";
+        $("#formula").append(small);
+        $("#input-result").textContent = blocked
+          ? "当前输入被保护条件阻断"
+          : unsafe
+            ? "当前输入违反容量不变量"
+            : "当前输入满足容量不变量";
+        $("#input-result").style.color = unsafe
+          ? "var(--coral)"
+          : "var(--mint)";
+        $("#input-description").textContent = blocked
+          ? `n = ${n} 大于容量 64，完整检查使该输入无法到达复制操作。`
+          : unsafe
+            ? `n = ${n} 大于容量 64。在这个简化模型中，复制会超出目标容量 ${n - capacity} 个单位。`
+            : `n = ${n} 不超过容量 64。单个输入安全，并不等于所有可能输入都安全。`;
+        let witness = null;
+        for (let value = 0; value <= 256; value++) {
+          if ((!guard || value <= capacity) && value > capacity) {
+            witness = value;
+            break;
+          }
+        }
+        $("#domain-result").replaceChildren();
+        const b = document.createElement("b");
+        b.textContent =
+          witness === null
+            ? "整个玩具输入域：无满足危险条件的值。"
+            : "整个玩具输入域：存在危险条件的见证。";
+        $("#domain-result").append(
+          b,
+          document.createTextNode(
+            witness === null
+              ? " 路径要求 n ≤ 64，而危险条件要求 n > 64，两者冲突。"
+              : ` 例如 n = ${witness}。这说明只测试一个安全输入不足以排除候选。`,
+          ),
+        );
+      }
+      function renderCycle(index) {
+        cycleStep = index;
+        $$("[data-cycle]").forEach((b) =>
+          b.setAttribute(
+            "aria-pressed",
+            String(Number(b.dataset.cycle) === index),
+          ),
+        );
+        const [kicker, title, description, tags, formula] = cycleFrames[index];
+        $("#cycle-kicker").textContent = kicker;
+        $("#cycle-title").textContent = title;
+        $("#cycle-description").textContent = description;
+        $("#cycle-formula").textContent = formula;
+        $("#cycle-tags").replaceChildren(
+          ...tags.map((t) => {
+            const span = document.createElement("span");
+            span.textContent = t;
+            return span;
+          }),
+        );
+        $("#cycle-next").textContent =
+          index === 2 ? "↶ 回到候选经验" : "演示下一环节 →";
+      }
+      function toggleNotes() {
+        const visible = $("#notes").hidden;
+        $("#notes").hidden = !visible;
+        $("#notes-toggle").setAttribute("aria-pressed", String(visible));
+      }
+      async function toggleFullscreen() {
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          else if (document.documentElement.requestFullscreen)
+            await document.documentElement.requestFullscreen();
+          else toast("此浏览器不支持全屏，可使用浏览器的全屏功能。");
+        } catch {
+          toast("全屏未开启，可继续使用普通窗口演示。");
+        }
+      }
+      $("#chapters").replaceChildren(
+        ...slides.map((s, i) => {
+          const b = document.createElement("button");
+          b.className = "chapter-dot";
+          b.dataset.chapter = i;
+          b.textContent = String(i + 1).padStart(2, "0");
+          b.title = s.dataset.title;
+          b.setAttribute("aria-label", `第 ${i + 1} 章：${s.dataset.title}`);
+          return b;
+        }),
+      );
+      $("#case-code").replaceChildren(
+        ...caseLines.map((text, i) => {
+          const row = document.createElement("div");
+          row.className = "code-line";
+          const no = document.createElement("span");
+          no.className = "line-no";
+          no.textContent = String(i + 1).padStart(2, "0");
+          const code = document.createElement("span");
+          code.className = "line-code";
+          code.textContent = text;
+          row.append(no, code);
+          return row;
+        }),
+      );
+      $("#case-steps").replaceChildren(
+        ...caseFrames.map((f, i) => {
+          const b = document.createElement("button");
+          b.dataset.case = i;
+          b.textContent = i + 1;
+          b.setAttribute("aria-label", `步骤 ${i + 1}：${f.title}`);
+          return b;
+        }),
+      );
+      const stepHint = document.createElement("small");
+      stepHint.textContent = "点击数字可回看";
+      $("#case-steps").append(stepHint);
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest("button,[data-cycle]");
+        if (!b) return;
+        if (b.dataset.chapter !== undefined) goTo(Number(b.dataset.chapter));
+        if (b.dataset.case !== undefined) {
+          stopAuto();
+          caseStep = Number(b.dataset.case);
+          renderCase();
+          renderChapter();
+        }
+        if (b.dataset.system) renderSystem(b.dataset.system);
+        if (b.dataset.verdict) renderVerdict(b.dataset.verdict);
+        if (b.dataset.cycle !== undefined) renderCycle(Number(b.dataset.cycle));
+      });
+      $("#begin").addEventListener("click", () => goTo(1));
+      $("#jump-case").addEventListener("click", () => {
+        caseStep = 0;
+        renderCase();
+        goTo(2);
+      });
+      $("#next").addEventListener("click", () => advance());
+      $("#prev").addEventListener("click", previous);
+      $("#restart").addEventListener("click", () => {
+        caseStep = 0;
+        renderCase();
+        renderCycle(0);
+        $("#guard").checked = false;
+        $("#length").value = 96;
+        renderExperiment();
+        renderSystem("candidate");
+        renderVerdict("static");
+        goTo(0);
+      });
+      $("#return-experiment").addEventListener("click", () => goTo(3));
+      $("#notes-toggle").addEventListener("click", toggleNotes);
+      $("#fullscreen").addEventListener("click", toggleFullscreen);
+      $("#cycle-next").addEventListener("click", () =>
+        renderCycle((cycleStep + 1) % 3),
+      );
+      $("#length").addEventListener("input", () => {
+        stopAuto();
+        renderExperiment();
+      });
+      $("#guard").addEventListener("change", () => {
+        stopAuto();
+        renderExperiment();
+      });
+      $("#auto").addEventListener("click", () => {
+        if (autoTimer) {
+          stopAuto();
+          return;
+        }
+        if (chapter === 7) {
+          caseStep = 0;
+          renderCase();
+          goTo(0, false);
+        }
+        autoTimer = setInterval(() => advance(false), 9000);
+        $("#auto").textContent = "暂停播放";
+        $("#auto").setAttribute("aria-pressed", "true");
+      });
+      document.addEventListener("keydown", (e) => {
+        if (
+          e.target.matches("input,textarea,select") ||
+          e.altKey ||
+          e.ctrlKey ||
+          e.metaKey
+        )
+          return;
+        const cycle = e.target.closest("[data-cycle]");
+        if (cycle && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          renderCycle(Number(cycle.dataset.cycle));
+          return;
+        }
+        if (e.key === " " && e.target.closest("button,a")) return;
+        if (["ArrowRight", "PageDown", " "].includes(e.key)) {
+          e.preventDefault();
+          advance();
+        } else if (["ArrowLeft", "PageUp"].includes(e.key)) {
+          e.preventDefault();
+          previous();
+        } else if (e.key.toLowerCase() === "n") toggleNotes();
+        else if (e.key.toLowerCase() === "f") toggleFullscreen();
+        else if (e.key === "Escape") {
+          $("#notes").hidden = true;
+          $("#notes-toggle").setAttribute("aria-pressed", "false");
+          stopAuto();
+        }
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) stopAuto();
+      });
+      document.addEventListener(
+        "fullscreenchange",
+        () =>
+          ($("#fullscreen").textContent = document.fullscreenElement
+            ? "退出全屏 ↙"
+            : "全屏 ↗"),
+      );
+      window.addEventListener("hashchange", () => {
+        const match = location.hash.match(/^#chapter-([1-8])$/);
+        if (match) goTo(Number(match[1]) - 1);
+      });
+      renderCase();
+      renderExperiment();
+      renderSystem("candidate");
+      renderVerdict("static");
+      renderCycle(0);
+      const initial = location.hash.match(/^#chapter-([1-8])$/);
+      goTo(initial ? Number(initial[1]) - 1 : 0);
+    </script>
+  </body>
+</html>

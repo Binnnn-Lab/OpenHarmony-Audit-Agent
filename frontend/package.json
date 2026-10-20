@@ -4,7 +4,8 @@
   "private": true,
   "description": "Offline interactive demo; npm is needed only for optional browser checks",
   "scripts": {
-    "test": "node tests/smoke.cjs"
+    "test": "node tests/smoke.cjs",
+    "test:demo": "node tests/presentation.cjs"
   },
   "devDependencies": {
     "puppeteer-core": "24.43.0"
