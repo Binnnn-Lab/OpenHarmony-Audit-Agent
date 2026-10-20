@@ -7,14 +7,17 @@
 | 1 工具源代码 | 01-source.zip | 含源码、提示词、配置、测试、HTML 与复现脚本；清单与 SHA-256 在压缩包内 SOURCE-MANIFEST.json |
 | 2 技术说明书 | 02-technical-manual.pdf | 原理、关键模块与实现说明；可编辑稿为 docs/technical-report.md |
 | 3 使用说明书 | 03-user-manual.pdf | 依赖、安装、操作及故障处理；HTML 为 frontend/manual.html |
-| 3 DEMO 录制材料 | 03-recording-kit.zip | 推荐：单文件演示网页、逐页口语讲稿及打开说明，供团队自行录屏 |
+| 3 DEMO 视频与配音 | 03-operation-video-kit.zip | 推荐：1080p 无配音视频、时间码讲稿、字幕和运行记录，团队配音后导出 |
+| 3 操作演示视频 | 03-operation-demo.mp4 | 8 分 34 秒，实际 Parcel 源码检查记录回放与原理交互 |
+| 3 配音稿 | 03-operation-voiceover.html、.md、.srt | 对应视频的 18 段讲稿，HTML 可播放视频并按时间跳转 |
+| 3 原理录制材料 | 03-recording-kit.zip | 保留：单文件原理演示网页、逐页口语讲稿及打开说明 |
 | 3 演示网页 | 03-recording-demo.html | 内嵌样式、图形、交互、环境说明和讲稿；可单独复制到其他电脑离线打开 |
 | 3 逐页讲稿 | 03-narration.html、03-narration.md | 八页正文直接朗读，操作提示单独标注 |
 | 5 性能说明 | 05-performance.pdf | 规划模块实测及完整审计测量方法；实际大规模源码扫描数据待补 |
 
-录屏时打开 03-recording-demo.html，把 03-narration.html 放在另一个窗口照读。网页内的“环境与操作”和“逐页讲稿”也可查看相关内容。第 4 页增加了 32 / 64 / 96 快捷按钮，便于配合讲稿操作。推荐录制分辨率为 1920×1080 或 1440×900。
+配音时解压 03-operation-video-kit.zip，打开 03-operation-voiceover.html，按各段时间码读正文。视频和讲稿 HTML 放在同一目录，可边看边录。操作回放 03-operation-replay.html 为单文件，也可独立离线打开。完整制作说明见 docs/operation-video.md。
 
-旧版字幕视频 03-demo-captioned.mp4 及 SRT 保留存档。本次交付以团队自行录制所需的网页与讲稿为主。
+旧版字幕视频 03-demo-captioned.mp4、SRT、原理 HTML 和逐页讲稿保留存档。本次推荐使用已制作的操作演示视频并补入本人配音。
 
 第 4 项漏洞分析报告由团队后续提供。第 5 项尚缺真实大规模审计耗时与内存，当前工程测量不能替代。完整对照见 docs/competition-checklist.md。
 

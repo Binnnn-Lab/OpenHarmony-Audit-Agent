@@ -1,0 +1,102 @@
+{
+  "attribution": "Copyright (c) 2021 Huawei Device Co., Ltd.; Apache-2.0",
+  "source_url": "https://github.com/openharmony/commonlibrary_c_utils/blob/b807d3dadb7dbb7639fe85b3a5f72da18d318da2/base/src/parcel.cpp",
+  "lines": [
+    {
+      "number": 409,
+      "text": "bool Parcel::WriteBuffer(const void *data, size_t size)"
+    },
+    {
+      "number": 410,
+      "text": "{"
+    },
+    {
+      "number": 411,
+      "text": "    if (data == nullptr || size == 0) {"
+    },
+    {
+      "number": 412,
+      "text": "        return false;"
+    },
+    {
+      "number": 413,
+      "text": "    }"
+    },
+    {
+      "number": 414,
+      "text": ""
+    },
+    {
+      "number": 415,
+      "text": "    size_t padSize = GetPadSize(size);"
+    },
+    {
+      "number": 416,
+      "text": "    size_t desireCapacity = size + padSize;"
+    },
+    {
+      "number": 417,
+      "text": ""
+    },
+    {
+      "number": 418,
+      "text": "    // in case of desireCapacity overflow"
+    },
+    {
+      "number": 419,
+      "text": "    if (desireCapacity < size || desireCapacity < padSize) {"
+    },
+    {
+      "number": 420,
+      "text": "        return false;"
+    },
+    {
+      "number": 421,
+      "text": "    }"
+    },
+    {
+      "number": 422,
+      "text": ""
+    },
+    {
+      "number": 423,
+      "text": "    if (EnsureWritableCapacity(desireCapacity)) {"
+    },
+    {
+      "number": 424,
+      "text": "        if (!WriteDataBytes(data, size)) {"
+    },
+    {
+      "number": 425,
+      "text": "            return false;"
+    },
+    {
+      "number": 426,
+      "text": "        }"
+    },
+    {
+      "number": 427,
+      "text": "        WritePadBytes(padSize);"
+    },
+    {
+      "number": 428,
+      "text": "        return true;"
+    },
+    {
+      "number": 429,
+      "text": "    }"
+    },
+    {
+      "number": 430,
+      "text": ""
+    },
+    {
+      "number": 431,
+      "text": "    return false;"
+    },
+    {
+      "number": 432,
+      "text": "}"
+    }
+  ]
+}

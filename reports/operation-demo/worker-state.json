@@ -1,0 +1,14 @@
+{
+  "state": "COMPLETE",
+  "terminal": true,
+  "scope": "bounded-source-review",
+  "completed_units": ["parcel-write-buffer"],
+  "cursor": "七个范围内函数检查完成，四份产物已落盘",
+  "artifacts": ["source-review.json", "review-report.md", "checkpoint.json", "worker-state.json"],
+  "candidate_count": 0,
+  "frozen_candidate_ids": [],
+  "todo": [],
+  "blocked_interfaces": ["history：none", "staticAnalysis：none", "validation：none", "novelty：none"],
+  "last_complete_artifact": "review-report.md",
+  "note": "终态仅代表用户指定的限定源码检查完成，不代表独立漏洞验证完成。"
+}

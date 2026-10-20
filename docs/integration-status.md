@@ -7,12 +7,12 @@
 | 主体入口 | `cli.py` → `workflow/generic_cli.py` | `workflow validate/plan/prepare/run/status` |
 | 目标与分片 | `generic_contracts.py`、`generic_adapters.py`、`generic_planner.py` | 读取目标、确定性分配 unit、生成独立 assignment 与提示词 |
 | 角色调查 | `prompts/controller.md`、`roles.md` | 提供角色职责与产物交接协议；实际调查由配置的 Agent 执行 |
-| 会话与恢复 | `generic_runner.py`、`checkpoint.py` | 启动 Claude Code、保存流式日志、检查终态和运行 checkpoint 会话；产物恢复依赖 Agent 遵守协议 |
+| 会话与恢复 | `generic_runner.py`、`checkpoint.py` | 启动 Claude Code 或 Codex、保存 JSONL 日志、检查终态和运行 checkpoint 会话；产物恢复依赖 Agent 遵守协议 |
 | 可选辅助策略 | `prompts/openharmony/codeql-evidence.md` | 已注入生成的 worker 提示词；有具体问题与工具配置时按需调用 |
 | 辅助 provider / MCP | `engines/codeql_ai/providers.py`、`mcp/server.py` | 保留原分析能力并提供接口；没有全自动调度、规范化与入库闭环 |
 | 统一契约 | `contracts/models.py` | CandidatePacket、Evidence、Decision 等可序列化对象；冻结由协议及 revision 约定实现，并非不可变数据库 |
 | 证据判定 | `evidence/decision_gate.py` | 源码审计可形成 STATIC_ONLY；确认需关联同版本、已复核的确定性记录与独立复核标志；支持决定性反证分支 |
-| 运行时 | `runtimes/` | 两个适配器可单独使用；主体并行 runner 当前接入 Claude Code，OpenAI-compatible 尚未接入该 runner |
+| 运行时 | `runtimes/`、`generic_runner.py` | 独立 HTTP 适配器可单独使用；主体 runner 接入 Claude Code 和 Codex CLI，OpenAI-compatible HTTP 尚未接入该 runner |
 | 输出报告 | `reporting/` | 生成技术说明书；真实漏洞材料的字段与报告接入由后续数据补齐 |
 
 ## 主体能够独立推进的工作
@@ -27,4 +27,4 @@
 
 ## 演示与实现的对应
 
-HTML 第二章模拟任务拆分、角色交接、辅助结果关联与断点续作。数据明确标注为抽象示例，浏览器没有调用后台。主体 CLI 的 validate/plan/prepare/status 可以独立操作；run 需要真实源码、配置模型和认证。当前检查仅覆盖工程结构及隔离测试，不构成真实 OpenHarmony 漏洞效果验证。
+HTML 第二章模拟任务拆分、角色交接、辅助结果关联与断点续作。主体 CLI 的 validate/plan/prepare/status 可以独立操作；run 需要真实源码、配置模型和认证。2026-10-21 新增 Codex 实际运行记录：固定版本 c_utils 的 Parcel 小范围源码检查，三个目标函数和四个直接辅助函数，候选数量 0。输出源码记录、检查报告、检查点、完成状态及资源测量。该次采用单 worker 顺序检查，独立盲验证及 CodeQL-AI 辅助不在该次执行范围。详见 [操作演示](operation-video.md)。

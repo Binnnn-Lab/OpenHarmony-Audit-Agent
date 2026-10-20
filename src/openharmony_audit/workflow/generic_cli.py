@@ -29,7 +29,7 @@ def _load_plan(run_root: Path) -> Dict[str, Any]:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Generic Claude Code repository-audit workflow")
+    parser = argparse.ArgumentParser(description="Repository-audit workflow with Claude Code and Codex runtimes")
     sub = parser.add_subparsers(dest="operation", required=True)
     validate = sub.add_parser("validate", help="validate workflow and target configuration")
     validate.add_argument("--workflow", type=Path, required=True)

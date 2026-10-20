@@ -1,0 +1,15 @@
+{
+  "schema": "parcel-source-review-checkpoint-v1",
+  "state": "COMPLETE",
+  "scope": "bounded-source-review",
+  "snapshot": "b807d3dadb7dbb7639fe85b3a5f72da18d318da2",
+  "completed_units": ["parcel-write-buffer"],
+  "completed_functions": ["WriteBuffer", "EnsureWritableCapacity", "WriteDataBytes", "GetWritableBytes", "CalcNewCapacity", "GetPadSize", "WritePadBytes"],
+  "cursor": "限定源码检查及保护条件核对已完成",
+  "artifacts": ["source-review.json", "review-report.md", "checkpoint.json", "worker-state.json"],
+  "candidate_count": 0,
+  "frozen_candidate_ids": [],
+  "next_actions": ["人工复核 source-review.json 的准确位置、观察事实及后续问题。", "仅在另行授权扩展范围后，核对游标与容量不变量、源缓冲区别名约定及补齐访问前提。"],
+  "remaining_required_work": [],
+  "note": "本次不进入候选验证流水线；未执行盲验证、构建、PoC 或动态验证。"
+}

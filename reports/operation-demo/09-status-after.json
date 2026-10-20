@@ -1,0 +1,18 @@
+{
+  "name": "09-status-after",
+  "started_at": "2026-10-20T17:50:27.896589+00:00",
+  "duration_seconds": 0.25073410000186414,
+  "command": [
+    "<USER>\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-m",
+    "openharmony_audit",
+    "workflow",
+    "status",
+    "--run-root",
+    "tmp/operation-demo/run"
+  ],
+  "exit_code": 0,
+  "stdout": "{\n  \"campaignId\": \"parcel-operation-demo\",\n  \"workers\": [\n    {\n      \"worker\": \"worker-1\",\n      \"status\": {\n        \"state\": \"COMPLETE\",\n        \"terminal\": true,\n        \"scope\": \"bounded-source-review\",\n        \"completed_units\": [\n          \"parcel-write-buffer\"\n        ],\n        \"cursor\": \"七个范围内函数检查完成，四份产物已落盘\",\n        \"artifacts\": [\n          \"source-review.json\",\n          \"review-report.md\",\n          \"checkpoint.json\",\n          \"worker-state.json\"\n        ],\n        \"candidate_count\": 0,\n        \"frozen_candidate_ids\": [],\n        \"todo\": [],\n        \"blocked_interfaces\": [\n          \"history：none\",\n          \"staticAnalysis：none\",\n          \"validation：none\",\n          \"novelty：none\"\n        ],\n        \"last_complete_artifact\": \"review-report.md\",\n        \"note\": \"终态仅代表用户指定的限定源码检查完成，不代表独立漏洞验证完成。\"\n      }\n    }\n  ]\n}\n",
+  "stderr": "",
+  "raw_output_sha256": "8ed8bc556b8459bd2bd0af92319e7c7c39f0d840127405e527d7168728a52042"
+}

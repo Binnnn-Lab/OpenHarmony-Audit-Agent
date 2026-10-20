@@ -1,0 +1,18 @@
+{
+  "name": "07-status-before",
+  "started_at": "2026-10-20T17:48:17.726750+00:00",
+  "duration_seconds": 0.249988499970641,
+  "command": [
+    "<USER>\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-m",
+    "openharmony_audit",
+    "workflow",
+    "status",
+    "--run-root",
+    "tmp/operation-demo/run"
+  ],
+  "exit_code": 0,
+  "stdout": "{\n  \"campaignId\": \"parcel-operation-demo\",\n  \"workers\": [\n    {\n      \"worker\": \"worker-1\",\n      \"status\": {\n        \"state\": \"NOT_STARTED\",\n        \"terminal\": false\n      }\n    }\n  ]\n}\n",
+  "stderr": "",
+  "raw_output_sha256": "2072fdc1dc5e666f69b53f2f318a92d1e756833b16a3b7338c89c5f7dfdcfca0"
+}

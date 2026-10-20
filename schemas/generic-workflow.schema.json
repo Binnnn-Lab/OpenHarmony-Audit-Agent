@@ -16,7 +16,7 @@
       "additionalProperties": false,
       "required": ["adapter", "command", "model"],
       "properties": {
-        "adapter": {"const": "claude-code"},
+        "adapter": {"enum": ["claude-code", "codex"]},
         "command": {"type": "string", "minLength": 1},
         "model": {"type": "string", "minLength": 1},
         "outputFormat": {"type": "string", "minLength": 1},

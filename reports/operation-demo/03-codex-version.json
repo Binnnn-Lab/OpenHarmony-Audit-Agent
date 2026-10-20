@@ -1,0 +1,13 @@
+{
+  "name": "03-codex-version",
+  "started_at": "2026-10-20T17:48:16.849559+00:00",
+  "duration_seconds": 0.11567470000591129,
+  "command": [
+    "<USER>\\AppData\\Local\\OpenAI\\Codex\\bin\\896a0166b774037a\\codex.exe",
+    "--version"
+  ],
+  "exit_code": 0,
+  "stdout": "codex-cli 0.163.0-alpha.10.2\n",
+  "stderr": "",
+  "raw_output_sha256": "7340c8bbe8b5bb886770f0f608cad06978bad881369879cb31b4af372fc02c0c"
+}

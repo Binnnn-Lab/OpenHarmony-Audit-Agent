@@ -1,0 +1,120 @@
+{
+  "schema": "operation-demo-session-v1",
+  "source_url": "https://github.com/openharmony/commonlibrary_c_utils",
+  "revision": "b807d3dadb7dbb7639fe85b3a5f72da18d318da2",
+  "model": "gpt-6-astra",
+  "runtime": "codex",
+  "source_file": "base/src/parcel.cpp",
+  "source_file_lines": 1686,
+  "source_file_sha256": "75a72d055ae3c0226c5cf2463a5f0e187f08ea3dcbf93533bdb37f8bc3bf87ca",
+  "scope": "WriteBuffer / EnsureWritableCapacity / WriteDataBytes (bounded source review)",
+  "python": "3.14.0",
+  "os": "Windows",
+  "workflow": {
+    "schema": "generic-audit-workflow-v1",
+    "campaignId": "parcel-operation-demo",
+    "promptDir": "<PROJECT>\\prompts",
+    "runtime": {
+      "adapter": "codex",
+      "command": "<USER>\\AppData\\Local\\OpenAI\\Codex\\bin\\896a0166b774037a\\codex.exe",
+      "model": "gpt-6-astra",
+      "outputFormat": "jsonl",
+      "mainTimeoutSeconds": 480,
+      "checkpointTimeoutSeconds": 90,
+      "maxCycles": 1,
+      "extraArgs": [],
+      "inheritEnv": [],
+      "env": {}
+    },
+    "parallelism": {
+      "rootWorkers": 1,
+      "shardStrategy": "balanced-units",
+      "subagentsPerWorker": 1,
+      "subagentRoles": [
+        "dataflow-lifetime"
+      ],
+      "serializeValidation": true
+    },
+    "phases": [
+      {
+        "id": "inventory",
+        "minutes": 30,
+        "objective": "freeze source snapshot, units and threat boundaries"
+      },
+      {
+        "id": "discovery",
+        "minutes": 60,
+        "objective": "audit source, extract invariants and investigate variants"
+      },
+      {
+        "id": "verification",
+        "minutes": 120,
+        "objective": "counterevidence, optional tool checks, blind review and PoC planning"
+      },
+      {
+        "id": "decision",
+        "minutes": 30,
+        "objective": "record evidence, checkpoint and prepare human review"
+      }
+    ],
+    "candidateLimitPerUnit": 3,
+    "terminalStates": [
+      "COMPLETE",
+      "NO_QUALIFIED_CANDIDATE",
+      "BLOCKED",
+      "CANCELLED"
+    ]
+  },
+  "target": {
+    "schema": "audit-target-profile-v1",
+    "id": "c-utils-parcel-demo",
+    "displayName": "OpenHarmony c_utils / Parcel capacity review",
+    "source": {
+      "adapter": "git-repository",
+      "root": "<PROJECT>\\tmp\\demo-source-c-utils",
+      "revision": "b807d3dadb7dbb7639fe85b3a5f72da18d318da2"
+    },
+    "units": [
+      {
+        "id": "parcel-write-buffer",
+        "path": "base/src/parcel.cpp",
+        "focus": [
+          "WriteBuffer",
+          "EnsureWritableCapacity",
+          "WriteDataBytes"
+        ],
+        "weight": 1
+      }
+    ],
+    "interfaces": {
+      "source": {
+        "adapter": "git-repository"
+      },
+      "history": {
+        "adapter": "none"
+      },
+      "staticAnalysis": {
+        "adapter": "none"
+      },
+      "validation": {
+        "adapter": "none"
+      },
+      "novelty": {
+        "adapter": "none"
+      }
+    },
+    "threatModel": {
+      "actors": [
+        "caller supplying buffer and length"
+      ],
+      "trustBoundaries": [
+        "Parcel public API"
+      ]
+    },
+    "evidenceRules": {
+      "requireBlindVerification": true,
+      "staticOnlyLabel": "STATIC_ONLY"
+    }
+  },
+  "display_note": "Machine-specific paths are replaced with <PROJECT> and <USER>."
+}

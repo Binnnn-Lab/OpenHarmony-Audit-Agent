@@ -1,0 +1,86 @@
+{
+  "schema": "parcel-source-review-v1",
+  "snapshot": "b807d3dadb7dbb7639fe85b3a5f72da18d318da2",
+  "analysis_unit": "parcel-write-buffer",
+  "source_identity": {
+    "target": "c-utils-parcel-demo",
+    "profile": "../../../target.json",
+    "interface": "target.json#/interfaces/source",
+    "adapter": "git-repository",
+    "revision_check": "git rev-parse HEAD 与任务版本一致；限定两个源码文件的 git status --short 输出为空",
+    "hashes_sha256": {
+      "base/src/parcel.cpp": "75A72D055AE3C0226C5CF2463A5F0E187F08EA3DCBF93533BDB37F8BC3BF87CA",
+      "base/include/parcel.h": "04D34D850DB72D519F483F5D5168FC992511E5C3D8CAFA1FC198985F1267BA75"
+    }
+  },
+  "scope": ["WriteBuffer", "EnsureWritableCapacity", "WriteDataBytes", "GetWritableBytes", "CalcNewCapacity", "GetPadSize", "WritePadBytes"],
+  "review_order": ["入口参数", "容量与写入数据流", "已有保护条件"],
+  "boundary": "调用方通过 Parcel 公共接口提供 data 指针和 size；未检查调用方及分配器实现",
+  "call_chain": "WriteBuffer → GetPadSize → EnsureWritableCapacity（GetWritableBytes、CalcNewCapacity、allocator_->Realloc）→ WriteDataBytes（GetWritableBytes、memcpy_s）→ WritePadBytes",
+  "checks": [
+    {
+      "function": "WriteBuffer",
+      "location": "base/src/parcel.cpp:409-432；base/include/parcel.h:298-306",
+      "observation": "入口接收指针和长度，计算补齐后的需求容量；仅在容量检查和数据复制成功后补齐。",
+      "protection": "411-412 行拒绝空指针及零长度；419-420 行拒绝 size + padSize 回绕；423-425 行传播容量或复制失败。",
+      "follow_up": "如另行授权，核对调用方提供的源区间有效性，以及源指针与内部缓冲区别名时的约定；本次未确认漏洞。"
+    },
+    {
+      "function": "EnsureWritableCapacity",
+      "location": "base/src/parcel.cpp:145-180",
+      "observation": "空间不足时计算 desireCapacity + writeCursor_，再计算新容量并调用分配器；仅分配成功才更新内部指针和容量。",
+      "protection": "147-149 行拒绝不可写对象；151-156 行在已有容量路径检查内部指针；161-165 行拒绝不增长或小于计算需求的新容量；168-179 行处理空分配器与分配失败。",
+      "follow_up": "159 行未显式检查加法回绕；需结合游标与容量不变量、后续容量比较及复制边界共同复核，不能仅凭该行判定越界。"
+    },
+    {
+      "function": "WriteDataBytes",
+      "location": "base/src/parcel.cpp:383-393",
+      "observation": "复制目标为 data_ + writeCursor_，以剩余可写容量作为 memcpy_s 的目标长度参数。",
+      "protection": "387-388 行在复制返回非 EOK 时失败；390-391 行仅在成功后增加写游标和数据长度。",
+      "follow_up": "未读取 securec 实现，未验证其运行语义；源缓冲区寿命、重叠规则及 dataSize_ 累加不变量待另行核对。"
+    },
+    {
+      "function": "GetWritableBytes",
+      "location": "base/src/parcel.cpp:91-98",
+      "observation": "返回容量与写游标之差，容量不大于游标时返回零。",
+      "protection": "先比较再相减，避免此处无符号减法下溢。",
+      "follow_up": "返回零并不修复游标超过容量的状态；其他状态修改入口不在本次范围。"
+    },
+    {
+      "function": "CalcNewCapacity",
+      "location": "base/src/parcel.cpp:109-143；base/src/parcel.cpp:46",
+      "observation": "以 4096 为阈值，小需求从 64 倍增，大需求按阈值步进，并根据非零最大容量限幅。",
+      "protection": "138-139 行限制小需求分支容量；调用方 161 行另查新容量必须增长且不小于计算需求。",
+      "follow_up": "最大容量配置与极值算术需结合状态前提复核；本次未扩展检查配置接口或声称所有整数边界安全。"
+    },
+    {
+      "function": "GetPadSize",
+      "location": "base/include/parcel.h:819-823",
+      "observation": "使用 size_t 运算计算四字节补齐量，结果为零至三。",
+      "protection": "WriteBuffer 在 419 行检查加入补齐量后的需求容量是否回绕。",
+      "follow_up": "极值输入的执行结果未经动态验证。"
+    },
+    {
+      "function": "WritePadBytes",
+      "location": "base/src/parcel.cpp:395-407",
+      "observation": "通过掩码修改以补齐后末尾为终点的四字节区域，随后增加游标和数据长度；没有独立容量判断。",
+      "protection": "所查 WriteBuffer 路径先为数据与补齐量申请空间，并在数据复制成功后才调用本函数；补齐量由 GetPadSize 约束。",
+      "follow_up": "四字节访问的对齐、有效对象范围和游标初始状态仍依赖调用前提，未作跨平台执行验证。"
+    }
+  ],
+  "protection_cross_checks": [
+    "对仅凭扩容加法提出异常的推断，核对了新容量双重比较及下游复制容量参数，未形成完整可达影响证据。",
+    "对复制失败仍推进游标的推断，核对了 EOK 分支与 WriteBuffer 的失败返回，源码不支持该推断。"
+  ],
+  "capability_gaps": [
+    {"interface": "target.json#/interfaces/history", "adapter": "none", "note": "未查询历史、引入提交或修复关系；读取 HEAD 仅用于版本核对。"},
+    {"interface": "target.json#/interfaces/staticAnalysis", "adapter": "none", "note": "未运行 CodeQL 或其他静态分析服务。"},
+    {"interface": "target.json#/interfaces/validation", "adapter": "none", "note": "未编译、未运行 PoC 或动态验证。"},
+    {"interface": "target.json#/interfaces/novelty", "adapter": "none", "note": "未核查新颖性，不作零日声明。"}
+  ],
+  "blind_verification": "用户本次演示约束明确排除独立盲验证；未执行且不声称完成候选验证流水线。",
+  "evidence_level": "STATIC_ONLY",
+  "outcome": "SOURCE_REVIEW_COMPLETE",
+  "candidate_count": 0,
+  "conclusion": "完成限定范围的源码事实与保护条件检查，未冻结漏洞候选；零候选不等于证明无漏洞。"
+}

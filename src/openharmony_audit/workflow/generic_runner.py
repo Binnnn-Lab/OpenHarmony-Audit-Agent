@@ -1,4 +1,4 @@
-"""Claude Code runtime adapter with parallel root workers and checkpoint cycles."""
+"""CLI agent runtimes with parallel root workers and checkpoint cycles."""
 
 from __future__ import annotations
 
@@ -44,15 +44,35 @@ def _state_is_terminal(worker_root: Path, terminal_states: Sequence[str]) -> boo
     return state.get("terminal") is True and state.get("state") in terminal_states
 
 
+def runtime_command(runtime: Mapping[str, Any]) -> List[str]:
+    if runtime.get("adapter", "claude-code") == "claude-code":
+        return claude_command(runtime)
+    if runtime.get("adapter") != "codex":
+        raise ConfigError("unsupported runtime adapter")
+    command, model = runtime.get("command"), runtime.get("model")
+    extra = runtime.get("extraArgs", [])
+    if not isinstance(command, str) or not command or not isinstance(model, str) or not model:
+        raise ConfigError("runtime command and model are required")
+    if not isinstance(extra, list) or any(not isinstance(item, str) for item in extra):
+        raise ConfigError("runtime extraArgs must be an array of strings")
+    return [command, "exec", "--json", "--ephemeral", "--skip-git-repo-check",
+            "--sandbox", "workspace-write", "--model", model, *extra, "-"]
+
+
 def _runtime_environment(runtime: Mapping[str, Any], worker_root: Path) -> Dict[str, str]:
     inherited = runtime.get("inheritEnv", [])
     if not isinstance(inherited, list) or any(not isinstance(item, str) for item in inherited):
         raise ConfigError("runtime.inheritEnv must be an array of variable names")
-    common = ("PATH", "HOME", "TMPDIR", "SHELL", "LANG", "LC_ALL", "TERM")
+    common = ("PATH", "HOME", "TMPDIR", "SHELL", "LANG", "LC_ALL", "TERM",
+              "USERPROFILE", "APPDATA", "LOCALAPPDATA", "SYSTEMROOT", "SystemRoot",
+              "TEMP", "TMP", "COMSPEC", "PATHEXT")
+    if runtime.get("adapter") == "codex":
+        common += ("CODEX_HOME",)
     environment = {
         key: os.environ[key] for key in tuple(common) + tuple(inherited) if key in os.environ
     }
-    environment["HOME"] = str(worker_root / "home")
+    if runtime.get("adapter", "claude-code") == "claude-code":
+        environment["HOME"] = str(worker_root / "home")
     fixed = runtime.get("env", {})
     if not isinstance(fixed, dict):
         raise ConfigError("runtime.env must be an object")
@@ -61,6 +81,8 @@ def _runtime_environment(runtime: Mapping[str, Any], worker_root: Path) -> Dict[
             raise ConfigError("runtime.env values must be strings")
         environment[key] = value
     model = str(runtime["model"])
+    if runtime.get("adapter") == "codex":
+        return environment
     environment.update(
         {
             "ANTHROPIC_MODEL": model,
@@ -104,7 +126,7 @@ def run_worker(plan: Mapping[str, Any], run_root: Path, worker_id: str) -> Dict[
     worker_root = run_root / "workers" / worker_id
     if not worker_root.is_dir():
         raise ConfigError("unknown worker: " + worker_id)
-    command = claude_command(runtime)
+    command = runtime_command(runtime)
     environment = _runtime_environment(runtime, worker_root)
     max_cycles = int(runtime["maxCycles"])
     events: List[Dict[str, Any]] = []

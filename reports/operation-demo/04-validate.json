@@ -1,0 +1,21 @@
+{
+  "name": "04-validate",
+  "started_at": "2026-10-20T17:48:16.965985+00:00",
+  "duration_seconds": 0.2663298000115901,
+  "command": [
+    "<USER>\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "-m",
+    "openharmony_audit",
+    "workflow",
+    "validate",
+    "--workflow",
+    "tmp/operation-demo/workflow.json",
+    "--target",
+    "tmp/operation-demo/target.json",
+    "--strict-source"
+  ],
+  "exit_code": 0,
+  "stdout": "{\n  \"status\": \"VALID\",\n  \"campaignId\": \"parcel-operation-demo\",\n  \"target\": \"c-utils-parcel-demo\"\n}\n",
+  "stderr": "",
+  "raw_output_sha256": "2abd63ff1ed4ad39d10162621fb917618d380a8e9ee23dc9eb514cf9c7f5b682"
+}

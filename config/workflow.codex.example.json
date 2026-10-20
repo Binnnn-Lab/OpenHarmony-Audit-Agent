@@ -1,0 +1,57 @@
+{
+  "schema": "generic-audit-workflow-v1",
+  "campaignId": "openharmony-codex-audit",
+  "promptDir": "../prompts",
+  "runtime": {
+    "adapter": "codex",
+    "command": "codex",
+    "model": "replace-with-model",
+    "outputFormat": "jsonl",
+    "mainTimeoutSeconds": 4200,
+    "checkpointTimeoutSeconds": 300,
+    "maxCycles": 4,
+    "extraArgs": [],
+    "inheritEnv": [],
+    "env": {}
+  },
+  "parallelism": {
+    "rootWorkers": 2,
+    "shardStrategy": "balanced-units",
+    "subagentsPerWorker": 3,
+    "subagentRoles": [
+      "entrypoint-boundary",
+      "dataflow-lifetime",
+      "counterevidence-history"
+    ],
+    "serializeValidation": true
+  },
+  "phases": [
+    {
+      "id": "inventory",
+      "minutes": 30,
+      "objective": "freeze source snapshot, units and threat boundaries"
+    },
+    {
+      "id": "discovery",
+      "minutes": 60,
+      "objective": "audit source, extract invariants and investigate variants"
+    },
+    {
+      "id": "verification",
+      "minutes": 120,
+      "objective": "counterevidence, optional tool checks, blind review and PoC planning"
+    },
+    {
+      "id": "decision",
+      "minutes": 30,
+      "objective": "record evidence, checkpoint and prepare human review"
+    }
+  ],
+  "candidateLimitPerUnit": 3,
+  "terminalStates": [
+    "COMPLETE",
+    "NO_QUALIFIED_CANDIDATE",
+    "BLOCKED",
+    "CANCELLED"
+  ]
+}

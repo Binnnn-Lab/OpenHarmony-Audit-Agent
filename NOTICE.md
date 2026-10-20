@@ -7,3 +7,5 @@
 
 本仓库保留必要实现并重新组织模块边界，修复主体工作流迁移入口、增加可选辅助调用策略，新增统一契约、证据归一化、审核规则、模型 runtime、说明书、演示及性能测量入口。自动辅助调用与完整实际审计仍需联调，详见 docs/integration-status.md。两个来源仓库当前未声明可继承的开源许可证，本私有仓库暂不新增开源许可证。来源与重构范围应随源码交付保留。
 
+操作演示新增了 OpenHarmony 官方 `commonlibrary_c_utils` 的源码节选，来源为 https://github.com/openharmony/commonlibrary_c_utils ，固定 commit `b807d3dadb7dbb7639fe85b3a5f72da18d318da2`，文件 `base/src/parcel.cpp` 的 409–432 行。该文件版权为 `Copyright (c) 2021 Huawei Device Co., Ltd.`，使用 Apache License 2.0。许可证全文保存在 `reports/operation-demo/SOURCE-LICENSE.txt`，随视频材料包提供；此项来源许可仅适用于该源码节选。
+

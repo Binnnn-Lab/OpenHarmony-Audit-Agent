@@ -14,7 +14,13 @@ OpenHarmony-Audit-Agent 以 **audit-workflow-prompts 审计工作流为主体**�
 
 ## 快速开始
 
-### HTML 原理与流程演示（推荐）
+### 操作演示视频与配音（推荐）
+
+[视频与配音材料包](deliverables/03-operation-video-kit.zip) 包含已制作的 1080p 无配音视频、按时间码对应的讲稿、字幕及操作记录回放。打开 [配音稿](deliverables/03-operation-voiceover.html)，可以边看 [视频](deliverables/03-operation-demo.mp4) 边录音。
+
+本次通过 Codex 实际完成 OpenHarmony c_utils 的小范围 Parcel 源码检查：3 个目标函数及 4 个直接辅助函数，候选数量 0。视频展示环境、配置、任务准备、执行记录、源码与报告，以及本次实测资源数据。[制作与运行说明](docs/operation-video.md) 包含范围、来源和复现步骤。
+
+### HTML 原理与流程演示（保留）
 
 [录屏材料包](deliverables/03-recording-kit.zip) 包含可直接转发的单文件演示 HTML 和逐页口语讲稿。打开 [录屏网页](deliverables/03-recording-demo.html)，照着 [讲稿](deliverables/03-narration.html) 操作并自行录制即可。演示文件内嵌环境说明与完整讲稿，复制到其他电脑后可直接用浏览器离线打开。
 
@@ -46,7 +52,7 @@ python -m openharmony_audit workflow prepare --workflow config/workflow.audit.ex
 python -m openharmony_audit workflow status --run-root reports/run-data
 ```
 
-上述操作不调用模型或 CodeQL。准备真实任务时替换源码路径、快照和模型配置，去掉 `--allow-missing-source`；配置 Claude Code 认证后，可执行 `python -m openharmony_audit workflow run --run-root reports/run-data`。该命令会启动实际 Agent，当前交付未执行真实源码审计。OpenAI-compatible 独立适配器尚未接入主体并行 runner。
+上述操作不调用模型或 CodeQL。准备真实任务时替换源码路径、快照和模型配置，去掉 `--allow-missing-source`；配置 Claude Code 或 Codex 认证后，可执行 `python -m openharmony_audit workflow run --run-root reports/run-data`。Codex 使用 `runtime.adapter="codex"`，配置命令路径与模型名；本次小范围源码审计已实际跑通。OpenAI-compatible HTTP 独立适配器尚未接入主体并行 runner。
 
 兼容的辅助与报告命令：
 

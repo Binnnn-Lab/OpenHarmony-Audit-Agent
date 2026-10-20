@@ -10,4 +10,5 @@ knowledge/
 scripts/.CODEQL-AI/
 tmp/
 node_modules/
+*.egg-info/
 

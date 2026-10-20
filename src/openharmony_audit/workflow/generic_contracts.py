@@ -128,8 +128,8 @@ class RuntimeConfig:
     def from_dict(cls, value: Mapping[str, Any]) -> "RuntimeConfig":
         data = _object(value, "runtime")
         adapter = _identifier(data.get("adapter", "claude-code"), "runtime.adapter")
-        if adapter != "claude-code":
-            raise ConfigError("runtime.adapter must currently be claude-code")
+        if adapter not in {"claude-code", "codex"}:
+            raise ConfigError("runtime.adapter must be claude-code or codex")
         raw_env = _object(data.get("env", {}), "runtime.env")
         env: Dict[str, str] = {}
         for key, item in raw_env.items():
@@ -141,7 +141,7 @@ class RuntimeConfig:
             raise ConfigError("runtime.inheritEnv contains an invalid variable name")
         return cls(
             adapter=adapter,
-            command=_text(data.get("command", "claude"), "runtime.command"),
+            command=_text(data.get("command", "codex" if adapter == "codex" else "claude"), "runtime.command"),
             model=_text(data.get("model"), "runtime.model"),
             output_format=_text(data.get("outputFormat", "stream-json"), "runtime.outputFormat"),
             main_timeout_seconds=_positive_int(

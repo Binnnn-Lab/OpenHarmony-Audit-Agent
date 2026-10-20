@@ -1,0 +1,13 @@
+{
+  "name": "01-environment",
+  "started_at": "2026-10-20T17:48:06.932556+00:00",
+  "duration_seconds": 0.012326599971856922,
+  "command": [
+    "<USER>\\AppData\\Local\\Programs\\Python\\Python314\\python.exe",
+    "--version"
+  ],
+  "exit_code": 0,
+  "stdout": "Python 3.14.0\n",
+  "stderr": "",
+  "raw_output_sha256": "dd3053439df3f1f47270318ad3f335a184b1ceeb3cce48bca779303eba0a15c9"
+}
