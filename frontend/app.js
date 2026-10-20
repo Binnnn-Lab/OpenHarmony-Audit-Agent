@@ -21,13 +21,12 @@ const stages = [
     log: "已载入 oh-demo-001；锁定 IPC、NAPI、Native 三个抽象单元。",
   },
   {
-    title: "静态发现",
+    title: "源码调查",
     en: "Discovery",
-    output: "Finding × 3",
-    role: "codeql",
-    description:
-      "回放三条预置 SARIF 候选，保留规则、CWE 与 source → sink 路径。",
-    log: "已归一化 3 条预置告警；静态告警仍是待审计的线索。",
+    output: "源码线索 × 3",
+    role: "entrypoint-boundary",
+    description: "回放三个抽象源码调查场景，记录入口、危险操作与待检查条件。",
+    log: "已整理 3 个预置源码线索；候选由主体角色继续调查。",
   },
   {
     title: "语义审计",
@@ -102,8 +101,8 @@ const cases = [
     evidence: [
       {
         kind: "static_path",
-        title: "预置静态路径",
-        producer: "CodeQL / SARIF",
+        title: "预置源码路径",
+        producer: "主体源码审计 / 模拟",
         stage: 1,
         content:
           "示例长度从 Parcel 传播到 memcpy 的 length 参数。路径是手工构造的演示材料。",
@@ -164,7 +163,7 @@ const cases = [
       {
         kind: "static_path",
         title: "预置复制路径",
-        producer: "CodeQL / SARIF",
+        producer: "主体源码审计 / 模拟",
         stage: 1,
         content:
           "规则看到了输入到复制操作的路径，但演示设定中尚未对 ValidateLength 建模。",
@@ -225,7 +224,7 @@ const cases = [
       {
         kind: "static_path",
         title: "预置回调引用链",
-        producer: "CodeQL / SARIF",
+        producer: "主体源码审计 / 模拟",
         stage: 1,
         content:
           "抽象回调捕获 owner，后续出现 ReleaseOwner 调用；该顺序不等同于对象已被释放。",
@@ -486,12 +485,12 @@ function download(filename, content, type) {
 }
 const architecture = {
   discovery: [
-    "CodeQL / 高召回的候选发现",
-    "通过规则与数据流近似生成 SARIF，保留 ruleId、CWE、源码位置及 code flow。静态告警是审计输入，不能直接当作最终漏洞。",
+    "主体工作流 / 源码候选发现",
+    "从源码入口、安全不变量与获准历史信息提出候选。静态告警可补充线索，主体不依赖告警才能开展审计。",
   ],
   workflow: [
     "审计工作流 / 统一调度中心",
-    "分配入口、数据流、反证等角色，冻结 CandidatePacket，再调用 CodeQL-AI 的复核能力。盲验证仅接收重建所需的事实，避免读取发现阶段结论。",
+    "分配入口、数据流、反证等角色，冻结 CandidatePacket，按需调用 CodeQL-AI 辅助验证。盲验证仅接收重建所需的事实，避免读取发现阶段结论。",
   ],
   experience: [
     "FP Experience / 可回归的经验",
@@ -522,7 +521,12 @@ function explainArchitecture(key) {
   );
 }
 const gateFields = [
-  ["path", "存在静态路径", "静态告警包含可追踪的 source → sink 路径。", true],
+  [
+    "path",
+    "存在静态路径",
+    "源码审计或静态工具提供可追踪的入口与危险操作。",
+    true,
+  ],
   [
     "invariant",
     "不变量与攻击条件明确",

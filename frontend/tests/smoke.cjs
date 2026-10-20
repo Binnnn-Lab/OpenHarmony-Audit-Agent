@@ -110,7 +110,7 @@ const path = require("node:path");
     );
     await page.click("#play");
     await page.waitForFunction(
-      () => document.querySelector("#phase-value").textContent === "静态发现",
+      () => document.querySelector("#phase-value").textContent === "源码调查",
       { timeout: 6000 },
     );
     await page.click("#play");

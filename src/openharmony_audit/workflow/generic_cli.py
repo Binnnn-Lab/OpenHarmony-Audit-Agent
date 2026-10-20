@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Sequence
 
 from .generic_contracts import ConfigError, TargetProfile, WorkflowConfig
-from .planner import build_plan, prepare_run
-from .runner import run_parallel
+from .generic_planner import build_plan, prepare_run
+from .generic_runner import run_parallel
 
 
 def _print(value: Any) -> None:

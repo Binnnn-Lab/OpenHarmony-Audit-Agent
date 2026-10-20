@@ -1,6 +1,10 @@
 """Evidence taxonomy and decision vocabulary."""
 
 EVIDENCE_KINDS = {
+    "source_review",
+    "deterministic_verification",
+    "poc_execution",
+    "decisive_counterevidence",
     "static_path",
     "sarif_alert",
     "ql_patch",

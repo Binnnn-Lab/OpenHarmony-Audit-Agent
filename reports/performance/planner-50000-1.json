@@ -1,0 +1,20 @@
+{
+  "schema": "audit-performance-measurement-v1",
+  "scope": "synthetic-planner-only",
+  "snapshot": "synthetic-v1",
+  "started_at": "2026-10-20T13:36:16.142437+00:00",
+  "wall_seconds": 2.167008899967186,
+  "sampled_peak_process_tree_rss_bytes": 72040448,
+  "sampling_interval_seconds": 0.02,
+  "samples": 73,
+  "returncode": 0,
+  "environment": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 197 Stepping 2, GenuineIntel",
+    "logical_cpus": 16,
+    "physical_memory_bytes": 33820106752,
+    "monitor_python": "3.12.14"
+  },
+  "measurement_notes": "RSS sampled over parent and live descendants; shared pages may be counted twice. Short peaks or short-lived children may be missed. Monitor process excluded. No remote model memory is measured."
+}

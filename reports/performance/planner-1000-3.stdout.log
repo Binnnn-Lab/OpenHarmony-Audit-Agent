@@ -1,0 +1,1 @@
+{"scope": "synthetic-planner-only", "units": 1000, "iterations": 20, "workers": 2, "planning_seconds": 0.013465200026985258, "seconds_per_plan": 0.0006732600013492629, "input_spec_sha256": "e1b70e90b752fa0ca144e01b5dca653e05249c82891763a5309243e02c87f698", "source_files_scanned": 0, "model_calls": 0, "codeql_calls": 0}

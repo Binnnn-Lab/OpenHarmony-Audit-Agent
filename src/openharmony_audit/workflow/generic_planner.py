@@ -140,6 +140,9 @@ def prepare_run(
     (run_root / "shared" / "reports").mkdir(parents=True, exist_ok=True)
     _write_json(run_root / "plan.json", plan)
     controller = (workflow.prompt_dir / "controller.md").read_text(encoding="utf-8")
+    auxiliary_path = workflow.prompt_dir / "openharmony" / "codeql-evidence.md"
+    if auxiliary_path.is_file():
+        controller += "\n\n" + auxiliary_path.read_text(encoding="utf-8")
     for worker in plan["workers"]:
         worker_root = run_root / "workers" / worker["id"]
         worker_root.mkdir(parents=True, exist_ok=True)

@@ -1,16 +1,22 @@
 # OpenHarmony-Audit-Agent
 
-OpenHarmony-Audit-Agent 将角色化代码审计工作流与 CodeQL-AI 的静态告警后处理能力统一为一套证据驱动的漏洞挖掘方案。
+OpenHarmony-Audit-Agent 以 **audit-workflow-prompts 审计工作流为主体**，组织源码调查、角色协作、不变量与变体发现、反证、候选冻结、盲验证和 checkpoint。**CodeQL-AI 是按需辅助验证能力**，为具体路径、保护函数和误报假设补充依据。
 
-## 为什么要统一
+## 主体与辅助如何衔接
 
-静态分析适合高召回发现，但会受 sanitizer、分支约束和跨函数语义影响。审计工作流负责拆解入口、信任边界、调用链和漏洞不变量；CodeQL-AI 负责误报经验、QL 优化、清洗函数分析和聚焦式符号验证。两者通过统一的 `Finding → CandidatePacket → Evidence → Decision` 数据流协作。
+主体从代码快照、威胁模型与安全不变量开展审计，不要求已有 CodeQL 告警。总控分配角色、形成候选并组织复核；遇到具体技术问题时，调用可用的 CodeQL-AI 工具，将结果关联到原候选版本。工具不可用时记录验证缺口，继续可完成的源码审计。
+
+主线是 `Target → Audit roles → CandidatePacket → Independent review → Report`。可选辅助路径是 `Candidate question → CodeQL-AI → Evidence → 主体复核`。详细实现和未接通部分见 [整合状态](docs/integration-status.md)。
+
+## 题目一交付材料
+
+见 [官方要求与交付清单](docs/competition-checklist.md)。技术说明书、使用说明书、原型视频、性能说明和源码包整理在 `deliverables/`。具体漏洞材料由团队后续提供。性能资料中的规划模块数据不能替代大规模源码审计实测；清单明确列出这一缺口。
 
 ## 快速开始
 
 ### HTML 原理与流程演示（推荐）
 
-[工具使用说明书（HTML）](frontend/manual.html) 包含依赖环境、安装步骤、命令输入输出、DEMO 操作和故障处理。DEMO 视频尚未录制，说明书末尾提供录制提纲；HTML 演示不能替代视频文件。
+[工具使用说明书（HTML）](frontend/manual.html) 包含依赖环境、安装步骤、命令输入输出、DEMO 操作和故障处理。[字幕版原型演示视频](deliverables/03-demo-captioned.mp4) 展示实际 dry-run 输出与 HTML 操作，未运行真实漏洞扫描。另附逐页讲稿供团队录制配音版。
 
 [逐页录屏讲解稿](frontend/narration.html) 可配合八章 DEMO 直接朗读，动作提示单独标注；[Markdown 原稿](frontend/NARRATION.md) 便于修改或打印。
 
@@ -18,7 +24,7 @@ OpenHarmony-Audit-Agent 将角色化代码审计工作流与 CodeQL-AI 的静态
 
 也可通过下方本地服务访问 http://127.0.0.1:8765/demo.html。
 
-![HTML 原理演示：从静态告警到可追溯的证据与结论](docs/demo-story.png)
+![HTML 原理演示：主体审计与按需辅助验证](docs/demo-story.png)
 
 ### 原有交互工作台（保留）
 
@@ -34,8 +40,19 @@ python scripts/serve_demo.py
 
 ```powershell
 python -m pip install -e .
+python -m openharmony_audit workflow validate --workflow config/workflow.audit.example.json --target config/target.openharmony.abstract.json
+python -m openharmony_audit workflow plan --workflow config/workflow.audit.example.json --target config/target.openharmony.abstract.json
+python -m openharmony_audit workflow prepare --workflow config/workflow.audit.example.json --target config/target.openharmony.abstract.json --run-root reports/run-data --allow-missing-source
+python -m openharmony_audit workflow status --run-root reports/run-data
+```
+
+上述操作不调用模型或 CodeQL。准备真实任务时替换源码路径、快照和模型配置，去掉 `--allow-missing-source`；配置 Claude Code 认证后，可执行 `python -m openharmony_audit workflow run --run-root reports/run-data`。该命令会启动实际 Agent，当前交付未执行真实源码审计。OpenAI-compatible 独立适配器尚未接入主体并行 runner。
+
+兼容的辅助与报告命令：
+
+```powershell
 python -m openharmony_audit validate-target --target config/target.openharmony.abstract.json
-python -m openharmony_audit prepare --target config/target.openharmony.abstract.json --run-root reports/run-data
+python -m openharmony_audit prepare --target config/target.openharmony.abstract.json --run-root reports/run-data/compatibility
 python -m openharmony_audit report --output reports/technical-report.md --pdf reports/technical-report.pdf
 ```
 
@@ -54,5 +71,5 @@ CodeQL、angr、FastMCP 和 PDF 依赖均为可选能力，分别见 `pyproject.
 
 ## 边界
 
-PoC 首版只生成复现计划，不自动执行或披露。没有确定性动态证据的候选必须标记为 `STATIC_ONLY`。请阅读 `NOTICE.md` 了解来源和许可证边界。
+主体的任务包、角色与运行入口已接入；辅助 provider 的自动调用、证据规范化和归档闭环仍需目标环境联调。没有有效确定性验证的候选保留 `STATIC_ONLY`；完整基础证据缺失则为 `NEEDS_EVIDENCE`。PoC 计划不等同于实际执行。本项目不自动披露漏洞。来源及重构范围见 [NOTICE.md](NOTICE.md)。
 

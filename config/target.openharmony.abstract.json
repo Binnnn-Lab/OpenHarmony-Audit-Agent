@@ -21,7 +21,7 @@
     "index": {"adapter": "openharmony-build-and-symbol-index"},
     "seeds": {"adapter": "file-catalog"},
     "domain": {"adapter": "openharmony-security-profile"},
-    "staticAnalysis": {"adapter": "codeql", "engines": ["codeql"]},
+    "staticAnalysis": {"adapter": "optional-codeql-ai", "engines": ["codeql"], "mode": "on-demand", "requiredForDiscovery": false},
     "novelty": {"adapter": "master-revision", "policy": "candidate-frozen-before-access"},
     "validation": {"adapter": "optional-component-backend", "status": "deferred"},
     "capability": {"adapter": "runner-probe"},

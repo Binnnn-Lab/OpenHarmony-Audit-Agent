@@ -1,120 +1,98 @@
-# OpenHarmony-Audit-Agent 技术方案与创新性报告
+# OpenHarmony-Audit-Agent 工具源代码技术说明书
 
-> 本报告描述统一的漏洞挖掘方法与工程架构。报告中的 OpenHarmony 场景为抽象化示例，不包含未披露的真实漏洞、真实 PoC 或虚构实验结果。
+本说明书对应题目一交付件 2，描述工具原理、代码实现与接入边界。具体漏洞、CVE、PoC 结果及影响版本由参赛团队后续提供。本文件不构成漏洞分析报告。
 
-## 摘要
+## 1. 工具定位
 
-OpenHarmony 源码漏洞挖掘同时面临规模大、跨模块调用链复杂、静态分析保守近似和漏洞证据难以复现等问题。本项目将一个可配置的多阶段审计工作流与 CodeQL-AI 的静态告警后处理能力统一为证据驱动的分层分析系统。静态分析负责高召回候选生成，角色化审计负责入口、数据流、生命周期和反证分析，CodeQL-AI 负责误报经验匹配、清洗函数识别、QL 优化和路径可达性复核，最终通过统一证据模型输出结构化漏洞报告。
+OpenHarmony-Audit-Agent 以角色化代码审计工作流为主体。主体负责目标拆分、源码调查、安全不变量提取、同类问题搜索、反证检查、候选冻结、独立盲验证、PoC 计划和人工复核材料。CodeQL-AI 是按需调用的辅助验证能力，用于检查特定路径、保护函数或查询模型。
 
-## 1. 问题定义与比赛目标
+候选可以直接来自源码审计、人工不变量、获准的历史修复信息或静态告警。CodeQL 告警不是启动审计的必要条件。辅助工具缺席时，工作流仍可开展具备条件的调查，并在报告中保留验证缺口。
 
-比赛要求工具能够分析 OpenHarmony 开源代码，输出漏洞描述、CWE/CVE、可执行 PoC、影响范围、修复建议和完整报告，同时关注准确性、完整性、PoC 质量、版本影响、性能和创新性。本项目把这些要求转化为可追溯的证据对象，避免单一模型结论直接成为漏洞结论。
+主体使用大模型进行跨文件语义分析与任务组织。可信性来自可重放的源码引用、明确的假设、主动反证、独立复核以及适用范围内的确定性验证。工具的存在本身不证明效果提升；增益通过对照实验测量。
 
-## 2. 统一理论模型
+## 2. 总体流程与职责
 
-静态分析通常采用保守近似，适合提高召回率，却会把未建模的 sanitizer、分支约束和跨函数语义折叠成告警。审计工作流把一个告警拆成入口、信任边界、逐跳调用链、危险操作和缺失不变量；CodeQL-AI 再对路径中的清洗逻辑和分支可达性进行针对性复核。
+主体流程为：目标快照与分片 → 源码调查与不变量提取 → 角色交接与反证 → 冻结候选 → 独立盲验证 → 获准的历史核查与 PoC 计划 → 证据审核及人工复核。候选在需要时发起辅助检查，结果回到同一候选版本。
 
-对候选 $c$，系统维护证据集合 $E(c)$。最终决策由证据门禁产生：
+入口角色核对攻击者、信任边界和可控参数。数据流角色核对容量、整数、对象生命周期及危险操作。反证角色寻找调用方限制、权限检查和保护路径。chain-composer 组织逐跳调用链，总控合并同根因项并发布固定版本。blind-verifier 使用独立上下文重建候选，不接收发现者的期望结论。历史查重在盲验证之后按授权范围执行；缺少历史时保留未知状态。
 
-```text
-STATIC_ONLY = static_path ∧ invariant ∧ counter_evidence
-CONFIRMED   = STATIC_ONLY ∧ independent_verification
-REJECTED    = STATIC_PATH ∧ decisive_counter_evidence
-NEEDS_EVIDENCE = otherwise
-```
+单个 worker 只处理分配到的 analysis unit。总控发布候选，其他角色返回调查产物。共享验证资源按配置串行使用。每个候选记录已完成事项、未解假设和下一步检查，供 checkpoint 恢复。
 
-模型 confidence 只描述推理质量，不替代证据门禁。误报经验默认以低置信度保存，经回归验证后才允许提升状态。
+## 3. 目录和功能实现
 
-## 3. 系统架构
-
-系统包含五个层次：目标与任务层、静态发现层、语义审计层、证据复核层和报告层。工作流控制器按 analysis unit 分片，冻结任务包和 checkpoint；CodeQL-AI provider 通过稳定接口提供 SARIF 解析、FP experience、QL 优化、sanitizer 分析和符号验证。
-
-![统一架构](architecture.mmd)
-
-## 4. 统一数据模型
-
-| 对象 | 作用 | 关键字段 |
-|---|---|---|
-| `AuditCampaign` | 冻结目标和威胁模型 | snapshot、revision、units、interfaces |
-| `Finding` | 归一化静态告警 | rule、CWE、source、sink、codeFlow |
-| `CandidatePacket` | 冻结漏洞候选 | invariant、callChain、impact、counterEvidence |
-| `Evidence` | 描述可复核事实 | kind、producer、inputHash、provenance |
-| `Decision` | 输出门禁结果 | verdict、rationale、evidenceRefs |
-| `ExperienceRecord` | 跨任务复用知识 | fpType、rootCause、confidence、validation |
-
-## 5. 统一工作流
-
-### 5.1 Inventory
-
-读取抽象化目标 profile，固定代码快照、分析单元、关注面、攻击者和信任边界。
-
-### 5.2 Discovery
-
-运行 CodeQL 或导入已有 SARIF，将告警转换为 `Finding`，保留原始 ruleId、CWE、源点、汇点和 code flow。
-
-### 5.3 Semantic Audit
-
-`entrypoint-boundary` 识别入口与攻击者控制；`dataflow-lifetime` 分析数据传播、容量、对象生命周期和危险操作；`counterevidence-history` 主动寻找反例；`chain-composer` 组装漏洞不变量。候选在此阶段冻结，后续模块只能追加证据。
-
-### 5.4 Evidence Enrichment
-
-FP Experience 负责历史误报匹配，Function-Level Sanitizer 负责发现未建模的清洗函数，QL Optimizer 负责提出查询修补，Symbolic Sanitizer 负责在明确攻击约束下验证路径是否可达。每个模块只产生带 provenance 的 `Evidence`，不直接改写候选结论。
-
-### 5.5 Decision 与 Feedback
-
-Blind Verifier 独立重建候选，防止发现阶段的期望结论污染验证。最终报告区分 `CONFIRMED`、`STATIC_ONLY`、`REJECTED` 和 `NEEDS_EVIDENCE`。确认的误报模式写入经验库，供下一轮 QL 优化使用。
-
-## 6. 关键技术
-
-### 6.1 SARIF 到证据对象
-
-归一化器读取 SARIF 2.1.0 的 runs、rules、results、locations 和 codeFlows，并计算原始文件 SHA-256。这样同一个告警可以在不同工作流阶段通过 `finding_id` 和 `input_hash` 追踪。
-
-### 6.2 误报经验闭环
-
-经验包含模式摘要、根因、CWE、查询 ID、状态和验证计数。低置信度经验只提供修补建议，不会直接 suppress 新告警；当回归结果支持经验时，再提升为 active 状态。
-
-### 6.3 聚焦式符号验证
-
-Symbolic Sanitizer 只对 SARIF 路径上的关键分支和攻击输入约束执行局部符号分析，避免全程序状态爆炸。LLM 负责选择分支和构造约束，求解器负责给出可达性结论，从而把语义判断与确定性复核分离。
-
-### 6.4 双模型运行时
-
-统一 `AgentRuntime.run(prompt, workdir, metadata)` 接口，分别适配 Claude Code 的 stream-json 和 OpenAI-compatible 的流式 Chat Completions。运行配置只保存模型名、端点和环境变量名，不保存密钥。
-
-## 7. OpenHarmony 适配方式
-
-首版使用抽象 target profile，不绑定具体版本、设备或真实漏洞。profile 可以描述 IPC、Parcel、NAPI、权限、缓冲区、整数和生命周期等关注面，并为后续代码快照、CodeQL 数据库、构建环境和设备验证后端预留接口。
-
-## 8. PoC、影响与修复报告
-
-PoC 阶段只生成复现计划、输入约束、测试桩需求和安全边界，不自动执行或提交。报告结构固定包含源码位置、漏洞描述、CWE/CVE、触发条件、调用链、影响模块/版本、PoC 计划、修复建议和证据引用。
-
-## 9. 与比赛评价维度的对应关系
-
-| 评价维度 | 对应机制 |
+| 模块 | 入口与主要行为 |
 |---|---|
-| 准确性 | 反证分析、FP experience、sanitizer 识别、blind verification |
-| 完整性 | CodeQL 高召回扫描、分片 worker、跨组件 unit profile |
-| CWE/CVE | 规则映射、结构化 Finding、报告字段约束 |
-| PoC 质量 | PoC planner、攻击约束和复现条件模板 |
-| 影响分析 | snapshot、unit、调用链和 threat model |
-| 修复建议 | QL patch、sanitizer 逻辑和修复计划证据 |
-| 性能 | 分片调度、局部符号执行、运行时事件和 checkpoint |
-| 创新性 | 统一证据模型、模型协作与求解器复核的分层闭环 |
+| cli.py | 主入口；workflow 子命令转发至 generic_cli；兼容 validate-target、prepare、normalize-sarif 和 report |
+| workflow/generic_contracts.py | 解析 WorkflowConfig、TargetProfile、AnalysisUnit；检查标识、相对路径、阶段、角色和运行时参数 |
+| workflow/generic_adapters.py | 目录、Git 仓库与反编译树接口；提供源码上下文与分析单元；strict 模式检查源目录与单元存在性 |
+| workflow/generic_planner.py | 按权重降序分配到当前负载最小的 worker；生成 plan、assignment、角色与盲验证提示词，并注入可选辅助策略 |
+| workflow/generic_runner.py | ThreadPoolExecutor 运行 root workers；调用 Claude Code stream-json；记录 controller/checkpoint 日志，按终态与 maxCycles 控制轮次 |
+| workflow/checkpoint.py | JSON 检查点读取；先写临时文件后 os.replace 原子替换。与 Agent 维护的 worker-state 协议配合 |
+| workflow/scheduler.py | 记录阶段事件；当前不承担自动调用 provider 或证据归档 |
+| contracts/models.py | Campaign、Finding、CandidatePacket、Evidence、Decision、ExperienceRecord 数据类及 JSON 序列化；Evidence 计算内容 SHA-256 |
+| evidence/normalizer.py | 读取 SARIF runs/results/codeFlows 并保留输入哈希；为可选静态告警提供统一输入 |
+| evidence/decision_gate.py | 按关联候选、源码/静态证据、调用链、不变量、反证和已复核结果输出四态结论 |
+| engines/codeql_ai/providers.py | 包装原 CodeQL-AI 的经验、查询、函数读取和符号验证接口；可通过 MCP 服务接入 Agent |
+| runtimes/ | Claude Code 与 OpenAI-compatible 独立适配器；主体并行 runner 当前接入 Claude Code |
+| reporting/ | 从内置模板生成本技术说明书 Markdown 与 PDF；模板不是漏洞分析结果 |
 
-## 10. 局限性与披露边界
+## 4. 主体运行机制
 
-没有真实构建、设备或动态 PoC 结果时，候选只能标记为 `STATIC_ONLY`。本项目不自动向 OpenHarmony 社区、CVE 平台或其他第三方提交漏洞。任何真实漏洞、源码片段、设备信息和 API 密钥都应在人工复核和披露流程完成后再进入正式材料。
+workflow validate 检查配置和提示词资源；默认可对抽象路径做结构检查，严格源目录检查需要 --strict-source。workflow plan 生成确定性分片计划，不调用模型。workflow prepare 创建独立 worker 目录、任务包、角色提示词和共享候选/复核/报告目录。--allow-missing-source 仅用于抽象目标准备。
 
-## 11. 当前工程状态
+workflow run 消费已准备任务包，启动配置的 Claude Code；实际使用必须配置可用模型、认证与真实源码。每轮检查 worker-state.json 的 terminal 和允许终态，未结束时运行 checkpoint 会话，在下一轮继续。已有终态会跳过。workflow status 读取落盘状态。run 不自动执行官方漏洞提交或外部披露。
 
-- 代码：统一契约、SARIF 归一化、证据门禁、经验库桥接、CodeQL 适配器、CodeQL-AI provider 和双 runtime 已实现。
-- 报告：本文件是可持续编辑的中文 Markdown 主稿，PDF 由同一内容生成。
-- 数据：当前不包含真实 OpenHarmony 漏洞结论和虚构性能数据。
-- 后续：接入实际代码快照、CodeQL 数据库、设备/仿真验证后端，并填充真实评测结果。
+状态记录和恢复协议已保留，但完整的 OpenHarmony Agent 执行、MCP 配置、独立上下文隔离和设备适配需要在目标环境联调。配置接口名称不代表对应后端已经实现。OpenAI-compatible 独立适配器不能直接替换目前仅支持 Claude Code 的并行 runner。
 
-## 附录：当前运行记录
+## 5. 候选与证据交接
+
+CandidatePacket 包含稳定 ID、revision、源码快照、单元、位置、调用链、不变量、威胁模型、影响、反证记录和未解假设。冻结通过版本协议实现；数据类本身并不提供不可变存储。实质修改使用新 revision，已有证据保留原版本归属。
+
+Evidence 包含 producer、candidate_id、source_ref、input_hash、content_hash、规则/模型版本、时间和执行状态。主体源码调查可生成 source_review；静态告警、保护函数、符号结果、历史信息和 PoC 执行均可提供不同类型证据。缺失来源字段不应被填成虚构凭证。
+
+当前决策接口要求 available 证据归属于当前 candidate_id。已复核的决定性反证可得到 REJECTED。基础证据不足得到 NEEDS_EVIDENCE。源码审计或静态路径加上位置、调用链、不变量、威胁模型与至少两条反证记录可保留 STATIC_ONLY。CONFIRMED 另外要求独立复核标志，以及来源/哈希非空、snapshot 与 revision 相符、reviewed=true、result=supported 的确定性验证记录。
+
+这些检查是结构性条件，不会验证哈希所指文件的真实性。调用方必须实际核验原始产物，再设置 reviewed。仅凭模型 confidence、工具类型名或失败结果不能确认漏洞。尚未对所有证据类型实现严格 Schema、签名与范围验证，不能将该判定函数当作完整信任边界。
+
+## 6. CodeQL-AI 辅助机制
+
+FP Experience 检索相似误报模式，帮助提出反证问题。Function-Level Sanitizer 搜索与读取路径上的保护函数。QL Optimizer 生成独立查询修补，需要重跑和正负例回归；查询修补与目标源码安全修复属于不同产物。Symbolic Sanitizer 在给定二进制、路径、分支选择与攻击谓词下执行局部验证。
+
+调用前应固定候选版本、问题与输入；返回后检查错误、超时、模型假设和覆盖范围。SAT 只说明约束内存在见证；UNSAT 只覆盖被验证的路径；UNKNOWN、错误或超时不得用作排除理由。低置信度经验只提供线索。通过回归的经验也需要核对代码版本与适用条件。
+
+本仓库已有 provider、MCP 入口和注入主体任务包的辅助策略。自动把 provider 输出规范化为完整 Evidence、校验并归档的总控闭环尚未完成；不能把 HTML 里的交接动画当成真实后台执行。
+
+## 7. OpenHarmony 适配与输出约定
+
+抽象目标覆盖 IPC / Parcel、NAPI 回调、权限身份、缓冲区、整数和生命周期。实际任务应固定社区源码来源、tag/commit、模块路径、构建信息与攻击者能力；多仓库工程应保存版本清单。硬件与系统服务验证由单独 adapter 接入。
+
+后续漏洞材料应包含源码位置与相关内容、CWE、已公开 CVE（如有）、触发条件、调用链、可执行 PoC 与运行环境、影响模块和分支、修复建议或补丁。当前技术说明书与方法演示不填入这些尚未提供的真实结果。报告字段与 PoC planner 协议不等同于已完成具体漏洞的 PoC 开发。
+
+## 8. 效果与性能评价方法
+
+以主体工作流作为主要基线，对比主体加按需辅助验证。单独 CodeQL 作为外部参照，分别移除角色、反证或辅助检查做消融。固定源码快照、输入线索、模型、预算、候选数量及复核标准；分别观察候选准确性、已知基准召回、复核耗时和未解决比例。
+
+性能按任务准备、主体审计、可选 CodeQL 建库/查询、辅助验证及报告阶段分别测量。记录源码规模、覆盖范围、并发数、端到端墙钟时间、进程树 RSS、超时、失败、模型调用和 token。原 CodeQL-AI 的 evaluation-design.md 只定义指标，没有实测耗时或内存；其中 16GB 是配置示例。
+
+随附性能说明提供当前可复现的规划模块工程测量及完整任务测量入口。规划合成数据不属于大规模源码扫描数据。大规模 OpenHarmony 审计的正式性能表仍需要真实目标与完整运行日志。
+
+## 9. 工程验证与已知限制
+
+工程检查包括 Python 语法与导入、主体 validate/plan/prepare/status、无 CodeQL 条件下的源码证据判定、独立复核与错误证据处理，以及离线 HTML 的交接、恢复与约束边界。检查不运行真实 PoC，不调用模型或真实扫描引擎。
+
+本交付提供源码、技术说明书、使用说明、原型 DEMO 和性能测量资料。完整参赛效果取决于后续真实任务、工具联调与漏洞材料。模型语义判断、局部符号建模、权限环境和跨线程路径都有适用边界；不以架构描述替代实验结果。
+
+## 10. 来源与重构范围
+
+主体来源：https://github.com/megakn1ght/audit-workflow-prompts ，commit 7bd9cd9cbea555980b347bfd71bd5e4e75087b9b。保留分片、角色协议、候选隔离、独立验证与 checkpoint；修复迁移入口并接入统一 CLI。
+
+辅助来源：https://github.com/Binnnn-Lab/CodeQL-AI ，commit 51dbf412f440f723746087588665646c0edadddd。保留必要源码、provider 和 MCP 入口，改为主体按需使用的辅助能力。统一契约、可选调用策略、演示、说明书和测量入口属于本工程重构内容。来源信息见 NOTICE.md；暂不新增开源许可证。
+
+官方题目：https://cpipc.acge.org.cn/cw/hp/2c90800c8093eef401809d33b36f0652 。交付件 1、2、3、5 的逐项状态见 competition-checklist.md。
+
+## 附录：本次传入的记录摘要
+
+以下仅统计调用方传入数据，不代表已运行扫描。
 
 ```json
 {

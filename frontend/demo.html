@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="theme-color" content="#111c24" />
-    <title>从一条告警开始 · OpenHarmony 审计原理演示</title>
+    <title>源码审计与按需验证 · OpenHarmony Audit Agent</title>
     <style>
       :root {
         --bg: #111c24;
@@ -1755,6 +1755,116 @@
           color: #4b5c39;
         }
       }
+      .workflow-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .workflow-tabs button {
+        padding: 10px 16px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        cursor: pointer;
+      }
+      .workflow-tabs button[aria-pressed="true"] {
+        background: #a8e1c41a;
+        color: var(--mint);
+        border-color: var(--mint);
+      }
+      .workflow-handoff {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+      }
+      .workflow-card {
+        min-width: 0;
+        padding: 22px 26px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #ffffff04;
+      }
+      .workflow-card small {
+        color: var(--mint);
+        font: 11px var(--mono);
+        letter-spacing: 1px;
+      }
+      .workflow-card h3 {
+        font-size: 24px;
+        margin: 13px 0;
+      }
+      .workflow-card p {
+        font-size: 15px;
+        line-height: 1.8;
+        color: var(--muted);
+        min-height: 54px;
+      }
+      .workflow-card pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        margin: 18px 0 0;
+        padding: 16px;
+        background: #09171c;
+        color: #c3ddd0;
+        font: 12px/1.8 var(--mono);
+        min-height: 128px;
+      }
+      .workflow-action {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+      .workflow-action p {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.8;
+        flex: 1;
+        min-width: 180px;
+      }
+      .workflow-action button {
+        font-size: 13px;
+        padding: 12px 18px;
+      }
+      .workflow-boundary {
+        font-size: 12px;
+        line-height: 1.8;
+        color: var(--muted);
+        margin-top: 16px;
+      }
+      #workflow-tour[hidden],
+      #system-map[hidden],
+      #workflow-action[hidden],
+      #flow-save[hidden],
+      #flow-resume[hidden],
+      #flow-return[hidden] {
+        display: none;
+      }
+      .workflow-slide .scene-head {
+        margin-bottom: 22px;
+      }
+      .workflow-slide #system-map .system-figure {
+        padding: 18px 22px;
+      }
+      @media (max-width: 760px) {
+        .workflow-handoff {
+          grid-template-columns: 1fr;
+        }
+        .workflow-card {
+          padding: 20px;
+        }
+        .workflow-card h3 {
+          font-size: 22px;
+        }
+        .workflow-tabs button {
+          padding: 9px 12px;
+          font-size: 12px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1777,16 +1887,16 @@
     <main>
       <section
         class="slide active"
-        data-title="从一条告警开始"
-        aria-label="第 1 章：从一条告警开始"
+        data-title="从源码审计开始"
+        aria-label="第 1 章：从源码审计开始"
       >
         <div class="hero">
           <div>
             <div class="eyebrow">OPENHARMONY · 源码漏洞挖掘</div>
-            <h1>一条告警，<br />如何成为<br /><em>可信的结论？</em></h1>
+            <h1>从代码审计，<br />到有依据的<br /><em>漏洞判断。</em></h1>
             <p class="intro">
-              跟随一个抽象 Parcel 案例，看看静态分析、角色化审计与 CodeQL-AI
-              如何逐步建立证据。
+              跟随一个抽象 Parcel
+              案例，了解审计工作流怎样发现问题、组织复核，并按需调用 CodeQL-AI。
             </p>
             <div class="hero-actions">
               <button class="primary" id="begin">开始演示 <span>→</span></button
@@ -1800,7 +1910,7 @@
             <svg
               viewBox="0 0 520 455"
               role="img"
-              aria-label="一条静态告警穿过审计、反证与复核，形成证据支持的判断"
+              aria-label="源码审计形成候选，经过反证与按需验证，输出可复核结论"
             >
               <defs>
                 <pattern
@@ -1849,7 +1959,7 @@
                 />
                 <text x="17" y="25" class="diagram-mono">01 / FINDING</text>
                 <text x="17" y="52" class="diagram-label" font-size="19">
-                  静态告警
+                  审计候选
                 </text>
                 <text x="17" y="79" class="diagram-mono">source → sink</text>
                 <circle cx="139" cy="26" r="4" fill="#ead492" class="pulsing" />
@@ -1886,7 +1996,7 @@
                   范围清晰 · 可追溯
                 </text>
               </g>
-              <text x="350" y="111" class="diagram-mono">静态告警提供线索</text>
+              <text x="350" y="111" class="diagram-mono">角色协作发现候选</text>
               <text x="350" y="130" class="diagram-mono">触发条件需要复核</text>
               <text x="42" y="326" class="diagram-mono">模型判断辅助分析</text>
               <text x="42" y="345" class="diagram-mono">结论依据验证证据</text>
@@ -1898,83 +2008,125 @@
           </div>
         </div>
         <div class="hero-bottom">
-          <span>STATIC ANALYSIS</span><span class="rule"></span
-          ><span>SEMANTIC AUDIT</span><span class="rule"></span
-          ><span>EVIDENCE-BASED DECISION</span>
+          <span>AUDIT WORKFLOW · 任务与角色</span><span class="rule"></span
+          ><span>CODEQL-AI · 分析与复核</span><span class="rule"></span
+          ><span>统一候选与证据</span>
         </div>
       </section>
       <section
-        class="slide"
+        class="slide workflow-slide"
         data-title="两个工具如何协作"
         aria-label="第 2 章：两个工具如何协作"
         hidden
       >
         <div class="scene-head">
           <div class="eyebrow">01 / THE UNIFIED IDEA</div>
-          <h2>工作流组织问题，分析引擎补充证据。</h2>
+          <h2>审计工作流主导，验证工具按需介入。</h2>
           <p class="intro">
-            CodeQL-AI 的输出作为 Evidence
-            关联到冻结的候选包，由工作流统一组织复核与决策。
+            主体从源码发现候选、组织反证与盲验证；遇到具体技术问题时，调用
+            CodeQL-AI 辅助检查。
           </p>
         </div>
-        <div class="system-figure">
-          <div class="orchestrator">
-            <span>AUDIT-WORKFLOW-PROMPTS</span>
-            <div>
-              <h3>统一审计编排</h3>
-              <p>角色分工 → 候选冻结 → 独立盲验证 → checkpoint</p>
-            </div>
-            <span>组织 / 调度 / 追溯</span>
-          </div>
-          <div class="control-arrows">
-            <span>↓ 分派发现</span><span>↓ 冻结假设</span><span>↓ 调用复核</span
-            ><span>↓ 汇总证据</span>
-          </div>
-          <div class="system-row">
-            <button
-              class="sys-node"
-              data-system="discovery"
-              aria-pressed="false"
-            >
-              <small>01 / DISCOVERY</small><strong>CodeQL</strong
-              ><span>SARIF 告警<br />保留静态路径</span></button
-            ><span class="arrow">→</span>
-            <button
-              class="sys-node"
-              data-system="candidate"
-              aria-pressed="true"
-            >
-              <small>02 / SEMANTICS</small><strong>候选包</strong
-              ><span
-                >入口、调用链、不变量<br />将可疑点变成可检验假设</span
-              ></button
-            ><span class="arrow">→</span>
-            <button
-              class="sys-node"
-              data-system="enrichment"
-              aria-pressed="false"
-            >
-              <small>03 / CODEQL-AI</small><strong>证据增强</strong>
-              <div class="enrich-stack">
-                <span>FP Experience</span><span>Sanitizer</span
-                ><span>QL Optimizer</span><span>Symbolic</span>
-              </div></button
-            ><span class="arrow">→</span>
-            <button
-              class="sys-node"
-              data-system="decision"
-              aria-pressed="false"
-            >
-              <small>04 / DECISION</small><strong>证据审核</strong
-              ><span>结论、证据引用<br />适用范围与未解假设</span>
-            </button>
-          </div>
-          <div class="loop-line">
-            ↶ 经验回写，服务下一轮审计
-            <span>低置信度模式只作线索，不直接抑制告警</span>
-          </div>
+        <div class="workflow-tabs" role="group" aria-label="整合流程">
+          <button data-flow="plan" aria-pressed="true">01 任务拆分</button>
+          <button data-flow="roles" aria-pressed="false">02 角色协作</button>
+          <button data-flow="call" aria-pressed="false">03 调用与回写</button>
+          <button data-flow="checkpoint" aria-pressed="false">
+            04 断点续作
+          </button>
+          <button data-flow="map" aria-pressed="false">整体架构</button>
         </div>
-        <div class="system-detail" id="system-detail" aria-live="polite"></div>
+        <div id="workflow-tour">
+          <div class="workflow-handoff" aria-live="polite">
+            <article class="workflow-card">
+              <small id="flow-left-owner"></small>
+              <h3 id="flow-left-title"></h3>
+              <p id="flow-left-description"></p>
+              <pre id="flow-left-data"></pre>
+            </article>
+            <article class="workflow-card">
+              <small id="flow-right-owner"></small>
+              <h3 id="flow-right-title"></h3>
+              <p id="flow-right-description"></p>
+              <pre id="flow-right-data"></pre>
+            </article>
+          </div>
+          <div class="workflow-action" id="workflow-action">
+            <button class="primary" id="flow-return">演示证据返回</button>
+            <button class="outline" id="flow-save">保存检查点并中断</button>
+            <button class="primary" id="flow-resume">恢复继续</button>
+            <p id="flow-status" role="status"></p>
+          </div>
+          <p class="workflow-boundary">
+            方法模拟：状态仅保存在本页内存；未启动 Agent 或
+            CodeQL-AI。后端已有任务规划、通用 runner 和
+            provider，自动交接及证据校验尚未完整接通。
+          </p>
+        </div>
+        <div id="system-map" hidden>
+          <div class="system-figure">
+            <div class="orchestrator">
+              <span>AUDIT-WORKFLOW-PROMPTS</span>
+              <div>
+                <h3>统一审计编排</h3>
+                <p>角色分工 → 候选冻结 → 独立盲验证 → checkpoint</p>
+              </div>
+              <span>组织 / 调度 / 追溯</span>
+            </div>
+            <div class="control-arrows">
+              <span>↓ 分派发现</span><span>↓ 冻结假设</span
+              ><span>↓ 调用复核</span><span>↓ 汇总证据</span>
+            </div>
+            <div class="system-row">
+              <button
+                class="sys-node"
+                data-system="discovery"
+                aria-pressed="false"
+              >
+                <small>01 / AUDIT</small><strong>源码审计</strong
+                ><span>入口 · 不变量 · 变体<br />可参考静态告警</span></button
+              ><span class="arrow">→</span>
+              <button
+                class="sys-node"
+                data-system="candidate"
+                aria-pressed="true"
+              >
+                <small>02 / SEMANTICS</small><strong>候选包</strong
+                ><span
+                  >入口、调用链、不变量<br />将可疑点变成可检验假设</span
+                ></button
+              ><span class="arrow">→</span>
+              <button
+                class="sys-node"
+                data-system="enrichment"
+                aria-pressed="false"
+              >
+                <small>03 / OPTIONAL</small><strong>CodeQL-AI 辅助</strong>
+                <div class="enrich-stack">
+                  <span>FP Experience</span><span>Sanitizer</span
+                  ><span>QL Optimizer</span><span>Symbolic</span>
+                </div></button
+              ><span class="arrow">→</span>
+              <button
+                class="sys-node"
+                data-system="decision"
+                aria-pressed="false"
+              >
+                <small>04 / DECISION</small><strong>证据审核</strong
+                ><span>结论、证据引用<br />适用范围与未解假设</span>
+              </button>
+            </div>
+            <div class="loop-line">
+              ↶ 经验回写，服务下一轮审计
+              <span>低置信度模式只作线索，不直接抑制告警</span>
+            </div>
+          </div>
+          <div
+            class="system-detail"
+            id="system-detail"
+            aria-live="polite"
+          ></div>
+        </div>
       </section>
       <section
         class="slide"
@@ -1984,9 +2136,9 @@
       >
         <div class="scene-head">
           <div class="eyebrow">02 / A FINDING IN MOTION</div>
-          <h2>沿着这一次复制，逐步收集证据。</h2>
+          <h2>同一候选，交给不同角色处理。</h2>
           <p class="intro">
-            这是手工构造的伪代码。每推进一步，观察左侧的关注点和右侧的证据卡。
+            工作流按职责分派问题、冻结候选，并按需调用辅助工具。伪代码和证据卡均为抽象示例。
           </p>
         </div>
         <div class="case-layout">
@@ -2105,7 +2257,8 @@
           <div class="eyebrow">04 / CHALLENGE THE HYPOTHESIS</div>
           <h2>独立验证：依据源码和输入重建调用路径。</h2>
           <p class="intro">
-            独立重建可以减少确认偏差；漏洞确认仍需要有效、范围明确的确定性证据。
+            工作流控制验证者可见的信息。盲验证完成后，按能力进入历史核查、PoC
+            计划与人工复核。
           </p>
         </div>
         <div class="blind-diagram">
@@ -2184,7 +2337,8 @@
           <div class="eyebrow">05 / CLOSE THE LOOP CAREFULLY</div>
           <h2>误报经验的记录、验证与复用。</h2>
           <p class="intro">
-            以“未建模的长度检查”为例，演示经验如何从线索走向可复用模型。
+            工作流提交已复核的反证；CodeQL-AI
+            提取模式并接受回归检查；下一轮总控核对适用范围。
           </p>
         </div>
         <div class="feedback-figure">
@@ -2310,24 +2464,24 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>A / BASELINE</td>
-                  <td>CodeQL 原始告警</td>
-                  <td>基线误报和漏报在哪里？</td>
+                  <td>A / PRIMARY</td>
+                  <td>完整主体审计工作流</td>
+                  <td>候选质量、覆盖与复核成本如何？</td>
                 </tr>
                 <tr>
-                  <td>B / AUDIT</td>
-                  <td>＋角色化语义审计</td>
-                  <td>语义拆解是否有效？</td>
+                  <td>B / ASSISTED</td>
+                  <td>主体＋按需 CodeQL-AI</td>
+                  <td>疑难判断是否获得额外验证？</td>
                 </tr>
                 <tr>
-                  <td>C / EVIDENCE</td>
-                  <td>＋CodeQL-AI 证据增强</td>
-                  <td>误报减少是否牺牲召回？</td>
+                  <td>C / REFERENCE</td>
+                  <td>单独 CodeQL（外部参照）</td>
+                  <td>两种发现方式各覆盖哪些问题？</td>
                 </tr>
                 <tr>
                   <td>D / ABLATION</td>
-                  <td>分别移除盲验证或经验反馈</td>
-                  <td>收益究竟来自哪个模块？</td>
+                  <td>分别移除角色、反证或辅助验证</td>
+                  <td>各项机制的独立贡献是什么？</td>
                 </tr>
               </tbody>
             </table>
@@ -2385,7 +2539,8 @@
             >
           </h2>
           <p class="intro">
-            静态分析发现线索，工作流组织推理，CodeQL-AI 补充反证与复核。<br />证据足够，才在明确范围内给出结论。
+            主体工作流发现候选、组织角色、推进反证与独立复核。<br />CodeQL-AI
+            按需补充验证依据，结论由主体汇总。
           </p>
           <div class="closing-chain">
             <span>Finding</span><i>→</i><span>CandidatePacket</span><i>→</i
@@ -2393,12 +2548,12 @@
           </div>
           <div class="closing-points">
             <div>
-              <strong>统一编排</strong>
-              <p>候选冻结，角色分工，产物可追溯。</p>
+              <strong>主体：审计工作流</strong>
+              <p>源码调查、变体发现、盲验证与检查点。</p>
             </div>
             <div>
-              <strong>证据审核</strong>
-              <p>区分假设、反证与确定性复核。</p>
+              <strong>辅助：CodeQL-AI</strong>
+              <p>对具体问题提供静态检查与路径复核。</p>
             </div>
             <div>
               <strong>经验复用</strong>
@@ -2426,7 +2581,7 @@
     <footer class="chapter-footer">
       <div class="chapter-info">
         <span id="chapter-number">01 / 08</span
-        ><strong id="chapter-title">从一条告警开始</strong>
+        ><strong id="chapter-title">从源码审计开始</strong>
       </div>
       <nav class="chapter-dots" id="chapters" aria-label="演示章节"></nav>
       <div class="nav-controls">
@@ -2462,14 +2617,14 @@
       ];
       const caseFrames = [
         {
-          title: "静态分析识别输入到复制操作的路径。",
+          title: "入口角色发现可疑复制操作。",
           description:
-            "外部长度 n 从 Parcel 进入 memcpy 的复制参数。CodeQL 给出候选，我们还不知道它是否真的可触发。",
-          type: "Finding",
+            "工作流分配 Parcel 入口给审计角色。源码显示长度 n 进入 memcpy；角色记录位置与调用关系，提出待验证问题。",
+          type: "Source review",
           content:
-            "source: Parcel.ReadUint32()\nsink: memcpy(..., n)\nrule / CWE: illustrative / CWE-787\nverdict: not decided",
+            "producer: entrypoint-boundary\nsource: Parcel.ReadUint32()\nsink: memcpy(..., n)\norigin: source audit / illustrative",
           lines: [2, 6],
-          role: "CodeQL · Discovery",
+          role: "主体工作流 · entrypoint-boundary",
           note: "关注输入来源和危险操作。静态路径的存在，不等于路径在真实环境中可达。",
           takeaway: "本阶段记录静态路径，触发条件待核实。",
         },
@@ -2481,7 +2636,7 @@
           content:
             "attacker_control: n (to verify)\ncapacity: 64 (illustrative)\ninvariant: n <= capacity\nviolation: n > capacity",
           lines: [1, 2, 4, 6],
-          role: "entrypoint-boundary + dataflow-lifetime",
+          role: "主体工作流 · entrypoint-boundary + dataflow-lifetime",
           note: "只有同时证明控制量、容量与危险操作，才有一个可检验的漏洞假设。",
           takeaway: "明确容量约束与越界条件。",
         },
@@ -2493,19 +2648,19 @@
           content:
             "candidate_id: DEMO-001\nsnapshot: abstract-example (not a commit)\nrevision: 1\nopen_questions: caller guards, IPC permission",
           lines: [0, 2, 6],
-          role: "chain-composer · Candidate Freeze",
+          role: "主体工作流 · chain-composer / 总控冻结",
           note: "真实运行需记录代码 commit、输入哈希与规则版本。本演示不伪造真实来源凭证。",
           takeaway: "候选版本固定，后续证据关联到该版本。",
         },
         {
           title: "主动寻找能推翻它的证据。",
           description:
-            "检查调用方是否限制长度、权限是否阻断入口、清洗函数是否覆盖全部路径。CodeQL-AI 帮助匹配经验和检查 sanitizer。",
+            "反证角色检查调用方长度限制与入口权限。若保护函数语义仍不明确，总控按需调用 CodeQL-AI 检查 sanitizer，并关联返回证据。",
           type: "Counterevidence checklist",
           content:
             "[?] caller guarantees n <= 64\n[?] IPC policy excludes the attacker\n[?] sanitizer dominates every copy\nexperience match ≠ decisive proof",
           lines: [0, 5, 6],
-          role: "counterevidence-history + CodeQL-AI",
+          role: "主体反证角色 → 可选 CodeQL-AI → 总控复核",
           note: "函数名字、单次模型判断或相似误报经验，都不足以排除当前候选。",
           takeaway: "反证检查用于排除受保护或不可达的路径。",
         },
@@ -2517,14 +2672,14 @@
           content:
             "verdict: STATIC_ONLY\nrequires: valid deterministic verification\npoc_plan: not an execution result\nscope: this abstract example only",
           lines: [5, 6],
-          role: "blind-verifier + decision-gate",
+          role: "主体工作流 · blind-verifier / 证据审核",
           note: "下一章用一个可操作的约束模型，解释符号复核究竟试图回答什么。",
           takeaway: "有计划，不等于已验证。",
         },
       ];
       const notes = [
-        "开场只讲一个问题：静态扫描会给出告警，但如何让评委相信结论？后面的演示围绕一个抽象案例展开，不宣称已经发现真实 OpenHarmony 漏洞。按 → 或空格推进，N 显示讲解提示，F 进入全屏。",
-        "说明工具分工：审计工作流调度 CodeQL-AI 补充证据。点击四个节点可查看职责。统一的数据契约记录每次交接的输入、产物和来源。",
+        "介绍主体审计工作流：任务分片、角色调查、不变量与变体发现、反证、候选冻结和盲验证。CodeQL-AI 是可选辅助验证。按 → 推进，N 显示提示，F 全屏。",
+        "依次点击任务拆分、角色协作、调用与回写。点击演示证据返回，再到断点续作保存并恢复，观察候选 ID、revision 和证据数量保持一致。说明这里只模拟交接，没有运行引擎。",
         "本章有五个小步骤。每次按 → 展开一个步骤，再进入下一章。依次指出输入长度、目标容量、复制操作、未解假设与反证问题。避免把玩具示例说成真实源码。",
         "设定 n=96、关闭 guard，说明为什么超过容量。将 n 调至 32，说明一个安全输入不能证明不存在其他危险输入。打开 guard 后，危险条件与路径条件冲突。这里只做有限整数枚举，真实求解仍受模型与覆盖范围限制。",
         "区分两层独立性：盲验证帮助减少确认偏差，确定性复核检验路径或触发条件。点击四张卡解释四种结论的前提。它们展示目标方法规则，未调用或复刻当前 Python 后端。",
@@ -2534,15 +2689,15 @@
       ];
       const systemDetails = {
         discovery: [
-          "CodeQL · 候选发现",
-          "保留 SARIF 的 ruleId、CWE、source、sink 与 code flow。静态分析为审计提供线索，实际召回率仍取决于规则与建模范围。",
+          "主体工作流 · 候选发现",
+          "审计角色从源码入口、安全不变量、生命周期与获准的历史信息提出候选。已有 SARIF 可以补充线索；没有 CodeQL 告警也可以开展源码审计。",
         ],
         candidate: [
           "工作流 · 语义拆解",
-          "把一条告警拆成入口、攻击者控制量、调用链、不变量与反证问题，并在新颖性检查及后续复核前冻结候选。",
+          "源码调查形成入口、攻击者控制量、调用链、不变量与反证问题。总控合并同根因候选、固定版本并组织盲验证；需要时调用辅助工具。",
         ],
         enrichment: [
-          "CodeQL-AI · 证据增强",
+          "CodeQL-AI · 按需辅助验证",
           "误报经验提出线索；sanitizer 检查保护关系；QL 优化修补分析模型；符号复核检查约束内可达性。所有输出都应带来源。",
         ],
         decision: [
@@ -2591,6 +2746,115 @@
           "* conceptual transition, not a test result\nreuse only when applicability is established",
         ],
       ];
+      let flowMode = "plan";
+      let flowState = {
+        candidate_id: "DEMO-001",
+        revision: 1,
+        snapshot_id: "abstract-example",
+        evidence_refs: [],
+        paused: false,
+      };
+      let flowCheckpoint = null;
+      function renderFlow(mode) {
+        flowMode = mode;
+        $$("[data-flow]").forEach((b) =>
+          b.setAttribute("aria-pressed", String(b.dataset.flow === mode)),
+        );
+        $("#system-map").hidden = mode !== "map";
+        $("#workflow-tour").hidden = mode === "map";
+        if (mode === "map") return;
+        const candidate = `candidate: ${flowState.candidate_id} / r${flowState.revision}\nsnapshot: ${flowState.snapshot_id}\nevidence_refs: ${flowState.evidence_refs.join(", ") || "[]"}`;
+        const frames = {
+          plan: [
+            "主体 / AUDIT WORKFLOW",
+            "确定范围与任务分片",
+            "总控固定代码快照与攻击者边界，按组件分派审计任务。源码与安全不变量可以直接作为输入。",
+            "snapshot: abstract-example\nunits: IPC / NAPI / permission\nseed: source review\nCodeQL required: no",
+            "主体 / WORKER ASSIGNMENT",
+            "各自调查，统一交接",
+            "入口、数据流、反证角色返回源码依据。总控合并同根因候选，限制并发写入范围。",
+            "worker-1: IPC / Parcel\nworker-2: NAPI / permission\nroles: boundary / lifetime / counterevidence\noutput: assignment + role artifacts",
+          ],
+          roles: [
+            "主体 / ROLE COORDINATION",
+            "把安全假设拆成检查任务",
+            "入口角色核对攻击者控制；数据流角色核对容量和生命周期；反证角色检查权限及保护条件。",
+            "entrypoint → n 是否可控？\ndataflow → 目标容量是否为 64？\ncounterevidence → 调用方是否限制 n？\nchain-composer → 组织调用链与依据",
+            "主体 / FROZEN CANDIDATE",
+            "总控发布固定版本的候选",
+            "候选冻结后保留原始问题与未解假设。辅助检查追加证据；实质修改假设需要新 revision。",
+            candidate + "\ninvariant: n ≤ capacity",
+          ],
+          call: [
+            "主体 → 可选辅助 / REQUEST",
+            "交给工具一个具体问题",
+            "源码审计已形成候选。当前需要核对保护条件是否覆盖复制路径；总控选择适用能力，工具缺席则记录待补证项。",
+            "caller: counterevidence / controller\nprovider: CodeQL-AI sanitizer / symbolic\nquestion: guard covers relevant paths?\ncandidate: DEMO-001 / r1",
+            "可选辅助 → 主体 / EVIDENCE",
+            "结果回到原候选，由主体复核",
+            "检查执行状态、来源、版本与适用范围。错误或超时不排除候选；有效结果也需进入独立盲验证。",
+            candidate +
+              (flowState.evidence_refs.length
+                ? "\nDEMO-E01: illustrative, not executed"
+                : "\nstatus: 尚未演示证据返回"),
+          ],
+          checkpoint: [
+            "主体 / CHECKPOINT",
+            "保存进度与未完成事项",
+            "总控保存当前候选版本、已关联证据和下一步任务。这里可模拟中断与恢复，页面刷新会清除该模拟状态。",
+            (flowCheckpoint && Object.entries(JSON.parse(flowCheckpoint)).map(([key, value]) => key + ": " + JSON.stringify(value)).join("\n")) ||
+              "checkpoint: 尚未保存\nnext: 独立盲验证 → 历史核查\nthen: PoC 计划 → 人工复核\n模型上下文可重建，产物负责交接",
+            "主体 / RESUME",
+            "恢复候选，继续待办任务",
+            "恢复后沿用同一候选 ID 与 revision，不重复追加已接收的证据。缺少验证条件时保留明确的能力缺口。",
+            candidate +
+              `\nstate: ${flowState.paused ? "已中断（模拟）" : "可继续（模拟）"}`,
+          ],
+        };
+        const frame = frames[mode];
+        [
+          "left-owner",
+          "left-title",
+          "left-description",
+          "left-data",
+          "right-owner",
+          "right-title",
+          "right-description",
+          "right-data",
+        ].forEach((id, i) => ($("#flow-" + id).textContent = frame[i]));
+        $("#workflow-action").hidden = !["call", "checkpoint"].includes(mode);
+        $("#flow-return").hidden = mode !== "call";
+        $("#flow-save").hidden = mode !== "checkpoint";
+        $("#flow-resume").hidden = mode !== "checkpoint";
+        $("#flow-return").disabled =
+          flowState.paused || flowState.evidence_refs.length > 0;
+        $("#flow-save").disabled = flowState.paused;
+        $("#flow-resume").disabled = !flowState.paused || !flowCheckpoint;
+        $("#flow-status").textContent = flowState.paused
+          ? "检查点已保存在本页内存。点击恢复后继续。"
+          : `当前候选 DEMO-001 / r1 · 关联 ${flowState.evidence_refs.length} 条模拟辅助证据 · 主体负责后续验证与报告`;
+      }
+      $("#flow-return").addEventListener("click", () => {
+        stopAuto();
+        if (!flowState.paused && !flowState.evidence_refs.includes("DEMO-E01"))
+          flowState.evidence_refs.push("DEMO-E01");
+        renderFlow("call");
+      });
+      $("#flow-save").addEventListener("click", () => {
+        stopAuto();
+        flowCheckpoint = JSON.stringify(
+          { ...flowState, paused: false },
+          null,
+          2,
+        );
+        flowState.paused = true;
+        renderFlow("checkpoint");
+      });
+      $("#flow-resume").addEventListener("click", () => {
+        stopAuto();
+        if (flowCheckpoint) flowState = JSON.parse(flowCheckpoint);
+        renderFlow("checkpoint");
+      });
       function toast(text) {
         $("#toast").textContent = text;
         $("#toast").hidden = false;
@@ -2841,6 +3105,10 @@
           renderChapter();
         }
         if (b.dataset.system) renderSystem(b.dataset.system);
+        if (b.dataset.flow) {
+          stopAuto();
+          renderFlow(b.dataset.flow);
+        }
         if (b.dataset.verdict) renderVerdict(b.dataset.verdict);
         if (b.dataset.cycle !== undefined) renderCycle(Number(b.dataset.cycle));
       });
@@ -2853,6 +3121,15 @@
       $("#next").addEventListener("click", () => advance());
       $("#prev").addEventListener("click", previous);
       $("#restart").addEventListener("click", () => {
+        flowState = {
+          candidate_id: "DEMO-001",
+          revision: 1,
+          snapshot_id: "abstract-example",
+          evidence_refs: [],
+          paused: false,
+        };
+        flowCheckpoint = null;
+        renderFlow("plan");
         caseStep = 0;
         renderCase();
         renderCycle(0);
@@ -2936,6 +3213,7 @@
       });
       renderCase();
       renderExperiment();
+      renderFlow("plan");
       renderSystem("candidate");
       renderVerdict("static");
       renderCycle(0);

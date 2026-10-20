@@ -1,19 +1,18 @@
-flowchart LR
-    A[OpenHarmony Target Profile] --> B[Inventory & Sharding]
-    B --> C[CodeQL SARIF Discovery]
-    C --> D[Unified Finding]
-    D --> E[Semantic Audit Roles]
-    E --> F[Frozen Candidate Packet]
-    F --> G[FP Experience Match]
-    F --> H[Function Sanitizer]
-    F --> I[QL Optimizer]
-    F --> J[Focused Symbolic Verification]
-    G --> K[Evidence Normalizer]
-    H --> K
-    I --> K
-    J --> K
-    K --> L[Blind Verification & Decision Gate]
-    L --> M[PoC Plan / Repair Plan / Report]
-    K --> N[Low-confidence Experience Store]
-    N -. next campaign .-> G
-
+flowchart TB
+    A[代码快照 / 威胁模型 / 安全不变量] --> B
+    subgraph MAIN[主体：审计工作流]
+        B[目标确认与任务分片] --> C[角色调查 / 不变量提取 / 变体发现]
+        C --> D[总控合并 / 反证检查 / 候选冻结]
+        D --> E[独立盲验证 / 历史核查 / PoC计划]
+        E --> F[证据审核 / 人工复核报告]
+        B -. progress .-> G[worker-state / checkpoint]
+        D -. progress .-> G
+        G -. resume .-> C
+    end
+    D -. 明确问题与版本 / 按需调用 .-> H
+    subgraph AUX[辅助：CodeQL-AI]
+        H[经验匹配 / sanitizer检查 / QL修补 / 局部符号验证]
+    end
+    H -. 证据与适用范围 / 错误与超时 .-> E
+    I[可选静态告警 SARIF] -. 补充线索 .-> C
+    F -. 经回归验证的经验 .-> H

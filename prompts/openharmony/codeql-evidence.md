@@ -1,13 +1,18 @@
-# CodeQL-AI 证据增强 Prompt
+# 可选 CodeQL-AI 辅助验证
 
-对冻结的 Candidate Packet 执行以下顺序：
+审计工作流从源码和安全不变量发现、冻结候选。CodeQL 告警可以补充线索，但不是启动审计的必要输入。
 
-1. 读取 SARIF path，确认 source、sink、ruleId、CWE 和 code flow；
-2. 匹配历史 FP Experience，记录匹配分数和未匹配转移；
-3. 查找路径上的潜在 sanitizer，并读取函数实现；
-4. 在需要时生成完整 patched QL，原始 QL 不直接覆盖；
-5. 对关键分支构造攻击谓词，调用聚焦式符号执行；
-6. 将每一步包装成 Evidence，记录 producer、输入哈希和工具版本。
+当源码分析留下可由工具回答的问题时，总控选择适用能力：
 
-不要因为单次模型判断就删除告警。若验证条件缺失，返回 `NEEDS_EVIDENCE` 或 `STATIC_ONLY`。
+- 路径需要静态交叉检查：有数据库与适用规则时调用 CodeQL，保留 source、sink 和 code flow。
+- 调用方可能有未识别的保护：使用 Function-Level Sanitizer 查找并核对函数语义。
+- 同类误报可能已有经验：查询 FP Experience，匹配结果只作为检查线索。
+- 规则遗漏了保护语义：生成独立 QL patch 并进行正负例回归，不覆盖原始规则。
+- 攻击条件与路径条件可能冲突：有可用二进制和可信建模条件时调用 Symbolic Sanitizer。
+
+每次调用绑定候选 ID、revision、源码 snapshot、具体问题和输入引用。输出保存为 Evidence，记录 producer、输入与内容哈希、规则和模型版本、时间、执行状态与适用范围。缺失字段列入待补证项。
+
+error、timeout、UNKNOWN、模型缺口或范围失配不能生成排除候选的结论。SAT 仅在模型条件内支持可达；UNSAT 仅覆盖实际验证的路径与假设。有效结果仍需独立复核，候选版本不得被工具输出覆盖。
+
+调用需要配置相应 MCP 服务或 provider。任务包生成本身不会运行外部工具，也没有自动完成 Evidence 校验与归档。工具未配置时保留源码审计结果，标明验证缺口。
 

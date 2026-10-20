@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -29,6 +30,10 @@ def _cwe(result: Mapping[str, Any], rule: Mapping[str, Any]) -> Optional[str]:
         if value:
             text = str(value).upper()
             return text if text.startswith("CWE-") else "CWE-" + text.removeprefix("CWE")
+    for tag in rule.get("properties", {}).get("tags", []) or []:
+        match = re.search(r"(?:^|/)cwe-(\d+)$", str(tag), re.IGNORECASE)
+        if match:
+            return f"CWE-{int(match.group(1))}"
     rule_id = str(result.get("ruleId", ""))
     if "cwe-" in rule_id.lower():
         tail = rule_id.lower().split("cwe-", 1)[1].split("/", 1)[0]
@@ -57,14 +62,18 @@ def findings_from_sarif(path: str | Path, *, engine: str = "codeql") -> List[Fin
     data = json.loads(raw.decode("utf-8"))
     digest = hashlib.sha256(raw).hexdigest()
     findings: List[Finding] = []
-    for run in data.get("runs", []) or []:
+    for run_index, run in enumerate(data.get("runs", []) or []):
         tool = (run.get("tool", {}).get("driver", {}) or {})
         rules = {str(item.get("id")): item for item in tool.get("rules", []) or []}
         for index, result in enumerate(run.get("results", []) or []):
             primary = (result.get("locations") or [{}])[0]
-            location = _location(primary.get("location", {}))
-            result_id = result.get("guid") or result.get("id") or f"{index:05d}"
+            location = _location(primary.get("location", primary))
+            result_id = result.get("guid") or result.get("id") or f"{run_index:03d}:{index:05d}"
             rule_id = str(result.get("ruleId") or "unknown-rule")
+            flow = _flow(result)
+            path_count = sum(len(item.get("threadFlows", []) or []) for item in result.get("codeFlows", []) or [])
+            # Do not invent a source/sink pair by joining unrelated SARIF paths.
+            endpoint_flow = flow if path_count == 1 else []
             findings.append(Finding(
                 finding_id=f"{engine}:{result_id}",
                 engine=engine,
@@ -75,11 +84,12 @@ def findings_from_sarif(path: str | Path, *, engine: str = "codeql") -> List[Fin
                 end_line=location.get("endLine"),
                 cwe=_cwe(result, rules.get(rule_id, {})),
                 cve=result.get("properties", {}).get("cve"),
-                source=result.get("properties", {}).get("source", {}),
-                sink=result.get("properties", {}).get("sink", {}),
-                code_flow=_flow(result),
+                source=result.get("properties", {}).get("source") or (endpoint_flow[0]["location"] if endpoint_flow else {}),
+                sink=result.get("properties", {}).get("sink") or (endpoint_flow[-1]["location"] if endpoint_flow else {}),
+                code_flow=flow,
                 properties=dict(result.get("properties", {}) or {}),
-                provenance={"sarif": str(source), "sha256": digest, "runTool": tool.get("name", engine)},
+                provenance={"sarif": str(source), "sha256": digest, "runTool": tool.get("name", engine),
+                            "runIndex": run_index, "rawCodeFlows": result.get("codeFlows", [])},
             ))
     return findings
 

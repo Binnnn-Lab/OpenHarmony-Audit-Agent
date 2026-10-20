@@ -1,5 +1,7 @@
 # 通用 0day Agent 代码分析工作流
 
+> 本文保留主体来源仓库的设计说明。文中的原 `patch-gap` 路径、生产环境和历史运行拓扑属于来源说明，不表示本仓库已完成同样的实机联调。本仓库对应实现位于 `src/openharmony_audit/workflow/generic_*.py`，入口为 `python -m openharmony_audit workflow`。CodeQL-AI 仅作为按需辅助验证，当前接入范围见 [整合状态](integration-status.md)。下述 `audit_workflow/`、`patch-gap/` 的旧目录引用均指来源仓库；本仓库工程测试使用 `python -m unittest discover -s tests -v`。
+
 本文说明从 OpenHarmony `patch-gap` 0day 审计系统中提取出的通用工作流。目标是保留已经验证过的 Agent 分工、证据隔离、并行分片、候选状态机、动态验证队列和检查点恢复，同时把 OpenHarmony 的 release manifest、14 个组件、GitCode 历史、GN/HAP、RK3568、SRC 中文报告以及具体模型全部移到可替换接口。
 
 提取后的实现位于 `audit_workflow/`。它可以直接为普通 Git 仓库、没有 Git 元数据的源码目录或反编译导出树生成分片计划、独立 worker 工作区和 Claude Code prompt，并用配置指定的模型并行运行 root workers。原 `patch-gap/` 保留为 OpenHarmony 的完整生产适配实现；两者的关系是“通用编排核心 + 目标适配 profile”，而不是复制两套分析方法。
@@ -321,7 +323,7 @@ blind verifier 必须创建全新上下文，只接收冻结 packet 和必要证
 ```sh
 cp config/workflow.deepseek.example.json /secure/audit/workflow.json
 cp config/target.repository.example.json /secure/audit/target.json
-python3 -m audit_workflow.cli validate \
+python -m openharmony_audit workflow validate \
   --workflow /secure/audit/workflow.json \
   --target /secure/audit/target.json \
   --strict-source
@@ -332,7 +334,7 @@ python3 -m audit_workflow.cli validate \
 ### 8.2 查看分片计划
 
 ```sh
-python3 -m audit_workflow.cli plan \
+python -m openharmony_audit workflow plan \
   --workflow /secure/audit/workflow.json \
   --target /secure/audit/target.json
 ```
@@ -342,7 +344,7 @@ python3 -m audit_workflow.cli plan \
 ### 8.3 生成工作区
 
 ```sh
-python3 -m audit_workflow.cli prepare \
+python -m openharmony_audit workflow prepare \
   --workflow /secure/audit/workflow.json \
   --target /secure/audit/target.json \
   --run-root /secure/audit/run-01
@@ -387,13 +389,13 @@ run-01/
 ### 8.5 并行运行
 
 ```sh
-python3 -m audit_workflow.cli run --run-root /secure/audit/run-01
+python -m openharmony_audit workflow run --run-root /secure/audit/run-01
 ```
 
 只运行部分分片：
 
 ```sh
-python3 -m audit_workflow.cli run \
+python -m openharmony_audit workflow run \
   --run-root /secure/audit/run-01 \
   --workers worker-1,worker-3
 ```
@@ -405,7 +407,7 @@ runner 使用 argv 启动 Claude Code，不通过 shell 拼接命令。每个 wo
 查看状态：
 
 ```sh
-python3 -m audit_workflow.cli status --run-root /secure/audit/run-01
+python -m openharmony_audit workflow status --run-root /secure/audit/run-01
 ```
 
 当前通用 runner 直接在本机启动多个 Claude Code 进程。需要 Podman、Kubernetes 或远程主机时，让 runtime adapter 在隔离环境内执行相同的 `plan.json + worker assignment + prompt` 契约；OpenHarmony 原 `launch-static-100.sh` 可以作为容器 runtime adapter 的参考。

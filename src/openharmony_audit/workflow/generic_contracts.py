@@ -221,7 +221,7 @@ class WorkflowConfig:
             raise ConfigError("phase ids must be unique")
         prompt_dir_raw = _text(data.get("promptDir", "builtin:generic"), "promptDir")
         if prompt_dir_raw == "builtin:generic":
-            prompt_dir = (Path(__file__).resolve().parents[1] / "prompts" / "generic").resolve()
+            prompt_dir = (Path(__file__).resolve().parents[3] / "prompts").resolve()
         else:
             prompt_dir = Path(prompt_dir_raw)
             if not prompt_dir.is_absolute():

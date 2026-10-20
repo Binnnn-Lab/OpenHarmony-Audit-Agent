@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 from openharmony_audit.evidence.normalizer import findings_from_sarif
@@ -13,8 +14,13 @@ from openharmony_audit.workflow.planner import load_target_profile, prepare_run
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "workflow":
+        from openharmony_audit.workflow.generic_cli import main as workflow_main
+        return workflow_main(argv[1:])
     parser = argparse.ArgumentParser(description="OpenHarmony-Audit-Agent")
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("workflow", help="primary audit workflow: validate, plan, prepare, run, status")
     validate = sub.add_parser("validate-target")
     validate.add_argument("--target", type=Path, required=True)
     plan = sub.add_parser("prepare")
