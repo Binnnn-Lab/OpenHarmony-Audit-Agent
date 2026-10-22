@@ -7,7 +7,8 @@
 | 1 工具源代码 | 01-source.zip | 含源码、提示词、配置、测试、HTML 与复现脚本；清单与 SHA-256 在压缩包内 SOURCE-MANIFEST.json |
 | 2 技术说明书 | 工具源代码技术说明书.pdf | 原理、关键模块与实现说明；可编辑稿为 docs/technical-report.md |
 | 3 使用说明书 | 工具使用说明书.pdf | 依赖、安装、操作及故障处理；HTML 为 frontend/manual.html |
-| 3 DEMO 视频与配音 | 03-operation-video-kit.zip | 推荐：1080p 无配音视频、时间码讲稿、字幕和运行记录，团队配音后导出 |
+| 3 DEMO 视频与配音 | 配音版操作演示视频.mp4 | 已完成配音的操作演示成片 |
+| 3 配音素材包 | 03-operation-video-kit.zip | 包含无配音视频、时间码讲稿、字幕和运行记录，可用于重新录制 |
 | 3 操作演示视频 | 03-operation-demo.mp4 | 8 分 34 秒，实际 Parcel 源码检查记录回放与原理交互 |
 | 3 配音稿 | 03-operation-voiceover.html、.md、.srt | 对应视频的 18 段讲稿，HTML 可播放视频并按时间跳转 |
 | 3 原理录制材料 | 03-recording-kit.zip | 保留：单文件原理演示网页、逐页口语讲稿及打开说明 |
@@ -15,7 +16,7 @@
 | 3 逐页讲稿 | 03-narration.html、03-narration.md | 八页正文直接朗读，操作提示单独标注 |
 | 5 性能说明 | 工具性能说明.pdf | 合成单元规划测试、Parcel 限定函数审计实测及资源采样方法 |
 
-配音时解压 03-operation-video-kit.zip，打开 03-operation-voiceover.html，按各段时间码读正文。视频和讲稿 HTML 放在同一目录，可边看边录。操作回放 03-operation-replay.html 为单文件，也可独立离线打开。完整制作说明见 docs/operation-video.md。
+配音版操作演示视频.mp4 为可直接播放的成片。需要重新制作配音时，解压 03-operation-video-kit.zip，打开 03-operation-voiceover.html，按各段时间码读正文。视频和讲稿 HTML 放在同一目录，可边看边录。操作回放 03-operation-replay.html 为单文件，也可独立离线打开。完整制作说明见 docs/operation-video.md。
 
 原理 HTML 与逐页讲稿提供交互讲解；03-demo-captioned.mp4 及对应 SRT 为原理操作演示存档。03-operation-demo.mp4 展示实际任务记录回放与原理交互。
 

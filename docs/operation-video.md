@@ -1,6 +1,6 @@
 # 操作演示视频与配音
 
-视频为 `deliverables/03-operation-demo.mp4`，1920×1080、24 fps、无配音，18 段，共 8 分 34 秒。配套的 `03-operation-voiceover.html` 可以播放视频、按时间码跳转和查看正文。`03-operation-voiceover.md` 便于修改，SRT 可导入剪辑软件。
+正式配音成片为 `deliverables/配音版操作演示视频.mp4`。原始画面视频为 `deliverables/03-operation-demo.mp4`，1920×1080、24 fps、无配音，18 段，共 8 分 34 秒。配套的 `03-operation-voiceover.html` 可以播放视频、按时间码跳转和查看正文。`03-operation-voiceover.md` 便于修改，SRT 可导入剪辑软件。
 
 ## 本次任务
 

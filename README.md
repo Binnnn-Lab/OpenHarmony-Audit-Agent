@@ -16,7 +16,7 @@ OpenHarmony-Audit-Agent 以 **audit-workflow-prompts 审计工作流为主体**�
 
 ### 操作演示视频与配音（推荐）
 
-[视频与配音材料包](deliverables/03-operation-video-kit.zip) 包含已制作的 1080p 无配音视频、按时间码对应的讲稿、字幕及操作记录回放。打开 [配音稿](deliverables/03-operation-voiceover.html)，可以边看 [视频](deliverables/03-operation-demo.mp4) 边录音。
+[配音版操作演示视频](deliverables/配音版操作演示视频.mp4) 为可直接播放的成片。[视频与配音材料包](deliverables/03-operation-video-kit.zip) 保留 1080p 无配音视频、时间码讲稿、字幕及操作记录回放，便于重新录制与编辑。
 
 本次通过 Codex 实际完成 OpenHarmony c_utils 的小范围 Parcel 源码检查：3 个目标函数及 4 个直接辅助函数，候选数量 0。视频展示环境、配置、任务准备、执行记录、源码与报告，以及本次实测资源数据。[制作与运行说明](docs/operation-video.md) 包含范围、来源和复现步骤。
 
